@@ -1,0 +1,17 @@
+node_modules
+dist
+.angular
+coverage
+.env
+.env.local
+.env.production
+.env.*
+!.env.example
+!**/.env.example
+frontend/.angular
+frontend/dist
+backend/dist
+backend/.env
+frontend/.env
+backend/prisma/dev.db
+backend/prisma/dev.db-journal

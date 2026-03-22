@@ -1,0 +1,248 @@
+<section class="page">
+  @if (game(); as currentGame) {
+    <header class="toolbar">
+      <span class="toolbar__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
+      <h1 class="toolbar__title">{{ currentGame.label }}</h1>
+      <p class="toolbar__subtitle">{{ currentGame.team.name }} · {{ statusLabel(currentGame) }}</p>
+    </header>
+
+    @if (errorMessage()) {
+      <div class="error-banner">{{ errorMessage() }}</div>
+    }
+
+    <section class="surface-card live-clock-card">
+      <div class="live-clock-card__row">
+        <div class="live-clock-card__metric">
+          <p class="live-clock-card__label">{{ 'live.clock.matchLabel' | t }}</p>
+          <strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong>
+        </div>
+
+        <div class="cluster live-clock-card__actions">
+          @if (canPause(currentGame)) {
+            <button
+              class="button button--secondary button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.pause' | t"
+              [attr.title]="'common.actions.pause' | t"
+              (click)="pauseGame()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <path d="M10 9v6M14 9v6" />
+              </svg>
+            </button>
+          }
+
+          @if (canResume(currentGame)) {
+            <button
+              class="button button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.resume' | t"
+              [attr.title]="'common.actions.resume' | t"
+              (click)="resumeGame()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7V5Z" />
+              </svg>
+            </button>
+          }
+
+          @if (currentGame.status !== 'FINISHED' && currentGame.status !== 'DRAFT') {
+            <button
+              class="button button--danger button--icon"
+              type="button"
+              [attr.aria-label]="'live.actions.end' | t"
+              [attr.title]="'live.actions.end' | t"
+              (click)="endGame()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 4v16" />
+                <path d="M8 5h8l-2.5 3L16 11H8" />
+              </svg>
+            </button>
+          }
+
+          @if (currentGame.status === 'FINISHED') {
+            <a
+              class="button button--icon"
+              [routerLink]="['/games', currentGame.id, 'summary']"
+              [attr.aria-label]="'live.actions.viewSummary' | t"
+              [attr.title]="'live.actions.viewSummary' | t">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 5v14h14" />
+                <path d="m9 15 3-3 2 2 5-6" />
+              </svg>
+            </a>
+          }
+        </div>
+      </div>
+
+      <div class="live-clock-card__row">
+        <div class="live-clock-card__metric">
+          <p class="live-clock-card__label">
+            {{ 'live.period.label' | t : { number: currentGame.currentPeriodNumber } }}
+          </p>
+          <strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong>
+        </div>
+
+        <div class="cluster live-clock-card__actions">
+          @if (currentGame.status === 'DRAFT') {
+            <button
+              class="button button--icon"
+              type="button"
+              [attr.aria-label]="'live.actions.start' | t"
+              [attr.title]="'live.actions.start' | t"
+              (click)="startGame()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7V5Z" />
+              </svg>
+            </button>
+          }
+
+          @if (canCompletePeriod(currentGame)) {
+            <button
+              class="button button--secondary button--icon"
+              type="button"
+              [attr.aria-label]="'live.actions.completePeriod' | t"
+              [attr.title]="'live.actions.completePeriod' | t"
+              (click)="completePeriod()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="7" y="7" width="10" height="10" rx="1.5" />
+              </svg>
+            </button>
+          }
+
+          @if (canStartNextPeriod(currentGame)) {
+            <button
+              class="button button--icon"
+              type="button"
+              [attr.aria-label]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
+              [attr.title]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
+              (click)="startNextPeriod()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7V5Z" />
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    @if (currentGame.status === 'DRAFT') {
+      <section class="surface-card">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'live.startingFive.title' | t }}</h2>
+            <p>{{ 'live.startingFive.subtitle' | t }}</p>
+          </div>
+        </div>
+
+        <div class="stack live-player-list">
+          @for (player of currentGame.selectedPlayers; track player.playerId) {
+            <app-player-card
+              [playerName]="player.name"
+              [jerseyNumber]="player.jerseyNumber"
+              [position]="player.position"
+              [compact]="true"
+              [tone]="player.isStarter ? 'active' : 'bench'"
+              [note]="player.isStarter ? ('live.notes.starter' | t) : ('live.notes.benchToOpen' | t)"
+              [timeLabel]="player.totalSeconds | duration : 'compact'">
+            </app-player-card>
+          }
+        </div>
+      </section>
+    }
+
+    @if (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED') {
+      @if (showSubstitutionBanner()) {
+        <section class="surface-card substitution-banner">
+          <div>
+            <strong>{{ pendingCountsLabel() }}</strong>
+            <p>{{ 'live.pending.subtitle' | t }}</p>
+            <p class="substitution-banner__status">
+              @if (canApplySubstitutionBatch()) {
+                {{ 'live.pending.ready' | t }}
+              } @else {
+                {{ 'live.pending.mismatch' | t }}
+              }
+            </p>
+          </div>
+
+          <div class="substitution-banner__actions">
+            <button
+              class="button"
+              type="button"
+              [disabled]="!canApplySubstitutionBatch()"
+              (click)="substituteBatch()">
+              {{ 'live.actions.applyChanges' | t }}
+            </button>
+
+            <button
+              class="button button--secondary button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.clear' | t"
+              [attr.title]="'common.actions.clear' | t"
+              (click)="clearSelections()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+        </section>
+      }
+
+      <section class="surface-card surface-card--court">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'live.onCourt.title' | t }}</h2>
+          </div>
+        </div>
+
+        <div class="stack live-player-list">
+          @for (player of currentGame.activePlayers; track player.playerId) {
+            <app-player-card
+              [playerName]="player.name"
+              [jerseyNumber]="player.jerseyNumber"
+              [position]="player.position"
+              [compact]="true"
+              [tone]="'active'"
+              [selected]="isActiveSelected(player.playerId)"
+              [note]="isActiveSelected(player.playerId) ? ('live.notes.outgoingSelected' | t) : ''"
+              [timeLabel]="playerTimeSummary(currentGame, player)"
+              [quickActions]="pointActions(player)"
+              [actionLabel]="isActiveSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubOut' | t)"
+              (quickActionPressed)="recordPoints(player.playerId, $event)"
+              (actionPressed)="toggleActivePlayer(player.playerId)">
+            </app-player-card>
+          }
+        </div>
+      </section>
+
+      <section class="surface-card surface-card--bench">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'live.bench.title' | t }}</h2>
+          </div>
+        </div>
+
+        <div class="stack live-player-list">
+          @for (player of currentGame.benchPlayers; track player.playerId) {
+            <app-player-card
+              [playerName]="player.name"
+              [jerseyNumber]="player.jerseyNumber"
+              [position]="player.position"
+              [compact]="true"
+              [tone]="'bench'"
+              [selected]="isBenchSelected(player.playerId)"
+              [note]="isBenchSelected(player.playerId) ? ('live.notes.incomingSelected' | t) : ''"
+              [timeLabel]="playerTimeSummary(currentGame, player)"
+              [actionLabel]="isBenchSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubIn' | t)"
+              (actionPressed)="toggleBenchPlayer(player.playerId)">
+            </app-player-card>
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    <section class="page">
+      <div class="empty-state">{{ 'live.loading' | t }}</div>
+    </section>
+  }
+</section>

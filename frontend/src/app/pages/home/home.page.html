@@ -1,0 +1,188 @@
+<section class="page">
+  <header class="toolbar">
+    <span class="toolbar__eyebrow">{{ 'home.hero.eyebrow' | t }}</span>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-banner">{{ errorMessage() }}</div>
+  }
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <h2>{{ 'home.teams.title' | t }}</h2>
+      </div>
+    </div>
+
+    <div class="teams-strip">
+      <article class="team-card team-card--editor">
+        <div class="team-card__content">
+          <input
+            id="teamName"
+            name="teamName"
+            class="team-card__input"
+            [(ngModel)]="teamName"
+            [attr.aria-label]="'home.teamForm.nameLabel' | t"
+            [placeholder]="editingTeamId ? ('home.teamForm.editTitle' | t) : ('home.teamForm.namePlaceholder' | t)" />
+        </div>
+
+        <div class="team-card__actions">
+          @if (editingTeamId) {
+            <button
+              class="button button--icon"
+              type="button"
+              [disabled]="!teamName.trim()"
+              [attr.aria-label]="'common.actions.save' | t"
+              [attr.title]="'common.actions.save' | t"
+              (click)="submitTeam()">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </button>
+          } @else {
+            <button
+              class="button button--icon"
+              type="button"
+              [disabled]="!teamName.trim()"
+              [attr.aria-label]="'common.actions.create' | t"
+              [attr.title]="'common.actions.create' | t"
+              (click)="submitTeam()">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          }
+
+          @if (editingTeamId) {
+            <button
+              class="button button--secondary button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.cancel' | t"
+              [attr.title]="'common.actions.cancel' | t"
+              (click)="resetTeamForm()">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          }
+        </div>
+      </article>
+
+      @for (team of teams(); track team.id) {
+        <article class="team-card">
+          <div class="team-card__content">
+            <div class="team-card__header">
+              <h3>{{ team.name }}</h3>
+              <p class="team-card__meta">{{ 'home.teams.playersCount' | t : { count: team.players.length } }}</p>
+            </div>
+          </div>
+
+          <div class="team-card__actions">
+            <a
+              class="button button--secondary button--icon"
+              [routerLink]="['/teams', team.id]"
+              [attr.aria-label]="'home.teams.roster' | t"
+              [attr.title]="'home.teams.roster' | t">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 6h12M8 12h12M8 18h12" />
+                <circle cx="4" cy="6" r="1.25" />
+                <circle cx="4" cy="12" r="1.25" />
+                <circle cx="4" cy="18" r="1.25" />
+              </svg>
+            </a>
+            <a
+              class="button button--ghost button--icon"
+              [routerLink]="['/games/new']"
+              [queryParams]="{ teamId: team.id }"
+              [attr.aria-label]="'home.teams.newGame' | t"
+              [attr.title]="'home.teams.newGame' | t">
+              <svg class="icon icon--fill" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7V5Z" />
+              </svg>
+            </a>
+            <button
+              class="button button--ghost button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.edit' | t"
+              [attr.title]="'common.actions.edit' | t"
+              (click)="editTeam(team)">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h4l10-10-4-4L4 16v4Z" />
+                <path d="m12 6 4 4" />
+              </svg>
+            </button>
+            <button
+              class="button button--danger button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.delete' | t"
+              [attr.title]="'common.actions.delete' | t"
+              (click)="deleteTeam(team.id)">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16" />
+                <path d="M9 7V4h6v3" />
+                <path d="M7 7l1 13h8l1-13" />
+                <path d="M10 11v5M14 11v5" />
+              </svg>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+
+    @if (!teams().length) {
+      <div class="empty-state">{{ 'home.teams.empty' | t }}</div>
+    }
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <h2>{{ 'home.games.title' | t }}</h2>
+      </div>
+    </div>
+
+    @if (games().length) {
+      <div class="stack">
+        @for (game of games(); track game.id) {
+          <a
+            class="game-card"
+            [class.game-card--draft]="game.status === 'DRAFT'"
+            [class.game-card--live]="game.status === 'LIVE'"
+            [class.game-card--paused]="game.status === 'PAUSED'"
+            [class.game-card--finished]="game.status === 'FINISHED'"
+            [routerLink]="gameLink(game)">
+            <div class="game-card__content">
+              <strong>{{ game.label }}</strong>
+              <p>{{ game.teamName }}</p>
+              <span class="game-card__date">{{ formattedGameDate(game.createdAt) }}</span>
+            </div>
+
+            <span class="game-card__status">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                @switch (game.status) {
+                  @case ('LIVE') {
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                  }
+                  @case ('PAUSED') {
+                    <path d="M9 6v12M15 6v12" />
+                  }
+                  @case ('FINISHED') {
+                    <path d="m5 12 4 4L19 6" />
+                  }
+                  @default {
+                    <path d="M12 7v5l3 3" />
+                    <circle cx="12" cy="12" r="8" />
+                  }
+                }
+              </svg>
+              <span>{{ statusLabel(game.status) }}</span>
+            </span>
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">{{ 'home.games.empty' | t }}</div>
+    }
+  </section>
+</section>

@@ -1,0 +1,17 @@
+<div class="shell">
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+
+  <nav class="tabbar" [attr.aria-label]="'app.nav.primaryAria' | t">
+    @for (item of navigationItems; track item.link) {
+      <a
+        class="tabbar__item"
+        [routerLink]="item.link"
+        routerLinkActive="tabbar__item--active"
+        [routerLinkActiveOptions]="{ exact: item.link === '/' }">
+        {{ item.labelKey | t }}
+      </a>
+    }
+  </nav>
+</div>

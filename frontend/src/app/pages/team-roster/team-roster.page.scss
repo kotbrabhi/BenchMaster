@@ -1,0 +1,233 @@
+.team-card-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.team-card-inline__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.team-card-inline__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.05rem;
+}
+
+.team-card-inline__input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-ink);
+}
+
+.team-card-inline__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-card-inline__edit {
+  flex-shrink: 0;
+}
+
+.team-card-inline__cta {
+  flex-shrink: 0;
+}
+
+.roster-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: hidden;
+  padding-bottom: 2px;
+}
+
+.roster-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 0.7fr) minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.roster-row--header {
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.roster-row--header span:last-child {
+  text-align: right;
+}
+
+.roster-row--editor {
+  background: rgba(215, 24, 42, 0.05);
+}
+
+.roster-row input,
+.roster-row select {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-ink);
+}
+
+.roster-position-select {
+  appearance: none;
+  padding-right: 40px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) calc(50% - 2px),
+    calc(100% - 14px) calc(50% - 2px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.roster-position-select option {
+  color: var(--color-ink);
+}
+
+.roster-name,
+.roster-number,
+.roster-position {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-name {
+  font-size: 1rem;
+}
+
+.roster-number,
+.roster-position {
+  color: var(--color-text-muted);
+}
+
+.roster-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.button--icon {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 14px;
+}
+
+.button--icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 767px) {
+  .team-card-inline {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .team-card-inline__identity,
+  .team-card-inline__cta {
+    width: 100%;
+  }
+
+  .team-card-inline__cta {
+    justify-content: center;
+  }
+
+  .roster-table {
+    overflow-x: hidden;
+    padding-bottom: 2px;
+  }
+
+  .roster-row {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.55fr) minmax(0, 0.9fr) 78px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .roster-row input,
+  .roster-row select {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 0.88rem;
+  }
+
+  .roster-position-select {
+    padding-right: 28px;
+    background-position:
+      calc(100% - 16px) calc(50% - 2px),
+      calc(100% - 11px) calc(50% - 2px);
+    background-size: 5px 5px;
+    font-size: 0.85rem;
+  }
+
+  .roster-name {
+    font-size: 0.92rem;
+  }
+
+  .roster-number,
+  .roster-position {
+    font-size: 0.8rem;
+  }
+
+  .roster-actions {
+    gap: 6px;
+  }
+
+  .button--icon {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 12px;
+  }
+
+  .button--icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .roster-row--header {
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+}

@@ -1,0 +1,84 @@
+<article
+  class="player-card"
+  [class.player-card--active]="tone === 'active'"
+  [class.player-card--compact]="compact"
+  [class.player-card--selected]="selected">
+  <div class="player-card__header">
+    <div class="player-card__summary">
+      <div class="player-card__number">#{{ jerseyNumber }}</div>
+
+      @if (compact) {
+        <div class="player-card__identity player-card__identity--compact">
+          <span class="player-card__name">{{ playerName }}</span>
+          <span class="player-card__meta">
+            <span>{{ position || ('common.position.flexibleRole' | t) }}</span>
+            @if (note) {
+              <span class="player-card__separator" aria-hidden="true">·</span>
+              <span>{{ note }}</span>
+            }
+          </span>
+          @if (timeLabel) {
+            <span class="player-card__time player-card__time--compact">{{ timeLabel }}</span>
+          }
+        </div>
+      } @else {
+        <div class="player-card__identity">
+          <h3>{{ playerName }}</h3>
+          <p>{{ position || ('common.position.flexibleRole' | t) }}</p>
+        </div>
+      }
+    </div>
+
+    @if (quickActions.length || actionLabel) {
+      <div class="player-card__actions">
+        @for (quickAction of quickActions; track quickAction.value) {
+          <button
+            class="player-card__quick-action"
+            type="button"
+            [disabled]="quickAction.disabled"
+            [attr.aria-label]="quickAction.title || quickAction.label"
+            [attr.title]="quickAction.title || quickAction.label"
+            (click)="quickActionPressed.emit(quickAction.value)">
+            {{ quickAction.label }}
+          </button>
+        }
+
+        @if (actionLabel) {
+          <button
+            class="player-card__action"
+            type="button"
+            [disabled]="actionDisabled"
+            [attr.aria-label]="actionLabel"
+            [attr.title]="actionLabel"
+            (click)="actionPressed.emit()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              @if (selected) {
+                <path d="m5 12 4 4L19 6" />
+              } @else if (tone === 'active') {
+                <path d="M5 12h14" />
+                <path d="m13 6 6 6-6 6" />
+              } @else {
+                <path d="M19 12H5" />
+                <path d="m11 6-6 6 6 6" />
+              }
+            </svg>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (!compact && note) {
+    <p class="player-card__note">{{ note }}</p>
+  }
+
+  @if (!compact && timeLabel) {
+    <div class="player-card__time">{{ timeLabel }}</div>
+  }
+
+  @if (!compact && progress > 0) {
+    <div class="player-card__bar" aria-hidden="true">
+      <span [style.width.%]="progress"></span>
+    </div>
+  }
+</article>

@@ -1,0 +1,39 @@
+.shell {
+  min-height: 100vh;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
+.shell__content {
+  min-height: 100vh;
+}
+
+.tabbar {
+  position: fixed;
+  inset: auto 16px 16px 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(16px);
+}
+
+.tabbar__item {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 52px;
+  border-radius: 18px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.tabbar__item--active {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: white;
+}

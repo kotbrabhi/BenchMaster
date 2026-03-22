@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GameStatus {
+  DRAFT
+  LIVE
+  PAUSED
+  FINISHED
+}
+
+enum PeriodStatus {
+  NOT_STARTED
+  LIVE
+  COMPLETED
+}
+
+model Team {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  players   Player[]
+  games     Game[]
+}
+
+model Player {
+  id           Int        @id @default(autoincrement())
+  teamId       Int
+  name         String
+  jerseyNumber String
+  position     String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  gamePlayers  GamePlayer[]
+
+  @@unique([teamId, jerseyNumber])
+}
+
+model Game {
+  id                  Int          @id @default(autoincrement())
+  teamId              Int
+  label               String
+  status              GameStatus   @default(DRAFT)
+  currentPeriodNumber Int          @default(1)
+  currentPeriodStatus PeriodStatus @default(NOT_STARTED)
+  startedAt           DateTime?
+  endedAt             DateTime?
+  isClockRunning      Boolean      @default(false)
+  clockElapsedSeconds Int          @default(0)
+  lastClockStartedAt  DateTime?
+  periodElapsedSeconds Int         @default(0)
+  lastPeriodStartedAt DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  team                Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  players             GamePlayer[]
+
+  /// TODO(axis-2): Add per-possession and per-segment stat rollups here once player statistics are introduced.
+}
+
+model GamePlayer {
+  id          Int             @id @default(autoincrement())
+  gameId       Int
+  playerId     Int
+  isAvailable  Boolean        @default(true)
+  isStarter    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  game         Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player       Player         @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  playingTime  PlayerGameTime?
+
+  @@unique([gameId, playerId])
+}
+
+model PlayerGameTime {
+  id            Int        @id @default(autoincrement())
+  gamePlayerId  Int        @unique
+  totalSeconds  Int        @default(0)
+  periodSeconds Int        @default(0)
+  points        Int        @default(0)
+  isOnCourt     Boolean    @default(false)
+  lastEnteredAt DateTime?
+  lastPeriodEnteredAt DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  gamePlayer    GamePlayer @relation(fields: [gamePlayerId], references: [id], onDelete: Cascade)
+
+  /// TODO(axis-2): Link stats events to on-court time segments so advanced metrics can be calculated accurately.
+}

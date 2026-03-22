@@ -1,0 +1,17 @@
+{
+  "name": "benchmaster",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "dev:frontend": "npm run start --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "db:migrate": "npm run prisma:migrate --workspace backend",
+    "db:setup": "npm run prisma:generate --workspace backend && sqlite3 backend/prisma/dev.db < backend/prisma/migrations/202603221230_init/migration.sql && npm run db:seed --workspace backend",
+    "db:seed": "npm run db:seed --workspace backend"
+  }
+}

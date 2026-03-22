@@ -1,0 +1,68 @@
+.setup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setup-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.setup-card__content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.setup-card--selected {
+  border-color: var(--color-ink-strong);
+  background: rgba(16, 16, 16, 0.06);
+}
+
+.setup-card--starter {
+  border-color: var(--color-accent-strong-soft);
+  background: rgba(248, 217, 222, 0.92);
+}
+
+.setup-card strong {
+  min-width: 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setup-card p {
+  margin: 0;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.button--icon {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 14px;
+}
+
+.button--icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

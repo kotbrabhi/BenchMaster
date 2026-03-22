@@ -1,0 +1,230 @@
+<section class="page">
+  <header class="toolbar">
+    <span class="toolbar__eyebrow">{{ 'teamRoster.hero.eyebrow' | t }}</span>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-banner">{{ errorMessage() }}</div>
+  }
+
+  <section class="surface-card">
+    <div class="team-card-inline">
+      <div class="team-card-inline__identity">
+        @if (editingTeamName) {
+          <input
+            id="teamNameEdit"
+            name="teamNameEdit"
+            class="team-card-inline__input"
+            [(ngModel)]="teamName"
+            [attr.aria-label]="'teamRoster.details.nameLabel' | t" />
+
+          <div class="team-card-inline__actions">
+            <button
+              class="button button--icon"
+              type="button"
+              [disabled]="!teamName.trim()"
+              [attr.aria-label]="'common.actions.save' | t"
+              [attr.title]="'common.actions.save' | t"
+              (click)="saveTeam()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </button>
+            <button
+              class="button button--secondary button--icon"
+              type="button"
+              [attr.aria-label]="'common.actions.cancel' | t"
+              [attr.title]="'common.actions.cancel' | t"
+              (click)="cancelEditingTeamName()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <strong class="team-card-inline__name">{{ team()?.name || teamName }}</strong>
+          <button
+            class="button button--ghost button--icon team-card-inline__edit"
+            type="button"
+            [attr.aria-label]="'common.actions.edit' | t"
+            [attr.title]="'common.actions.edit' | t"
+            (click)="startEditingTeamName()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 20h4l10-10-4-4L4 16v4Z" />
+              <path d="m12 6 4 4" />
+            </svg>
+          </button>
+        }
+      </div>
+
+      <a class="button team-card-inline__cta" [routerLink]="['/games/new']" [queryParams]="{ teamId: teamId }">
+        {{ 'teamRoster.details.createGame' | t }}
+      </a>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <h2>{{ 'teamRoster.list.title' | t }}</h2>
+        <p>{{ 'teamRoster.list.subtitle' | t : { count: roster().length } }}</p>
+      </div>
+    </div>
+
+    <div class="roster-table">
+      <div class="roster-row roster-row--header" aria-hidden="true">
+        <span>{{ 'teamRoster.playerForm.nameLabel' | t }}</span>
+        <span>{{ 'teamRoster.playerForm.numberLabel' | t }}</span>
+        <span>{{ 'teamRoster.playerForm.positionLabel' | t }}</span>
+        <span>Actions</span>
+      </div>
+
+      <div class="roster-row roster-row--editor">
+        <input
+          id="newPlayerName"
+          name="newPlayerName"
+          [(ngModel)]="newPlayerName"
+          [placeholder]="'teamRoster.playerForm.namePlaceholder' | t"
+          [attr.aria-label]="'teamRoster.playerForm.nameLabel' | t" />
+
+        <input
+          id="newJerseyNumber"
+          name="newJerseyNumber"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          [(ngModel)]="newJerseyNumber"
+          [placeholder]="'teamRoster.playerForm.numberPlaceholder' | t"
+          [attr.aria-label]="'teamRoster.playerForm.numberLabel' | t" />
+
+        <select
+          class="roster-position-select"
+          id="newPosition"
+          name="newPosition"
+          [(ngModel)]="newPosition"
+          [attr.aria-label]="'teamRoster.playerForm.positionLabel' | t">
+          @for (option of getPositionOptions(); track option.value) {
+            <option [value]="option.value">{{ option.labelKey ? (option.labelKey | t) : option.label }}</option>
+          }
+        </select>
+
+        <div class="roster-actions">
+          <button
+            class="button button--icon"
+            type="button"
+            [attr.aria-label]="'teamRoster.playerForm.add' | t"
+            [attr.title]="'teamRoster.playerForm.add' | t"
+            (click)="addPlayer()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+          <button
+            class="button button--secondary button--icon"
+            type="button"
+            [attr.aria-label]="'common.actions.clear' | t"
+            [attr.title]="'common.actions.clear' | t"
+            (click)="resetNewPlayerForm()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      @if (roster().length) {
+        @for (player of roster(); track player.id) {
+          @if (editingPlayerId === player.id) {
+            <div class="roster-row roster-row--editor roster-row--editing">
+              <input
+                [id]="'editPlayerName-' + player.id"
+                [name]="'editPlayerName-' + player.id"
+                [(ngModel)]="editingPlayerName"
+                [placeholder]="'teamRoster.playerForm.namePlaceholder' | t"
+                [attr.aria-label]="'teamRoster.playerForm.nameLabel' | t" />
+
+              <input
+                [id]="'editJerseyNumber-' + player.id"
+                [name]="'editJerseyNumber-' + player.id"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                [(ngModel)]="editingJerseyNumber"
+                [placeholder]="'teamRoster.playerForm.numberPlaceholder' | t"
+                [attr.aria-label]="'teamRoster.playerForm.numberLabel' | t" />
+
+              <select
+                class="roster-position-select"
+                [id]="'editPosition-' + player.id"
+                [name]="'editPosition-' + player.id"
+                [(ngModel)]="editingPosition"
+                [attr.aria-label]="'teamRoster.playerForm.positionLabel' | t">
+                @for (option of getPositionOptions(player.position); track option.value) {
+                  <option [value]="option.value">{{ option.labelKey ? (option.labelKey | t) : option.label }}</option>
+                }
+              </select>
+
+              <div class="roster-actions">
+                <button
+                  class="button button--icon"
+                  type="button"
+                  [attr.aria-label]="'teamRoster.playerForm.save' | t"
+                  [attr.title]="'teamRoster.playerForm.save' | t"
+                  (click)="saveEditedPlayer()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                </button>
+                <button
+                  class="button button--secondary button--icon"
+                  type="button"
+                  [attr.aria-label]="'common.actions.cancel' | t"
+                  [attr.title]="'common.actions.cancel' | t"
+                  (click)="resetEditingPlayer()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <article class="roster-row roster-row--display">
+              <strong class="roster-name">{{ player.name }}</strong>
+              <span class="roster-number">#{{ player.jerseyNumber }}</span>
+              <span class="roster-position">{{ getPositionLabel(player.position) }}</span>
+
+              <div class="roster-actions">
+                <button
+                  class="button button--ghost button--icon"
+                  type="button"
+                  [attr.aria-label]="'common.actions.edit' | t"
+                  [attr.title]="'common.actions.edit' | t"
+                  (click)="editPlayer(player)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20h4l10-10-4-4L4 16v4Z" />
+                    <path d="m12 6 4 4" />
+                  </svg>
+                </button>
+                <button
+                  class="button button--danger button--icon"
+                  type="button"
+                  [attr.aria-label]="'common.actions.delete' | t"
+                  [attr.title]="'common.actions.delete' | t"
+                  (click)="deletePlayer(player.id)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16" />
+                    <path d="M9 7V4h6v3" />
+                    <path d="M7 7l1 13h8l1-13" />
+                    <path d="M10 11v5M14 11v5" />
+                  </svg>
+                </button>
+              </div>
+            </article>
+          }
+        }
+      } @else {
+        <div class="empty-state">{{ 'teamRoster.list.empty' | t }}</div>
+      }
+    </div>
+  </section>
+</section>

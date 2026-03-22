@@ -1,0 +1,150 @@
+<section class="page">
+  <header class="toolbar">
+    <span class="toolbar__eyebrow">{{ 'newGame.hero.eyebrow' | t }}</span>
+    <h1 class="toolbar__title">{{ 'newGame.hero.title' | t }}</h1>
+    <p class="toolbar__subtitle">{{ 'newGame.hero.subtitle' | t }}</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-banner">{{ errorMessage() }}</div>
+  }
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <h2>{{ 'newGame.chooseTeam.title' | t }}</h2>
+        <p>{{ 'newGame.chooseTeam.subtitle' | t }}</p>
+      </div>
+    </div>
+
+    @if (teams().length) {
+      <div class="cluster">
+        @for (team of teams(); track team.id) {
+          <button
+            class="pill"
+            type="button"
+            [class.pill--active]="selectedTeamId() === team.id"
+            (click)="selectTeam(team.id)">
+            {{ team.name }}
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">{{ 'newGame.chooseTeam.empty' | t }}</div>
+    }
+  </section>
+
+  @if (selectedTeamId()) {
+    <section class="surface-card">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'newGame.details.title' | t }}</h2>
+          <p>{{ teamName(selectedTeamId()) }}</p>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="gameLabel">{{ 'newGame.details.label' | t }}</label>
+        <input id="gameLabel" name="gameLabel" [(ngModel)]="gameLabel" [placeholder]="'newGame.details.placeholder' | t" />
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'newGame.available.title' | t }}</h2>
+          <p>{{ 'newGame.available.subtitle' | t : { count: availablePlayerIds().length } }}</p>
+        </div>
+      </div>
+
+      <div class="setup-list" role="list">
+        @for (player of roster(); track trackByPlayer($index, player)) {
+          <article class="setup-card" role="listitem" [class.setup-card--selected]="isAvailable(player)">
+            <div class="setup-card__content">
+              <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+              <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
+            </div>
+
+            <button
+              class="button button--ghost button--icon"
+              type="button"
+              [attr.aria-label]="
+                isAvailable(player) ? ('newGame.available.action.remove' | t) : ('newGame.available.action.available' | t)
+              "
+              [attr.title]="
+                isAvailable(player) ? ('newGame.available.action.remove' | t) : ('newGame.available.action.available' | t)
+              "
+              (click)="toggleAvailability(player.id)">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                @if (isAvailable(player)) {
+                  <path d="M6 12h12" />
+                } @else {
+                  <path d="M12 5v14M5 12h14" />
+                }
+              </svg>
+            </button>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'newGame.startingFive.title' | t }}</h2>
+          <p>{{ 'newGame.startingFive.subtitle' | t : { count: starterPlayerIds().length } }}</p>
+        </div>
+      </div>
+
+      @if (availablePlayers().length) {
+        <div class="setup-list" role="list">
+          @for (player of availablePlayers(); track player.id) {
+            <article class="setup-card" role="listitem" [class.setup-card--starter]="isStarter(player)">
+              <div class="setup-card__content">
+                <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+                <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
+              </div>
+
+              <button
+                class="button button--secondary button--icon"
+                type="button"
+                [attr.aria-label]="
+                  isStarter(player)
+                    ? ('newGame.startingFive.action.starter' | t)
+                    : ('newGame.startingFive.action.markStarter' | t)
+                "
+                [attr.title]="
+                  isStarter(player)
+                    ? ('newGame.startingFive.action.starter' | t)
+                    : ('newGame.startingFive.action.markStarter' | t)
+                "
+                (click)="toggleStarter(player.id)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  @if (isStarter(player)) {
+                    <path d="m5 12 4 4L19 6" />
+                  } @else {
+                    <path d="m12 3 2.8 5.67 6.26.91-4.53 4.42 1.07 6.25L12 17.27 6.4 20.25l1.07-6.25L2.94 9.58l6.26-.91L12 3Z" />
+                  }
+                </svg>
+              </button>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">{{ 'newGame.startingFive.empty' | t }}</div>
+      }
+    </section>
+
+    <section class="surface-card">
+      <div class="stack">
+        <p class="helper-text">
+          {{ 'newGame.helper' | t }}
+        </p>
+
+        <button class="button" type="button" [disabled]="!canCreateGame()" (click)="createGame()">
+          {{ 'newGame.create' | t }}
+        </button>
+      </div>
+    </section>
+  }
+</section>

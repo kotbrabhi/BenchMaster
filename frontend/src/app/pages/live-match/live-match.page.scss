@@ -1,0 +1,129 @@
+.live-clock-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.live-clock-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.live-clock-card__metric {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.live-clock-card__actions {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.button--icon {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 14px;
+}
+
+.button--icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.live-clock-card__label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.live-clock-card strong {
+  font-size: 2rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.substitution-banner {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.substitution-banner strong {
+  display: block;
+}
+
+.substitution-banner p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+}
+
+.substitution-banner__status {
+  font-weight: 700;
+}
+
+.substitution-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.live-player-list {
+  gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .live-clock-card strong {
+    font-size: 1.55rem;
+  }
+
+  .live-clock-card__label {
+    font-size: 0.82rem;
+  }
+
+  .live-clock-card .button {
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+  }
+
+  .substitution-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .substitution-banner__actions {
+    width: 100%;
+  }
+
+  .substitution-banner__actions .button:first-child {
+    flex: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .live-clock-card__row {
+    gap: 18px;
+  }
+
+  .live-clock-card__metric {
+    gap: 14px;
+  }
+}
