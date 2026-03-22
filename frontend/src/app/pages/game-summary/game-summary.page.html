@@ -9,19 +9,16 @@
       <div class="error-banner">{{ errorMessage() }}</div>
     }
     <section class="surface-card">
-      <div class="section-heading">
-        <div>
-          <h2>{{ 'summary.playingTime.title' | t }}</h2>
-        </div>
-      </div>
-
       <div class="summary-table-wrap">
         <table class="summary-table">
           <thead>
             <tr>
-              <th scope="col">{{ 'summary.table.player' | t }}</th>
-              <th scope="col">{{ 'summary.playingTime.title' | t }}</th>
-              <th scope="col">Pts</th>
+              <th class="summary-table__player" scope="col">{{ 'summary.table.player' | t }}</th>
+              <th class="summary-table__minutes" scope="col">{{ 'summary.table.minutes' | t }}</th>
+              <th class="summary-table__stat" scope="col">{{ 'summary.table.points' | t }}</th>
+              <th class="summary-table__stat" scope="col">{{ 'summary.table.assists' | t }}</th>
+              <th class="summary-table__stat" scope="col">{{ 'summary.table.blocks' | t }}</th>
+              <th class="summary-table__stat" scope="col">{{ 'summary.table.rebounds' | t }}</th>
             </tr>
           </thead>
 
@@ -29,8 +26,11 @@
             @for (player of gameSummary.players; track player.playerId) {
               <tr>
                 <td class="summary-table__player">{{ player.name }}</td>
-                <td class="summary-table__time">{{ playingMinutes(player.totalSeconds) }}</td>
-                <td class="summary-table__points">{{ player.points }}</td>
+                <td class="summary-table__minutes">{{ playingMinutes(player.totalSeconds) }}</td>
+                <td class="summary-table__stat">{{ player.points }}</td>
+                <td class="summary-table__stat">{{ player.assists }}</td>
+                <td class="summary-table__stat">{{ player.blocks }}</td>
+                <td class="summary-table__stat">{{ player.rebounds }}</td>
               </tr>
             }
           </tbody>

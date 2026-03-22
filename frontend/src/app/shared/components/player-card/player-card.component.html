@@ -31,16 +31,40 @@
 
     @if (quickActions.length || actionLabel) {
       <div class="player-card__actions">
-        @for (quickAction of quickActions; track quickAction.value) {
-          <button
-            class="player-card__quick-action"
-            type="button"
-            [disabled]="quickAction.disabled"
-            [attr.aria-label]="quickAction.title || quickAction.label"
-            [attr.title]="quickAction.title || quickAction.label"
-            (click)="quickActionPressed.emit(quickAction.value)">
-            {{ quickAction.label }}
-          </button>
+        @if (quickActions.length) {
+          <div class="player-card__quick-actions-stack">
+            @if (primaryQuickActions.length) {
+              <div class="player-card__quick-actions-row">
+                @for (quickAction of primaryQuickActions; track quickAction.value) {
+                  <button
+                    class="player-card__quick-action"
+                    type="button"
+                    [disabled]="quickAction.disabled"
+                    [attr.aria-label]="quickAction.title || quickAction.label"
+                    [attr.title]="quickAction.title || quickAction.label"
+                    (click)="quickActionPressed.emit(quickAction.value)">
+                    {{ quickAction.label }}
+                  </button>
+                }
+              </div>
+            }
+
+            @if (secondaryQuickActions.length) {
+              <div class="player-card__quick-actions-row">
+                @for (quickAction of secondaryQuickActions; track quickAction.value) {
+                  <button
+                    class="player-card__quick-action"
+                    type="button"
+                    [disabled]="quickAction.disabled"
+                    [attr.aria-label]="quickAction.title || quickAction.label"
+                    [attr.title]="quickAction.title || quickAction.label"
+                    (click)="quickActionPressed.emit(quickAction.value)">
+                    {{ quickAction.label }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
         }
 
         @if (actionLabel) {

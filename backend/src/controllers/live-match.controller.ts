@@ -52,6 +52,16 @@ export async function recordPlayerPoints(request: Request, response: Response) {
   );
 }
 
+export async function recordPlayerStat(request: Request, response: Response) {
+  response.json(
+    await liveMatchService.recordPlayerStat(
+      Number(request.params.gameId),
+      Number(request.params.playerId),
+      String(request.body.stat)
+    )
+  );
+}
+
 export async function endGame(request: Request, response: Response) {
   response.json(await liveMatchService.endGame(Number(request.params.gameId)));
 }

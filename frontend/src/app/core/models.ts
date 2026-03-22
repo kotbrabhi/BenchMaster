@@ -1,5 +1,6 @@
 export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
+export type PlayerStatType = 'assists' | 'blocks' | 'rebounds';
 
 export interface Player {
   id: number;
@@ -27,6 +28,9 @@ export interface GamePlayerState {
   totalSeconds: number;
   periodSeconds: number;
   points: number;
+  assists: number;
+  blocks: number;
+  rebounds: number;
   isOnCourt: boolean;
   lastEnteredAt: string | null;
   lastPeriodEnteredAt: string | null;

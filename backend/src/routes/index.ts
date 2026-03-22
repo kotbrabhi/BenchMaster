@@ -34,6 +34,7 @@ router.post('/games/:gameId/periods/complete', asyncHandler(liveMatchController.
 router.post('/games/:gameId/periods/start', asyncHandler(liveMatchController.startNextPeriod));
 router.post('/games/:gameId/substitutions', asyncHandler(liveMatchController.substitutePlayers));
 router.post('/games/:gameId/players/:playerId/points', asyncHandler(liveMatchController.recordPlayerPoints));
+router.post('/games/:gameId/players/:playerId/stats', asyncHandler(liveMatchController.recordPlayerStat));
 router.post('/games/:gameId/end', asyncHandler(liveMatchController.endGame));
 
 export default router;

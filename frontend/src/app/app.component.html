@@ -14,7 +14,22 @@
         [routerLink]="item.link"
         routerLinkActive="tabbar__item--active"
         [routerLinkActiveOptions]="{ exact: item.link === '/' }">
-        {{ item.labelKey | t }}
+        <span class="tabbar__icon" aria-hidden="true">
+          @if (item.icon === 'home') {
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M3 10.75L12 3l9 7.75" />
+              <path d="M6.75 9.5V21h10.5V9.5" />
+              <path d="M10 21v-5.5h4V21" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+              <path d="M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0" />
+            </svg>
+          }
+        </span>
+        <span class="tabbar__label">{{ item.labelKey | t }}</span>
       </a>
     }
   </nav>

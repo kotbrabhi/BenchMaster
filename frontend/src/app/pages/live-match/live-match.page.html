@@ -208,7 +208,7 @@
               [timeLabel]="playerTimeSummary(currentGame, player)"
               [quickActions]="pointActions(player)"
               [actionLabel]="isActiveSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubOut' | t)"
-              (quickActionPressed)="recordPoints(player.playerId, $event)"
+              (quickActionPressed)="handleQuickAction(player.playerId, $event)"
               (actionPressed)="toggleActivePlayer(player.playerId)">
             </app-player-card>
           }

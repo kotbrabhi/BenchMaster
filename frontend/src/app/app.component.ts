@@ -10,7 +10,7 @@ import { TranslatePipe } from './shared/pipes/translate.pipe';
 })
 export class AppComponent {
   readonly navigationItems = [
-    { labelKey: 'app.nav.home' as const, link: '/' },
-    { labelKey: 'app.nav.newGame' as const, link: '/games/new' }
+    { labelKey: 'app.nav.home' as const, link: '/', icon: 'home' as const },
+    { labelKey: 'app.nav.newGame' as const, link: '/games/new', icon: 'plus' as const }
   ];
 }

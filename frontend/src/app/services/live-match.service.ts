@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../core/api';
-import { GameDetail } from '../core/models';
+import { GameDetail, PlayerStatType } from '../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class LiveMatchService {
@@ -91,6 +91,10 @@ export class LiveMatchService {
 
   async recordPlayerPoints(gameId: number, playerId: number, points: number) {
     return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/points`, { points });
+  }
+
+  async recordPlayerStat(gameId: number, playerId: number, stat: PlayerStatType) {
+    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/stats`, { stat });
   }
 
   private async updateGameFromPost(url: string, body: unknown = {}) {

@@ -6,7 +6,10 @@ import { getErrorMessage } from '../../core/api';
 import { I18nService } from '../../core/i18n.service';
 import { GameDetail, GamePlayerState } from '../../core/models';
 import { LiveMatchService } from '../../services/live-match.service';
-import { PlayerCardQuickAction } from '../../shared/components/player-card/player-card.component';
+import {
+  PlayerCardQuickAction,
+  PlayerCardQuickActionValue
+} from '../../shared/components/player-card/player-card.component';
 import { TimeTrackingService } from '../../services/time-tracking.service';
 import { PlayerCardComponent } from '../../shared/components/player-card/player-card.component';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
@@ -31,7 +34,7 @@ export class LiveMatchPageComponent implements OnInit {
   readonly pendingActivePlayers = this.liveMatchService.pendingActivePlayers;
   readonly canApplySubstitutionBatch = this.liveMatchService.canApplySubstitutionBatch;
   readonly errorMessage = signal('');
-  readonly pointUpdatePlayerIds = signal<number[]>([]);
+  readonly statUpdatePlayerIds = signal<number[]>([]);
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly t = this.i18n.t;
 
@@ -123,8 +126,15 @@ export class LiveMatchPageComponent implements OnInit {
       this.formatClock(this.playerSeconds(game, player))
     ];
 
-    if (player.points > 0) {
-      segments.push('·', this.t('live.points.inline', { count: player.points }));
+    const statSegments = [
+      player.points > 0 ? this.t('live.points.inline', { count: player.points }) : '',
+      player.assists > 0 ? this.t('live.assists.inline', { count: player.assists }) : '',
+      player.blocks > 0 ? this.t('live.blocks.inline', { count: player.blocks }) : '',
+      player.rebounds > 0 ? this.t('live.rebounds.inline', { count: player.rebounds }) : ''
+    ].filter(Boolean);
+
+    if (statSegments.length) {
+      segments.push('·', statSegments.join(' · '));
     }
 
     return segments.join(' ');
@@ -192,32 +202,61 @@ export class LiveMatchPageComponent implements OnInit {
   }
 
   pointActions(player: GamePlayerState): PlayerCardQuickAction[] {
-    return [1, 2, 3].map((points) => ({
-      value: points,
-      label: `+${points}`,
-      title: this.t('live.actions.addPoints', { count: points }),
-      disabled: this.isUpdatingPoints(player.playerId)
-    }));
+    const disabled = this.isUpdatingStats(player.playerId);
+
+    return [
+      ...[1, 2, 3].map((points) => ({
+        value: points,
+        label: `+${points}`,
+        title: this.t('live.actions.addPoints', { count: points }),
+        disabled,
+        row: 'primary' as const
+      })),
+      {
+        value: 'assists' as const,
+        label: this.t('live.stats.assists.short'),
+        title: this.t('live.actions.addAssist'),
+        disabled,
+        row: 'secondary' as const
+      },
+      {
+        value: 'blocks' as const,
+        label: this.t('live.stats.blocks.short'),
+        title: this.t('live.actions.addBlock'),
+        disabled,
+        row: 'secondary' as const
+      },
+      {
+        value: 'rebounds' as const,
+        label: this.t('live.stats.rebounds.short'),
+        title: this.t('live.actions.addRebound'),
+        disabled,
+        row: 'secondary' as const
+      }
+    ];
   }
 
-  async recordPoints(playerId: number, points: number) {
-    this.pointUpdatePlayerIds.update((current) => (current.includes(playerId) ? current : [...current, playerId]));
+  async handleQuickAction(playerId: number, action: PlayerCardQuickActionValue) {
+    this.statUpdatePlayerIds.update((current) => (current.includes(playerId) ? current : [...current, playerId]));
 
     try {
-      await this.liveMatchService.recordPlayerPoints(this.gameId, playerId, points);
+      if (typeof action === 'number') {
+        await this.liveMatchService.recordPlayerPoints(this.gameId, playerId, action);
+      } else {
+        await this.liveMatchService.recordPlayerStat(this.gameId, playerId, action);
+      }
+
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
     } finally {
-      this.pointUpdatePlayerIds.update((current) => current.filter((id) => id !== playerId));
+      this.statUpdatePlayerIds.update((current) => current.filter((id) => id !== playerId));
     }
   }
 
-  isUpdatingPoints(playerId: number) {
-    return this.pointUpdatePlayerIds().includes(playerId);
+  isUpdatingStats(playerId: number) {
+    return this.statUpdatePlayerIds().includes(playerId);
   }
-
-  // TODO(axis-2): Attach quick stat actions here so points, fouls, and advanced events can be recorded against live on-court segments.
 
   private async loadGame() {
     try {

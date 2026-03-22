@@ -1,18 +1,16 @@
 .summary-table-wrap {
-  overflow-x: auto;
-  margin: 0 -4px;
-  padding: 0 4px;
+  margin: 0;
 }
 
 .summary-table {
   width: 100%;
-  min-width: 320px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .summary-table th,
 .summary-table td {
-  padding: 12px 10px;
+  padding: 9px 6px;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   vertical-align: middle;
@@ -26,28 +24,54 @@
   text-transform: uppercase;
 }
 
+.summary-table th.summary-table__player,
+.summary-table td.summary-table__player {
+  width: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .summary-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.summary-table__time,
-.summary-table__points {
+.summary-table__minutes,
+.summary-table__stat {
   white-space: nowrap;
+  text-align: center;
+}
+
+.summary-table__minutes {
+  width: 3rem;
 }
 
 .summary-table__player {
   font-weight: 700;
 }
 
-.summary-table__time,
-.summary-table__points {
-  text-align: right;
+.summary-table__stat {
+  width: 2.4rem;
 }
 
 @media (max-width: 640px) {
   .summary-table th,
   .summary-table td {
-    padding: 10px 8px;
-    font-size: 0.94rem;
+    padding: 8px 4px;
+    font-size: 0.82rem;
+  }
+
+  .summary-table th {
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+  }
+
+  .summary-table__minutes {
+    width: 2.6rem;
+  }
+
+  .summary-table__stat {
+    width: 2rem;
   }
 }

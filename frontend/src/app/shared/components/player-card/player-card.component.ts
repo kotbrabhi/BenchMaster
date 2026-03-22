@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { PlayerStatType } from '../../../core/models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
+export type PlayerCardQuickActionValue = number | PlayerStatType;
 export interface PlayerCardQuickAction {
-  value: number;
+  value: PlayerCardQuickActionValue;
   label: string;
   title?: string;
   disabled?: boolean;
+  row?: 'primary' | 'secondary';
 }
 
 @Component({
@@ -31,5 +34,13 @@ export class PlayerCardComponent {
   @Input() compact = false;
 
   @Output() actionPressed = new EventEmitter<void>();
-  @Output() quickActionPressed = new EventEmitter<number>();
+  @Output() quickActionPressed = new EventEmitter<PlayerCardQuickActionValue>();
+
+  get primaryQuickActions() {
+    return this.quickActions.filter((quickAction) => quickAction.row !== 'secondary');
+  }
+
+  get secondaryQuickActions() {
+    return this.quickActions.filter((quickAction) => quickAction.row === 'secondary');
+  }
 }

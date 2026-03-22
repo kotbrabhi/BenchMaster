@@ -13,6 +13,14 @@ const gameInclude = {
   }
 } satisfies Prisma.GameInclude;
 
+const trackableStats = {
+  assists: 'passe décisive',
+  blocks: 'contre',
+  rebounds: 'rebond'
+} as const;
+
+type TrackableStat = keyof typeof trackableStats;
+
 function diffSeconds(from: Date, to: Date) {
   return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 1000));
 }
@@ -354,6 +362,47 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
       data: {
         points: {
           increment: points
+        }
+      }
+    });
+
+    return getGameForUpdate(transaction, game.id);
+  });
+
+  return serializeGame(result);
+}
+
+export async function recordPlayerStat(gameId: number, playerId: number, stat: string) {
+  if (!(stat in trackableStats)) {
+    throw new HttpError(400, 'Statistique non prise en charge.');
+  }
+
+  const trackableStat = stat as TrackableStat;
+
+  const result = await prisma.$transaction(async (transaction) => {
+    const game = await getGameForUpdate(transaction, gameId);
+    ensureTrackableLiveGame(game);
+
+    const player = game.players.find((entry) => entry.playerId === playerId);
+
+    if (!player) {
+      throw new HttpError(404, 'Joueur·euse introuvable pour ce match.');
+    }
+
+    if (!player.playingTime?.isOnCourt) {
+      throw new HttpError(
+        400,
+        `Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir un ${trackableStats[trackableStat]}.`
+      );
+    }
+
+    await transaction.playerGameTime.update({
+      where: {
+        gamePlayerId: player.id
+      },
+      data: {
+        [trackableStat]: {
+          increment: 1
         }
       }
     });

@@ -86,6 +86,9 @@ model PlayerGameTime {
   totalSeconds  Int        @default(0)
   periodSeconds Int        @default(0)
   points        Int        @default(0)
+  assists       Int        @default(0)
+  blocks        Int        @default(0)
+  rebounds      Int        @default(0)
   isOnCourt     Boolean    @default(false)
   lastEnteredAt DateTime?
   lastPeriodEnteredAt DateTime?

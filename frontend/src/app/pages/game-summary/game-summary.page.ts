@@ -36,6 +36,4 @@ export class GameSummaryPageComponent implements OnInit {
   playingMinutes(totalSeconds: number) {
     return String(Math.round(totalSeconds / 60));
   }
-
-  // TODO(axis-2): Expand this summary with points, rebounds, efficiency, and per-minute comparisons once stat tracking ships.
 }
