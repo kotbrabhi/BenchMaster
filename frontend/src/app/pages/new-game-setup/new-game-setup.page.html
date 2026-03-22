@@ -1,4 +1,4 @@
-<section class="page">
+<section class="page page--new-game">
   @if (errorMessage()) {
     <div class="error-banner">{{ errorMessage() }}</div>
   }
@@ -28,7 +28,7 @@
   </section>
 
   @if (selectedTeamId()) {
-    <section class="surface-card">
+    <section class="surface-card setup-roster-card">
       <div class="form-field">
         <label for="gameLabel">{{ 'newGame.details.label' | t }}</label>
         <input id="gameLabel" name="gameLabel" [(ngModel)]="gameLabel" [placeholder]="'newGame.details.placeholder' | t" />

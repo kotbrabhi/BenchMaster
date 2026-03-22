@@ -65,6 +65,18 @@ These TODOs reserve space for future points, rebounds, assists, shooting, effici
 
 ## Setup
 
+### Node.js version
+
+This project requires Node.js `20.19.0` or newer because the frontend uses Angular CLI 21.
+
+The repository now includes `.nvmrc` and `.node-version`, so any compatible Node version manager can pick the right runtime automatically.
+
+If you use a shell-based `nvm` setup, run this once from the project root before installing dependencies:
+
+```bash
+nvm use
+```
+
 ### 1. Install dependencies
 
 Run from the project root:

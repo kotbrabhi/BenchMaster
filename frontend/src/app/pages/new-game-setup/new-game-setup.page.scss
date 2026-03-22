@@ -1,10 +1,22 @@
+.page--new-game {
+  min-height: auto;
+}
+
+.setup-roster-card {
+  overflow: hidden;
+  isolation: isolate;
+}
+
 .setup-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: hidden;
+  padding-bottom: 2px;
 }
 
 .setup-card {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
