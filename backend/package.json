@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "db:setup": "sqlite3 prisma/dev.db < prisma/migrations/202603221230_init/migration.sql && npm run db:seed",
+    "db:setup": "prisma migrate deploy && npm run db:seed",
     "db:seed": "tsx prisma/seed.ts",
     "db:bootstrap": "node prisma/bootstrap.mjs"
   },

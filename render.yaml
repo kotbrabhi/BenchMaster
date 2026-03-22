@@ -5,10 +5,10 @@ services:
   - type: web
     runtime: node
     name: benchmaster-api
-    plan: starter
+    plan: free
     region: frankfurt
     buildCommand: npm install && npm run prisma:generate --workspace backend && npm run build --workspace backend
-    preDeployCommand: npx prisma db execute --schema backend/prisma/schema.prisma --file backend/prisma/migrations/202603221230_init/migration.sql && npm run db:bootstrap --workspace backend
+    preDeployCommand: npx prisma migrate deploy --schema backend/prisma/schema.prisma && npm run db:bootstrap --workspace backend
     startCommand: npm run start --workspace backend
     healthCheckPath: /healthz
     buildFilter:
@@ -16,15 +16,11 @@ services:
         - backend/**
         - package.json
         - package-lock.json
-    disk:
-      name: benchmaster-data
-      mountPath: /var/data
-      sizeGB: 10
     envVars:
       - key: NODE_VERSION
         value: 20.19.0
       - key: DATABASE_URL
-        value: file:/var/data/benchmaster.db
+        sync: false
       - key: FRONTEND_ORIGIN
         sync: false
 
