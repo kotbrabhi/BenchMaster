@@ -1,0 +1,2 @@
+-- No-op migration placeholder.
+-- The PostgreSQL schema is fully captured in 202603221230_init_postgres.

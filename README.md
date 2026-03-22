@@ -7,7 +7,7 @@ BenchMaster is a mobile-first MVP for basketball coaches and assistant coaches w
 - Frontend: Angular 21 standalone app
 - Mobile UI style: Ionic-inspired cards, toolbars, pill selectors, and thumb-friendly tap targets
 - Backend: Node.js + Express REST API
-- Database: SQLite with Prisma ORM
+- Database: PostgreSQL with Prisma ORM
 
 ## Project Structure
 
@@ -73,15 +73,27 @@ Run from the project root:
 npm install
 ```
 
-### 2. Generate Prisma client and create the SQLite database
+### 2. Create the local PostgreSQL database
+
+Make sure your local PostgreSQL service is running, then create the development database once:
+
+```bash
+createdb benchmaster
+```
+
+### 3. Generate Prisma client, apply migrations, and seed the database
 
 ```bash
 npm run db:setup
 ```
 
-`prisma migrate dev` is scaffolded in the backend package, but in this environment Prisma's schema engine returned a generic error while applying SQLite DDL. The checked-in SQL migration is the reliable path used for this MVP bootstrap.
+The backend expects a PostgreSQL connection string in `backend/.env`. The default local format is:
 
-### 3. Run the backend API
+```bash
+DATABASE_URL="postgresql://USER@localhost:5432/benchmaster?schema=public"
+```
+
+### 4. Run the backend API
 
 ```bash
 npm run dev:backend
@@ -89,7 +101,7 @@ npm run dev:backend
 
 The API will start on [http://localhost:3000](http://localhost:3000).
 
-### 4. Run the frontend
+### 5. Run the frontend
 
 In another terminal:
 
@@ -124,6 +136,40 @@ The Angular app will start on [http://localhost:4200](http://localhost:4200).
 
 - Playing time logic is isolated in backend services so timers never depend on Angular components.
 - Live substitutions use a two-step mobile flow: select bench player first, then tap the player leaving the court.
-- SQLite + Prisma keeps the MVP simple while leaving room for richer stat models later.
+- PostgreSQL + Prisma keeps the local and production environments aligned while leaving room for richer stat models later.
 - Angular standalone components keep the frontend modular and easy to extend without extra NgModule ceremony.
 - The Live Match screen is the central workflow and uses minimal text input during active game usage.
+
+## CI/CD
+
+The repository now includes two GitHub Actions workflows:
+
+- `CI`: installs dependencies, generates the Prisma client, builds the backend, and builds the frontend.
+- `CD Render`: triggers Render deployments after a successful `CI` run on the `main` branch.
+
+### GitHub Actions
+
+Workflows are defined in:
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/cd-render.yml`
+
+### Required GitHub Secrets
+
+Add these repository secrets before enabling production deploys:
+
+- `RENDER_API_DEPLOY_HOOK_URL`
+- `RENDER_WEB_DEPLOY_HOOK_URL`
+
+You can create each deploy hook from the Render dashboard in the corresponding service:
+
+1. Open the service.
+2. Go to `Settings`.
+3. Create or copy a `Deploy Hook`.
+4. Save the hook URL in the matching GitHub secret.
+
+### Deployment Flow
+
+1. A push or pull request starts `CI`.
+2. If `CI` succeeds on `main`, `CD Render` triggers both Render services.
+3. Render then builds and deploys using `render.yaml`.

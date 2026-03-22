@@ -49,6 +49,13 @@
   white-space: nowrap;
 }
 
+.setup-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .button--icon {
   width: 44px;
   min-width: 44px;

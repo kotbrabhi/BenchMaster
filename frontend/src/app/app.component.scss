@@ -17,7 +17,7 @@
 .shell::before {
   z-index: -2;
   background:
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center / 3px 100% no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center / 100% 3px no-repeat,
     radial-gradient(circle, transparent 0 43%, var(--color-court-line) 43.5% 45.2%, transparent 45.7%) center / min(40vh, 320px) min(40vh, 320px) no-repeat,
     linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
     linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
@@ -27,8 +27,8 @@
     linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 80px - min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
     radial-gradient(circle at 50% 0, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) top center / min(100vw, 720px) min(48vh, 420px) no-repeat,
     radial-gradient(circle at 50% 100%, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) bottom center / min(100vw, 720px) min(48vh, 420px) no-repeat,
-    radial-gradient(circle at 50% 100%, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center 118px / min(24vh, 192px) min(12vh, 96px) no-repeat,
-    radial-gradient(circle at 50% 0, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center calc(100% - 118px) / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle at 50% 0, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center 118px / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center calc(100% - 118px) / min(24vh, 192px) min(12vh, 96px) no-repeat,
     radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center 48px / 22px 22px no-repeat,
     radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center calc(100% - 48px) / 22px 22px no-repeat,
     linear-gradient(var(--color-court-line), var(--color-court-line)) center 38px / 64px 3px no-repeat,

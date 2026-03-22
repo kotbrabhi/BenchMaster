@@ -32,9 +32,8 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly availablePlayerIds = signal<number[]>([]);
   readonly starterPlayerIds = signal<number[]>([]);
   readonly t = this.i18n.t;
-
-  readonly availablePlayers = computed(() =>
-    this.roster().filter((player) => this.availablePlayerIds().includes(player.id))
+  readonly sortedRoster = computed(() =>
+    [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
   );
 
   gameLabel = '';
@@ -125,6 +124,18 @@ export class NewGameSetupPageComponent implements OnInit {
 
   isStarter(player: Player) {
     return this.starterPlayerIds().includes(player.id);
+  }
+
+  private playerSortRank(playerId: number) {
+    if (this.starterPlayerIds().includes(playerId)) {
+      return 0;
+    }
+
+    if (this.availablePlayerIds().includes(playerId)) {
+      return 1;
+    }
+
+    return 2;
   }
 
   canCreateGame() {
