@@ -3,47 +3,38 @@
     <header class="toolbar">
       <span class="toolbar__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
       <h1 class="toolbar__title">{{ gameSummary.label }}</h1>
-      <p class="toolbar__subtitle">{{ gameSummary.team.name }} · {{ 'summary.hero.subtitle' | t }}</p>
     </header>
 
     @if (errorMessage()) {
       <div class="error-banner">{{ errorMessage() }}</div>
     }
-
-    <section class="surface-card">
-      <div class="mini-grid">
-        <div>
-          <p class="helper-text">{{ 'summary.stats.totalClock' | t }}</p>
-          <strong class="summary-stat">{{ gameSummary.totalGameSeconds | duration : 'clock' }}</strong>
-        </div>
-
-        <div>
-          <p class="helper-text">{{ 'summary.stats.playersTracked' | t }}</p>
-          <strong class="summary-stat">{{ gameSummary.players.length }}</strong>
-        </div>
-      </div>
-    </section>
-
     <section class="surface-card">
       <div class="section-heading">
         <div>
           <h2>{{ 'summary.playingTime.title' | t }}</h2>
-          <p>{{ 'summary.playingTime.subtitle' | t }}</p>
         </div>
       </div>
 
-      <div class="stack">
-        @for (player of gameSummary.players; track player.playerId) {
-          <app-player-card
-            [playerName]="player.name"
-            [jerseyNumber]="player.jerseyNumber"
-            [position]="player.position"
-            [tone]="'summary'"
-            [note]="playerNote(player)"
-            [timeLabel]="player.totalSeconds | duration : 'compact'"
-            [progress]="progress(player.totalSeconds, gameSummary.maxPlayerSeconds)">
-          </app-player-card>
-        }
+      <div class="summary-table-wrap">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'summary.table.player' | t }}</th>
+              <th scope="col">{{ 'summary.playingTime.title' | t }}</th>
+              <th scope="col">Pts</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (player of gameSummary.players; track player.playerId) {
+              <tr>
+                <td class="summary-table__player">{{ player.name }}</td>
+                <td class="summary-table__time">{{ playingMinutes(player.totalSeconds) }}</td>
+                <td class="summary-table__points">{{ player.points }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </section>
   } @else {

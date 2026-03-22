@@ -127,10 +127,6 @@ export class NewGameSetupPageComponent implements OnInit {
     return this.starterPlayerIds().includes(player.id);
   }
 
-  teamName(teamId: number | null) {
-    return this.teams().find((team) => team.id === teamId)?.name ?? '';
-  }
-
   canCreateGame() {
     return !!this.selectedTeamId() && this.availablePlayerIds().length >= 5 && this.starterPlayerIds().length === 5;
   }

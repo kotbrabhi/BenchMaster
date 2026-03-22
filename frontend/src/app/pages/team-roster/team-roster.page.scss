@@ -27,7 +27,7 @@
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--color-surface-glass-strong);
   color: var(--color-ink);
 }
 
@@ -62,7 +62,7 @@
   padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--color-surface-glass);
 }
 
 .roster-row--header {
@@ -83,7 +83,7 @@
 }
 
 .roster-row--editor {
-  background: rgba(215, 24, 42, 0.05);
+  background: var(--color-accent-soft);
 }
 
 .roster-row input,
@@ -94,7 +94,7 @@
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--color-surface-glass-strong);
   color: var(--color-ink);
 }
 

@@ -1,27 +1,39 @@
 :root {
-  --color-bg: #f3f3f3;
-  --color-surface: #ffffff;
-  --color-surface-strong: #fff;
-  --color-border: rgba(16, 16, 16, 0.12);
-  --color-ink: #101010;
-  --color-text-muted: #5f5f5f;
-  --color-accent: #d7182a;
-  --color-accent-strong: #a80f1f;
-  --color-court: #d7182a;
-  --color-court-soft: #f8d9de;
-  --color-bench: #ececec;
-  --color-danger: #b10f20;
-  --color-ink-soft: rgba(16, 16, 16, 0.08);
-  --color-ink-strong: rgba(16, 16, 16, 0.22);
-  --color-accent-soft: rgba(215, 24, 42, 0.12);
-  --color-accent-strong-soft: rgba(168, 15, 31, 0.18);
-  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.12);
+  --color-bg: #efd6b1;
+  --color-surface: #fff8ef;
+  --color-surface-strong: #fffdf9;
+  --color-border: rgba(84, 49, 20, 0.16);
+  --color-ink: #2d1a0f;
+  --color-text-muted: #75563c;
+  --color-accent: #bc632a;
+  --color-accent-strong: #8f4318;
+  --color-court: #b8652d;
+  --color-court-soft: rgba(255, 249, 241, 0.86);
+  --color-bench: #efe0cf;
+  --color-danger: #9e2d1a;
+  --color-ink-soft: rgba(73, 42, 19, 0.08);
+  --color-ink-strong: rgba(73, 42, 19, 0.24);
+  --color-accent-soft: rgba(188, 99, 42, 0.14);
+  --color-accent-strong-soft: rgba(143, 67, 24, 0.2);
+  --color-wood-light: #f6ddb9;
+  --color-wood-mid: #e8bf8a;
+  --color-wood-dark: #d79e63;
+  --color-court-line: rgba(255, 255, 255, 0.72);
+  --color-surface-glass: rgba(255, 251, 246, 0.92);
+  --color-surface-glass-strong: rgba(255, 253, 249, 0.97);
+  --color-surface-muted: rgba(73, 42, 19, 0.06);
+  --color-surface-warm: rgba(244, 228, 207, 0.9);
+  --color-status-live: rgba(164, 61, 26, 0.16);
+  --color-status-live-border: rgba(164, 61, 26, 0.28);
+  --color-status-paused: rgba(185, 124, 37, 0.18);
+  --color-status-paused-border: rgba(185, 124, 37, 0.28);
+  --color-status-paused-ink: #875519;
+  --color-status-finished: rgba(78, 113, 66, 0.18);
+  --color-status-finished-border: rgba(78, 113, 66, 0.28);
+  --color-status-finished-ink: #43613a;
+  --shadow-card: 0 18px 40px rgba(68, 36, 8, 0.18);
   font-family: 'Avenir Next', 'Segoe UI', sans-serif;
   color: var(--color-ink);
-  background:
-    radial-gradient(circle at top left, rgba(215, 24, 42, 0.18), transparent 34%),
-    radial-gradient(circle at top right, rgba(16, 16, 16, 0.08), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #ededed 100%);
 }
 
 * {
@@ -32,7 +44,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: transparent;
+  background: var(--color-bg);
 }
 
 body {
@@ -87,16 +99,16 @@ button {
   padding: 18px;
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-surface-glass);
   box-shadow: var(--shadow-card);
 }
 
 .surface-card--court {
-  background: linear-gradient(180deg, var(--color-accent-soft), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(180deg, rgba(198, 120, 58, 0.18), var(--color-surface-glass-strong));
 }
 
 .surface-card--bench {
-  background: linear-gradient(180deg, rgba(16, 16, 16, 0.05), rgba(255, 255, 255, 0.98));
+  background: linear-gradient(180deg, var(--color-surface-muted), var(--color-surface-glass-strong));
 }
 
 .section-heading {
@@ -139,15 +151,15 @@ button {
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 248, 239, 0.78);
   color: var(--color-ink);
   font-weight: 700;
 }
 
 .pill--active {
   border-color: transparent;
-  background: var(--color-ink);
-  color: white;
+  background: var(--color-court);
+  color: var(--color-surface-strong);
 }
 
 .button {
@@ -159,7 +171,7 @@ button {
   border: 0;
   border-radius: 18px;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
-  color: white;
+  color: var(--color-surface-strong);
   font-weight: 800;
   text-decoration: none;
 }
@@ -170,7 +182,7 @@ button {
 }
 
 .button--ghost {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 249, 241, 0.84);
   border: 1px solid var(--color-border);
   color: var(--color-ink);
 }
@@ -202,7 +214,7 @@ button {
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-surface-glass-strong);
   color: var(--color-ink);
 }
 

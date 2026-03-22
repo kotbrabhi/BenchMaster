@@ -1,22 +1,99 @@
 .shell {
+  position: relative;
   min-height: 100vh;
   padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.shell::before,
+.shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.shell::before {
+  z-index: -2;
+  background:
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center / 3px 100% no-repeat,
+    radial-gradient(circle, transparent 0 43%, var(--color-court-line) 43.5% 45.2%, transparent 45.7%) center / min(40vh, 320px) min(40vh, 320px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(80px + min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 80px - min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
+    radial-gradient(circle at 50% 0, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) top center / min(100vw, 720px) min(48vh, 420px) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) bottom center / min(100vw, 720px) min(48vh, 420px) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center 118px / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle at 50% 0, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center calc(100% - 118px) / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center 48px / 22px 22px no-repeat,
+    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center calc(100% - 48px) / 22px 22px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center 38px / 64px 3px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 38px) / 64px 3px no-repeat,
+    repeating-linear-gradient(
+      90deg,
+      rgba(133, 77, 28, 0.1) 0 2px,
+      transparent 2px 88px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1) 0 1px,
+      transparent 1px 144px
+    ),
+    linear-gradient(
+      90deg,
+      var(--color-wood-light) 0%,
+      #f8e3c2 11%,
+      var(--color-wood-mid) 24%,
+      #efcf9f 36%,
+      var(--color-wood-dark) 50%,
+      #f3d6ae 64%,
+      var(--color-wood-mid) 78%,
+      #fae6c7 100%
+    );
+}
+
+.shell::after {
+  z-index: -1;
+  background:
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.38), transparent 32%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.14), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 251, 245, 0.3));
+}
+
+.shell__brand {
+  display: flex;
+  justify-content: center;
+  padding: calc(8px + env(safe-area-inset-top)) 16px 2px;
+  text-decoration: none;
+}
+
+.shell__brand-logo {
+  display: block;
+  width: min(180px, calc(100vw - 96px));
+  height: auto;
 }
 
 .shell__content {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
 }
 
 .tabbar {
   position: fixed;
   inset: auto 16px 16px 16px;
+  z-index: 30;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 10px;
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--color-surface-glass-strong);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(16px);
 }
@@ -35,5 +112,10 @@
 
 .tabbar__item--active {
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
-  color: white;
+  color: var(--color-surface-strong);
+}
+@media (max-width: 767px) {
+  .shell__brand-logo {
+    width: min(160px, calc(100vw - 112px));
+  }
 }

@@ -5,12 +5,12 @@
   padding: 16px;
   border: 1px solid var(--color-border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--color-surface-glass);
 }
 
 .player-card--active {
   border-color: var(--color-accent-strong-soft);
-  background: rgba(248, 217, 222, 0.92);
+  background: var(--color-surface-warm);
 }
 
 .player-card--selected {
@@ -98,7 +98,7 @@
   padding: 0 8px;
   border: 1px solid var(--color-accent-strong-soft);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--color-surface-glass-strong);
   color: var(--color-accent-strong);
   font-size: 0.8rem;
   font-weight: 800;
