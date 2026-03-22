@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../utils/http-error';
-import { compareJerseyNumbers } from '../utils/jersey-number';
+import { rethrowPrismaError } from '../utils/prisma-error';
 
 export interface TeamInput {
   name: string;
@@ -12,8 +12,16 @@ function normalizeTeamName(name: string) {
 
 export async function listTeams() {
   const teams = await prisma.team.findMany({
-    include: {
-      players: true
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          players: true
+        }
+      }
     },
     orderBy: {
       updatedAt: 'desc'
@@ -21,8 +29,11 @@ export async function listTeams() {
   });
 
   return teams.map((team) => ({
-    ...team,
-    players: [...team.players].sort((left, right) => compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber))
+    id: team.id,
+    name: team.name,
+    createdAt: team.createdAt,
+    updatedAt: team.updatedAt,
+    playerCount: team._count.players
   }));
 }
 
@@ -39,36 +50,32 @@ export async function createTeam(input: TeamInput) {
 }
 
 export async function updateTeam(teamId: number, input: TeamInput) {
-  const team = await prisma.team.findUnique({
-    where: { id: teamId }
-  });
-
-  if (!team) {
-    throw new HttpError(404, 'Équipe introuvable.');
-  }
-
   const name = normalizeTeamName(input.name);
 
   if (!name) {
     throw new HttpError(400, "Le nom de l'équipe est obligatoire.");
   }
 
-  return prisma.team.update({
-    where: { id: teamId },
-    data: { name }
-  });
+  try {
+    return await prisma.team.update({
+      where: { id: teamId },
+      data: { name }
+    });
+  } catch (error) {
+    rethrowPrismaError(error, {
+      P2025: new HttpError(404, 'Équipe introuvable.')
+    });
+  }
 }
 
 export async function deleteTeam(teamId: number) {
-  const team = await prisma.team.findUnique({
-    where: { id: teamId }
-  });
-
-  if (!team) {
-    throw new HttpError(404, 'Équipe introuvable.');
+  try {
+    await prisma.team.delete({
+      where: { id: teamId }
+    });
+  } catch (error) {
+    rethrowPrismaError(error, {
+      P2025: new HttpError(404, 'Équipe introuvable.')
+    });
   }
-
-  await prisma.team.delete({
-    where: { id: teamId }
-  });
 }

@@ -47,8 +47,12 @@ function mapPlayerEntry(entry: GameWithRoster['players'][number]) {
   };
 }
 
+export function serializeSelectedPlayers(players: GameWithRoster['players']) {
+  return sortByJersey(players.map(mapPlayerEntry));
+}
+
 export function serializeGame(game: GameWithRoster) {
-  const selectedPlayers = sortByJersey(game.players.map(mapPlayerEntry));
+  const selectedPlayers = serializeSelectedPlayers(game.players);
   const activePlayers = selectedPlayers.filter((player) => player.isOnCourt);
   const benchPlayers = selectedPlayers.filter((player) => !player.isOnCourt);
 

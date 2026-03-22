@@ -13,9 +13,9 @@ export interface Player {
 export interface Team {
   id: number;
   name: string;
+  playerCount: number;
   createdAt?: string;
   updatedAt?: string;
-  players: Player[];
 }
 
 export interface GamePlayerState {

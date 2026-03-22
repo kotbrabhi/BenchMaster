@@ -1,6 +1,6 @@
 import { GameStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { serializeGame, serializeGameListItem, serializeSummary } from '../utils/game-serializer';
+import { serializeGame, serializeSelectedPlayers, serializeSummary } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';
 
 export interface CreateGameInput {
@@ -12,6 +12,42 @@ export interface CreateGameInput {
 
 const gameInclude = {
   team: true,
+  players: {
+    include: {
+      player: true,
+      playingTime: true
+    }
+  }
+} satisfies Prisma.GameInclude;
+
+const gameListSelect = {
+  id: true,
+  label: true,
+  status: true,
+  createdAt: true,
+  teamId: true,
+  team: {
+    select: {
+      name: true
+    }
+  },
+  _count: {
+    select: {
+      players: true
+    }
+  },
+  players: {
+    select: {
+      playingTime: {
+        select: {
+          isOnCourt: true
+        }
+      }
+    }
+  }
+} satisfies Prisma.GameSelect;
+
+const gamePlayersInclude = {
   players: {
     include: {
       player: true,
@@ -42,13 +78,22 @@ function defaultGameLabel() {
 export async function listGames(teamId?: number) {
   const games = await prisma.game.findMany({
     where: teamId ? { teamId } : undefined,
-    include: gameInclude,
+    select: gameListSelect,
     orderBy: {
       createdAt: 'desc'
     }
   });
 
-  return games.map(serializeGameListItem);
+  return games.map((game) => ({
+    id: game.id,
+    label: game.label,
+    status: game.status,
+    createdAt: game.createdAt.toISOString(),
+    teamId: game.teamId,
+    teamName: game.team.name,
+    selectedCount: game._count.players,
+    activeCount: game.players.filter((player) => player.playingTime?.isOnCourt).length
+  }));
 }
 
 export async function createGame(input: CreateGameInput) {
@@ -131,14 +176,14 @@ export async function getGame(gameId: number) {
 export async function getGamePlayers(gameId: number) {
   const game = await prisma.game.findUnique({
     where: { id: gameId },
-    include: gameInclude
+    include: gamePlayersInclude
   });
 
   if (!game) {
     throw new HttpError(404, 'Match introuvable.');
   }
 
-  return serializeGame(game).selectedPlayers;
+  return serializeSelectedPlayers(game.players);
 }
 
 export async function getGameSummary(gameId: number) {

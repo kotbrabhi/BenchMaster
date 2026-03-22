@@ -63,6 +63,8 @@ model Game {
   players             GamePlayer[]
 
   /// TODO(axis-2): Add per-possession and per-segment stat rollups here once player statistics are introduced.
+
+  @@index([teamId])
 }
 
 model GamePlayer {

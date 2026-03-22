@@ -92,7 +92,6 @@ export class TeamRosterPageComponent implements OnInit {
         jerseyNumber,
         position: this.newPosition || null
       });
-      await this.teamService.loadTeams();
       this.resetNewPlayerForm();
       this.errorMessage.set('');
     } catch (error) {
@@ -121,7 +120,6 @@ export class TeamRosterPageComponent implements OnInit {
         jerseyNumber,
         position: this.editingPosition || null
       });
-      await this.teamService.loadTeams();
       this.resetEditingPlayer();
       this.errorMessage.set('');
     } catch (error) {
@@ -138,7 +136,6 @@ export class TeamRosterPageComponent implements OnInit {
 
     try {
       await this.playerService.deletePlayer(this.teamId, playerId);
-      await this.teamService.loadTeams();
       if (this.editingPlayerId === playerId) {
         this.resetEditingPlayer();
       }

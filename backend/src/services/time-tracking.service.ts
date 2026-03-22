@@ -38,6 +38,65 @@ async function getGameForUpdate(transaction: Prisma.TransactionClient, gameId: n
   return game;
 }
 
+type GameForUpdate = Awaited<ReturnType<typeof getGameForUpdate>>;
+type GamePlayerForUpdate = GameForUpdate['players'][number];
+
+function clonePlayerForUpdate(player: GamePlayerForUpdate): GamePlayerForUpdate {
+  return {
+    ...player,
+    player: { ...player.player },
+    playingTime: player.playingTime ? { ...player.playingTime } : null
+  };
+}
+
+function cloneGameForUpdate(game: GameForUpdate): GameForUpdate {
+  return {
+    ...game,
+    team: { ...game.team },
+    players: game.players.map(clonePlayerForUpdate)
+  };
+}
+
+function applyFinalizeClockAndPlayers(game: GameForUpdate, now: Date) {
+  const updatedGame = cloneGameForUpdate(game);
+
+  if (!updatedGame.isClockRunning || !updatedGame.lastClockStartedAt) {
+    return updatedGame;
+  }
+
+  const elapsedSinceResume = diffSeconds(updatedGame.lastClockStartedAt, now);
+  const periodElapsedSinceResume =
+    getEffectivePeriodStatus(updatedGame) === PeriodStatus.LIVE && updatedGame.lastPeriodStartedAt
+      ? diffSeconds(updatedGame.lastPeriodStartedAt, now)
+      : 0;
+
+  updatedGame.clockElapsedSeconds += elapsedSinceResume;
+  updatedGame.periodElapsedSeconds += periodElapsedSinceResume;
+  updatedGame.isClockRunning = false;
+  updatedGame.lastClockStartedAt = null;
+  updatedGame.lastPeriodStartedAt = null;
+  updatedGame.players = updatedGame.players.map((player) => {
+    if (!player.playingTime?.isOnCourt || !player.playingTime.lastEnteredAt) {
+      return player;
+    }
+
+    return {
+      ...player,
+      playingTime: {
+        ...player.playingTime,
+        totalSeconds: player.playingTime.totalSeconds + diffSeconds(player.playingTime.lastEnteredAt, now),
+        periodSeconds:
+          player.playingTime.periodSeconds +
+          (player.playingTime.lastPeriodEnteredAt ? diffSeconds(player.playingTime.lastPeriodEnteredAt, now) : 0),
+        lastEnteredAt: null,
+        lastPeriodEnteredAt: null
+      }
+    };
+  });
+
+  return updatedGame;
+}
+
 function ensureExactlyFiveStarters(game: Awaited<ReturnType<typeof getGameForUpdate>>) {
   const starters = game.players.filter((player) => player.isStarter);
 
@@ -112,7 +171,7 @@ async function finalizeClockAndPlayers(
 }
 
 export async function startGame(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
     ensureExactlyFiveStarters(game);
@@ -153,14 +212,38 @@ export async function startGame(gameId: number) {
       )
     );
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.status = GameStatus.LIVE;
+    updatedGame.currentPeriodNumber = 1;
+    updatedGame.currentPeriodStatus = PeriodStatus.LIVE;
+    updatedGame.startedAt = now;
+    updatedGame.isClockRunning = true;
+    updatedGame.lastClockStartedAt = now;
+    updatedGame.periodElapsedSeconds = 0;
+    updatedGame.lastPeriodStartedAt = now;
+    updatedGame.players = updatedGame.players.map((player) => {
+      if (!player.playingTime) {
+        return player;
+      }
 
-  return serializeGame(result);
+      return {
+        ...player,
+        playingTime: {
+          ...player.playingTime,
+          isOnCourt: player.isStarter,
+          periodSeconds: 0,
+          lastEnteredAt: player.isStarter ? now : null,
+          lastPeriodEnteredAt: player.isStarter ? now : null
+        }
+      };
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function pauseGame(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
 
@@ -178,14 +261,15 @@ export async function pauseGame(gameId: number) {
       }
     });
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = applyFinalizeClockAndPlayers(game, now);
+    updatedGame.status = GameStatus.PAUSED;
 
-  return serializeGame(result);
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function resumeGame(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
 
@@ -229,10 +313,28 @@ export async function resumeGame(gameId: number) {
       )
     );
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.status = GameStatus.LIVE;
+    updatedGame.isClockRunning = true;
+    updatedGame.lastClockStartedAt = now;
+    updatedGame.lastPeriodStartedAt = now;
+    updatedGame.players = updatedGame.players.map((player) => {
+      if (!player.playingTime?.isOnCourt || !onCourtPlayers.some((onCourtPlayer) => onCourtPlayer.id === player.id)) {
+        return player;
+      }
 
-  return serializeGame(result);
+      return {
+        ...player,
+        playingTime: {
+          ...player.playingTime,
+          lastEnteredAt: now,
+          lastPeriodEnteredAt: now
+        }
+      };
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 function ensureUniqueIds(ids: number[], label: string) {
@@ -259,7 +361,7 @@ export async function substitutePlayers(gameId: number, playerInIds: number[], p
   ensureUniqueIds(playerInIds, 'joueur·euse entrant·e');
   ensureUniqueIds(playerOutIds, 'joueur·euse sortant·e');
 
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
 
     ensureTrackableLiveGame(game);
@@ -330,10 +432,54 @@ export async function substitutePlayers(gameId: number, playerInIds: number[], p
 
     // TODO(axis-2): Create stat segments tied to substitutions so future points, rebounds, and advanced efficiency splits can be calculated.
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const playerInIdSet = new Set(playerInIds);
+    const playerOutIdSet = new Set(playerOutIds);
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.players = updatedGame.players.map((player) => {
+      if (!player.playingTime) {
+        return player;
+      }
 
-  return serializeGame(result);
+      if (playerOutIdSet.has(player.playerId)) {
+        return {
+          ...player,
+          playingTime: {
+            ...player.playingTime,
+            isOnCourt: false,
+            totalSeconds:
+              player.playingTime.totalSeconds +
+              (game.isClockRunning && player.playingTime.lastEnteredAt
+                ? diffSeconds(player.playingTime.lastEnteredAt, now)
+                : 0),
+            periodSeconds:
+              player.playingTime.periodSeconds +
+              (game.isClockRunning && player.playingTime.lastPeriodEnteredAt
+                ? diffSeconds(player.playingTime.lastPeriodEnteredAt, now)
+                : 0),
+            lastEnteredAt: null,
+            lastPeriodEnteredAt: null
+          }
+        };
+      }
+
+      if (playerInIdSet.has(player.playerId)) {
+        return {
+          ...player,
+          playingTime: {
+            ...player.playingTime,
+            isOnCourt: true,
+            lastEnteredAt: game.isClockRunning ? now : null,
+            lastPeriodEnteredAt:
+              game.isClockRunning && getEffectivePeriodStatus(game) === PeriodStatus.LIVE ? now : null
+          }
+        };
+      }
+
+      return player;
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
@@ -341,7 +487,7 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
     throw new HttpError(400, 'Seuls les ajouts de 1, 2 ou 3 points sont autorisés.');
   }
 
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureTrackableLiveGame(game);
 
@@ -370,10 +516,23 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
       }
     });
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.players = updatedGame.players.map((entry) => {
+      if (entry.playerId !== playerId || !entry.playingTime) {
+        return entry;
+      }
 
-  return serializeGame(result);
+      return {
+        ...entry,
+        playingTime: {
+          ...entry.playingTime,
+          points: entry.playingTime.points + (correction ? -points : points)
+        }
+      };
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function recordPlayerStat(gameId: number, playerId: number, stat: string, correction = false) {
@@ -383,7 +542,7 @@ export async function recordPlayerStat(gameId: number, playerId: number, stat: s
 
   const trackableStat = stat as TrackableStat;
 
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureTrackableLiveGame(game);
 
@@ -415,14 +574,27 @@ export async function recordPlayerStat(gameId: number, playerId: number, stat: s
       }
     });
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.players = updatedGame.players.map((entry) => {
+      if (entry.playerId !== playerId || !entry.playingTime) {
+        return entry;
+      }
 
-  return serializeGame(result);
+      return {
+        ...entry,
+        playingTime: {
+          ...entry.playingTime,
+          [trackableStat]: entry.playingTime[trackableStat] + (correction ? -1 : 1)
+        }
+      };
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function completePeriod(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
 
@@ -451,14 +623,19 @@ export async function completePeriod(gameId: number) {
       }
     });
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = game.isClockRunning ? applyFinalizeClockAndPlayers(game, now) : cloneGameForUpdate(game);
+    updatedGame.status = GameStatus.PAUSED;
+    updatedGame.currentPeriodStatus = PeriodStatus.COMPLETED;
+    updatedGame.isClockRunning = false;
+    updatedGame.lastClockStartedAt = null;
+    updatedGame.lastPeriodStartedAt = null;
 
-  return serializeGame(result);
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function startNextPeriod(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
 
@@ -506,14 +683,36 @@ export async function startNextPeriod(gameId: number) {
       )
     );
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = cloneGameForUpdate(game);
+    updatedGame.status = GameStatus.LIVE;
+    updatedGame.currentPeriodNumber = game.currentPeriodNumber + 1;
+    updatedGame.currentPeriodStatus = PeriodStatus.LIVE;
+    updatedGame.isClockRunning = true;
+    updatedGame.lastClockStartedAt = now;
+    updatedGame.periodElapsedSeconds = 0;
+    updatedGame.lastPeriodStartedAt = now;
+    updatedGame.players = updatedGame.players.map((player) => {
+      if (!player.playingTime) {
+        return player;
+      }
 
-  return serializeGame(result);
+      return {
+        ...player,
+        playingTime: {
+          ...player.playingTime,
+          periodSeconds: 0,
+          lastEnteredAt: player.playingTime.isOnCourt ? now : null,
+          lastPeriodEnteredAt: player.playingTime.isOnCourt ? now : null
+        }
+      };
+    });
+
+    return serializeGame(updatedGame);
+  });
 }
 
 export async function endGame(gameId: number) {
-  const result = await prisma.$transaction(async (transaction) => {
+  return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId);
     ensureLiveState(game);
 
@@ -537,8 +736,15 @@ export async function endGame(gameId: number) {
       }
     });
 
-    return getGameForUpdate(transaction, game.id);
-  });
+    const updatedGame = applyFinalizeClockAndPlayers(game, now);
+    updatedGame.status = GameStatus.FINISHED;
+    updatedGame.currentPeriodStatus =
+      game.currentPeriodStatus === PeriodStatus.NOT_STARTED ? PeriodStatus.NOT_STARTED : PeriodStatus.COMPLETED;
+    updatedGame.endedAt = now;
+    updatedGame.isClockRunning = false;
+    updatedGame.lastClockStartedAt = null;
+    updatedGame.lastPeriodStartedAt = null;
 
-  return serializeGame(result);
+    return serializeGame(updatedGame);
+  });
 }
