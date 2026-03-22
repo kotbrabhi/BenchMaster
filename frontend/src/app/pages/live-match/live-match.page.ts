@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
 import { I18nService } from '../../core/i18n.service';
 import { GameDetail, GamePlayerState } from '../../core/models';
+import { TranslationKey } from '../../core/translations';
 import { LiveMatchService } from '../../services/live-match.service';
 import {
   PlayerCardQuickAction,
@@ -14,6 +15,8 @@ import { TimeTrackingService } from '../../services/time-tracking.service';
 import { PlayerCardComponent } from '../../shared/components/player-card/player-card.component';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+
+type LiveRosterView = 'court' | 'bench';
 
 @Component({
   selector: 'app-live-match-page',
@@ -35,6 +38,8 @@ export class LiveMatchPageComponent implements OnInit {
   readonly canApplySubstitutionBatch = this.liveMatchService.canApplySubstitutionBatch;
   readonly errorMessage = signal('');
   readonly statUpdatePlayerIds = signal<number[]>([]);
+  readonly correctionMode = signal(false);
+  readonly mobileRosterView = signal<LiveRosterView>('court');
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly t = this.i18n.t;
 
@@ -82,6 +87,43 @@ export class LiveMatchPageComponent implements OnInit {
     this.liveMatchService.clearSelections();
   }
 
+  mobileRosterSwitchAriaLabel() {
+    return this.i18n.locale() === 'fr'
+      ? 'Navigation mobile entre le terrain et le banc'
+      : 'Mobile navigation between court and bench';
+  }
+
+  mobileRosterSwipeHint() {
+    return this.i18n.locale() === 'fr'
+      ? "Balayez l'ecran pour passer du terrain au banc."
+      : 'Swipe the screen to switch between court and bench.';
+  }
+
+  scrollMobileRoster(container: HTMLElement, view: LiveRosterView) {
+    this.mobileRosterView.set(view);
+
+    if (!container.clientWidth) {
+      return;
+    }
+
+    container.scrollTo({
+      left: view === 'court' ? 0 : container.clientWidth,
+      behavior: 'smooth'
+    });
+  }
+
+  syncMobileRosterView(container: HTMLElement) {
+    if (!container.clientWidth || container.scrollWidth <= container.clientWidth) {
+      return;
+    }
+
+    const nextView: LiveRosterView = container.scrollLeft >= container.clientWidth / 2 ? 'bench' : 'court';
+
+    if (this.mobileRosterView() !== nextView) {
+      this.mobileRosterView.set(nextView);
+    }
+  }
+
   async substituteBatch() {
     await this.runAction(() => this.liveMatchService.substitute(this.gameId));
   }
@@ -119,11 +161,8 @@ export class LiveMatchPageComponent implements OnInit {
 
   playerTimeSummary(game: GameDetail, player: GamePlayerState) {
     const segments = [
-      this.t('live.playerTime.periodShort'),
-      this.formatClock(this.playerPeriodSeconds(game, player)),
-      '/',
-      this.t('live.playerTime.matchShort'),
-      this.formatClock(this.playerSeconds(game, player))
+      `${this.t('live.playerTime.periodShort')}${this.formatClock(this.playerPeriodSeconds(game, player))}`,
+      `${this.t('live.playerTime.matchShort')}${this.formatClock(this.playerSeconds(game, player))}`
     ];
 
     const statSegments = [
@@ -134,10 +173,10 @@ export class LiveMatchPageComponent implements OnInit {
     ].filter(Boolean);
 
     if (statSegments.length) {
-      segments.push('·', statSegments.join(' · '));
+      segments.push(statSegments.join(' '));
     }
 
-    return segments.join(' ');
+    return segments.join(' · ');
   }
 
   isBenchSelected(playerId: number) {
@@ -201,49 +240,66 @@ export class LiveMatchPageComponent implements OnInit {
     return game.status === 'PAUSED' && this.effectivePeriodStatus(game) === 'COMPLETED';
   }
 
+  toggleCorrectionMode() {
+    this.correctionMode.update((current) => !current);
+    this.errorMessage.set('');
+  }
+
+  correctionActionKey(): TranslationKey {
+    return this.correctionMode() ? 'live.correction.cancel' : 'live.correction.activate';
+  }
+
   pointActions(player: GamePlayerState): PlayerCardQuickAction[] {
     const disabled = this.isUpdatingStats(player.playerId);
+    const correctionMode = this.correctionMode();
 
     return [
       ...[1, 2, 3].map((points) => ({
         value: points,
         label: `+${points}`,
-        title: this.t('live.actions.addPoints', { count: points }),
-        disabled,
+        title: correctionMode
+          ? this.t('live.actions.removePoints', { count: points })
+          : this.t('live.actions.addPoints', { count: points }),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, points)),
         row: 'primary' as const
       })),
       {
         value: 'assists' as const,
         label: this.t('live.stats.assists.short'),
-        title: this.t('live.actions.addAssist'),
-        disabled,
+        title: correctionMode ? this.t('live.actions.removeAssist') : this.t('live.actions.addAssist'),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'assists')),
         row: 'secondary' as const
       },
       {
         value: 'blocks' as const,
         label: this.t('live.stats.blocks.short'),
-        title: this.t('live.actions.addBlock'),
-        disabled,
+        title: correctionMode ? this.t('live.actions.removeBlock') : this.t('live.actions.addBlock'),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'blocks')),
         row: 'secondary' as const
       },
       {
         value: 'rebounds' as const,
         label: this.t('live.stats.rebounds.short'),
-        title: this.t('live.actions.addRebound'),
-        disabled,
+        title: correctionMode ? this.t('live.actions.removeRebound') : this.t('live.actions.addRebound'),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'rebounds')),
         row: 'secondary' as const
       }
     ];
   }
 
   async handleQuickAction(playerId: number, action: PlayerCardQuickActionValue) {
+    const correctionMode = this.correctionMode();
     this.statUpdatePlayerIds.update((current) => (current.includes(playerId) ? current : [...current, playerId]));
 
     try {
       if (typeof action === 'number') {
-        await this.liveMatchService.recordPlayerPoints(this.gameId, playerId, action);
+        await this.liveMatchService.recordPlayerPoints(this.gameId, playerId, action, correctionMode);
       } else {
-        await this.liveMatchService.recordPlayerStat(this.gameId, playerId, action);
+        await this.liveMatchService.recordPlayerStat(this.gameId, playerId, action, correctionMode);
+      }
+
+      if (correctionMode) {
+        this.correctionMode.set(false);
       }
 
       this.errorMessage.set('');
@@ -256,6 +312,14 @@ export class LiveMatchPageComponent implements OnInit {
 
   isUpdatingStats(playerId: number) {
     return this.statUpdatePlayerIds().includes(playerId);
+  }
+
+  private canReverseAction(player: GamePlayerState, action: PlayerCardQuickActionValue) {
+    if (typeof action === 'number') {
+      return player.points >= action;
+    }
+
+    return player[action] >= 1;
   }
 
   private async loadGame() {

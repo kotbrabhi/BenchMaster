@@ -336,7 +336,7 @@ export async function substitutePlayers(gameId: number, playerInIds: number[], p
   return serializeGame(result);
 }
 
-export async function recordPlayerPoints(gameId: number, playerId: number, points: number) {
+export async function recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
   if (!Number.isInteger(points) || points < 1 || points > 3) {
     throw new HttpError(400, 'Seuls les ajouts de 1, 2 ou 3 points sont autorisés.');
   }
@@ -355,13 +355,17 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
       throw new HttpError(400, 'Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir des points.');
     }
 
+    if (correction && (player.playingTime.points ?? 0) < points) {
+      throw new HttpError(400, 'Impossible de retirer plus de points que ceux déjà enregistrés.');
+    }
+
     await transaction.playerGameTime.update({
       where: {
         gamePlayerId: player.id
       },
       data: {
         points: {
-          increment: points
+          [correction ? 'decrement' : 'increment']: points
         }
       }
     });
@@ -372,7 +376,7 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
   return serializeGame(result);
 }
 
-export async function recordPlayerStat(gameId: number, playerId: number, stat: string) {
+export async function recordPlayerStat(gameId: number, playerId: number, stat: string, correction = false) {
   if (!(stat in trackableStats)) {
     throw new HttpError(400, 'Statistique non prise en charge.');
   }
@@ -396,13 +400,17 @@ export async function recordPlayerStat(gameId: number, playerId: number, stat: s
       );
     }
 
+    if (correction && (player.playingTime?.[trackableStat] ?? 0) < 1) {
+      throw new HttpError(400, `Impossible de retirer un ${trackableStats[trackableStat]} non enregistré.`);
+    }
+
     await transaction.playerGameTime.update({
       where: {
         gamePlayerId: player.id
       },
       data: {
         [trackableStat]: {
-          increment: 1
+          [correction ? 'decrement' : 'increment']: 1
         }
       }
     });

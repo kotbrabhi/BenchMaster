@@ -140,41 +140,64 @@
 }
 
 .player-card--compact {
-  gap: 0;
-  padding: 12px 14px;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 18px;
 }
 
 .player-card--compact .player-card__header {
   align-items: center;
+  gap: 10px;
 }
 
 .player-card--compact .player-card__summary {
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .player-card--compact .player-card__number {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   flex-shrink: 0;
+  font-size: 0.88rem;
 }
 
 .player-card--compact .player-card__action {
-  width: 38px;
-  min-width: 38px;
-  min-height: 38px;
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 11px;
 }
 
 .player-card--compact .player-card__actions {
-  align-items: stretch;
+  align-items: center;
+  gap: 4px;
 }
 
 .player-card--compact .player-card__quick-action {
-  width: 32px;
-  min-height: 32px;
-  border-radius: 10px;
-  font-size: 0.76rem;
+  width: 28px;
+  min-height: 28px;
+  border-radius: 9px;
+  font-size: 0.68rem;
+}
+
+.player-card--compact .player-card__identity--compact {
+  gap: 1px;
+  font-size: 0.82rem;
+  line-height: 1.15;
+}
+
+.player-card--compact .player-card__name {
+  font-size: 0.93rem;
+}
+
+.player-card--compact .player-card__meta {
+  font-size: 0.75rem;
+}
+
+.player-card--compact .player-card__separator {
+  margin: 0 4px;
 }
 
 .player-card__note,
@@ -187,6 +210,15 @@
 .player-card__time--compact {
   color: var(--color-accent-strong);
   font-size: 0.88rem;
+}
+
+.player-card__time--compact-row {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  line-height: 1.1;
 }
 
 .player-card__bar {
@@ -219,4 +251,24 @@
 
 .player-card__quick-action:disabled {
   opacity: 0.45;
+}
+
+@media (min-width: 768px) {
+  .player-card--compact .player-card__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .player-card--compact .player-card__quick-actions-stack {
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+  }
+
+  .player-card--compact .player-card__quick-actions-row {
+    display: flex;
+    gap: 4px;
+    width: auto;
+  }
 }

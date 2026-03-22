@@ -89,12 +89,18 @@ export class LiveMatchService {
     return game;
   }
 
-  async recordPlayerPoints(gameId: number, playerId: number, points: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/points`, { points });
+  async recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
+    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/points`, {
+      points,
+      correction
+    });
   }
 
-  async recordPlayerStat(gameId: number, playerId: number, stat: PlayerStatType) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/stats`, { stat });
+  async recordPlayerStat(gameId: number, playerId: number, stat: PlayerStatType, correction = false) {
+    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/stats`, {
+      stat,
+      correction
+    });
   }
 
   private async updateGameFromPost(url: string, body: unknown = {}) {

@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import * as liveMatchService from '../services/time-tracking.service';
 
+function isCorrectionRequested(value: unknown) {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
 export async function startGame(request: Request, response: Response) {
   response.json(await liveMatchService.startGame(Number(request.params.gameId)));
 }
@@ -47,7 +51,8 @@ export async function recordPlayerPoints(request: Request, response: Response) {
     await liveMatchService.recordPlayerPoints(
       Number(request.params.gameId),
       Number(request.params.playerId),
-      Number(request.body.points)
+      Number(request.body.points),
+      isCorrectionRequested(request.body.correction)
     )
   );
 }
@@ -57,7 +62,8 @@ export async function recordPlayerStat(request: Request, response: Response) {
     await liveMatchService.recordPlayerStat(
       Number(request.params.gameId),
       Number(request.params.playerId),
-      String(request.body.stat)
+      String(request.body.stat),
+      isCorrectionRequested(request.body.correction)
     )
   );
 }

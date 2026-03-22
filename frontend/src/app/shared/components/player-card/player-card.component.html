@@ -17,9 +17,6 @@
               <span>{{ note }}</span>
             }
           </span>
-          @if (timeLabel) {
-            <span class="player-card__time player-card__time--compact">{{ timeLabel }}</span>
-          }
         </div>
       } @else {
         <div class="player-card__identity">
@@ -91,6 +88,12 @@
       </div>
     }
   </div>
+
+  @if (compact && timeLabel) {
+    <div class="player-card__time player-card__time--compact player-card__time--compact-row">
+      {{ timeLabel }}
+    </div>
+  }
 
   @if (!compact && note) {
     <p class="player-card__note">{{ note }}</p>

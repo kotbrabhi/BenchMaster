@@ -1,9 +1,7 @@
-<section class="page">
+<section class="page page--live">
   @if (game(); as currentGame) {
     <header class="toolbar">
       <span class="toolbar__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
-      <h1 class="toolbar__title">{{ currentGame.label }}</h1>
-      <p class="toolbar__subtitle">{{ currentGame.team.name }} · {{ statusLabel(currentGame) }}</p>
     </header>
 
     @if (errorMessage()) {
@@ -20,7 +18,7 @@
         <div class="cluster live-clock-card__actions">
           @if (canPause(currentGame)) {
             <button
-              class="button button--secondary button--icon"
+              class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
               type="button"
               [attr.aria-label]="'common.actions.pause' | t"
               [attr.title]="'common.actions.pause' | t"
@@ -29,12 +27,13 @@
                 <circle cx="12" cy="12" r="8" />
                 <path d="M10 9v6M14 9v6" />
               </svg>
+              <span class="live-clock-card__control-label">{{ 'common.actions.pause' | t }}</span>
             </button>
           }
 
           @if (canResume(currentGame)) {
             <button
-              class="button button--icon"
+              class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
               type="button"
               [attr.aria-label]="'common.actions.resume' | t"
               [attr.title]="'common.actions.resume' | t"
@@ -42,12 +41,13 @@
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m8 5 11 7-11 7V5Z" />
               </svg>
+              <span class="live-clock-card__control-label">{{ 'common.actions.resume' | t }}</span>
             </button>
           }
 
           @if (currentGame.status !== 'FINISHED' && currentGame.status !== 'DRAFT') {
             <button
-              class="button button--danger button--icon"
+              class="button button--danger button--icon live-clock-card__control live-clock-card__control--fixed-width"
               type="button"
               [attr.aria-label]="'live.actions.end' | t"
               [attr.title]="'live.actions.end' | t"
@@ -56,6 +56,7 @@
                 <path d="M6 4v16" />
                 <path d="M8 5h8l-2.5 3L16 11H8" />
               </svg>
+              <span class="live-clock-card__control-label">{{ 'live.actions.end' | t }}</span>
             </button>
           }
 
@@ -85,7 +86,7 @@
         <div class="cluster live-clock-card__actions">
           @if (currentGame.status === 'DRAFT') {
             <button
-              class="button button--icon"
+              class="button button--icon live-clock-card__control"
               type="button"
               [attr.aria-label]="'live.actions.start' | t"
               [attr.title]="'live.actions.start' | t"
@@ -93,12 +94,32 @@
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m8 5 11 7-11 7V5Z" />
               </svg>
+              <span class="live-clock-card__control-label">{{ 'live.actions.start' | t }}</span>
+            </button>
+          }
+
+          @if (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED') {
+            <button
+              class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
+              type="button"
+              [class.button--secondary]="!correctionMode()"
+              [class.button--danger]="correctionMode()"
+              [attr.aria-label]="correctionActionKey() | t"
+              [attr.title]="correctionActionKey() | t"
+              [attr.aria-pressed]="correctionMode()"
+              (click)="toggleCorrectionMode()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 16 7.5-7.5a2.12 2.12 0 1 1 3 3L11 19H6a1 1 0 0 1-.7-.3l-1-1a1 1 0 0 1 0-1.4L9 11" />
+                <path d="m13.5 10.5 3 3" />
+                <path d="M6 19h9" />
+              </svg>
+              <span class="live-clock-card__control-label">{{ correctionActionKey() | t }}</span>
             </button>
           }
 
           @if (canCompletePeriod(currentGame)) {
             <button
-              class="button button--secondary button--icon"
+              class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
               type="button"
               [attr.aria-label]="'live.actions.completePeriod' | t"
               [attr.title]="'live.actions.completePeriod' | t"
@@ -106,12 +127,13 @@
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="7" y="7" width="10" height="10" rx="1.5" />
               </svg>
+              <span class="live-clock-card__control-label">{{ 'live.actions.completePeriod' | t }}</span>
             </button>
           }
 
           @if (canStartNextPeriod(currentGame)) {
             <button
-              class="button button--icon"
+              class="button button--icon live-clock-card__control"
               type="button"
               [attr.aria-label]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
               [attr.title]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
@@ -119,6 +141,9 @@
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m8 5 11 7-11 7V5Z" />
               </svg>
+              <span class="live-clock-card__control-label">
+                {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+              </span>
             </button>
           }
         </div>
@@ -188,57 +213,87 @@
         </section>
       }
 
-      <section class="surface-card surface-card--court">
-        <div class="section-heading">
-          <div>
-            <h2>{{ 'live.onCourt.title' | t }}</h2>
+      <div class="live-roster-switch-wrap">
+        <div class="live-roster-switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
+          <button
+            class="pill"
+            type="button"
+            role="tab"
+            [class.pill--active]="mobileRosterView() === 'court'"
+            [attr.aria-selected]="mobileRosterView() === 'court'"
+            (click)="scrollMobileRoster(rosterScroller, 'court')">
+            {{ 'live.onCourt.title' | t }}
+          </button>
+
+          <button
+            class="pill"
+            type="button"
+            role="tab"
+            [class.pill--active]="mobileRosterView() === 'bench'"
+            [attr.aria-selected]="mobileRosterView() === 'bench'"
+            (click)="scrollMobileRoster(rosterScroller, 'bench')">
+            {{ 'live.bench.title' | t }}
+          </button>
+        </div>
+
+        <p class="live-roster-switch__hint">{{ mobileRosterSwipeHint() }}</p>
+      </div>
+
+      <div class="live-match__roster-grid" #rosterScroller (scroll)="syncMobileRosterView(rosterScroller)">
+        <section class="surface-card surface-card--court" id="live-roster-court">
+          <div class="section-heading">
+            <div>
+              <h2>{{ 'live.onCourt.title' | t }}</h2>
+              <p>{{ 'live.onCourt.subtitle' | t : { count: currentGame.activePlayers.length } }}</p>
+            </div>
           </div>
-        </div>
 
-        <div class="stack live-player-list">
-          @for (player of currentGame.activePlayers; track player.playerId) {
-            <app-player-card
-              [playerName]="player.name"
-              [jerseyNumber]="player.jerseyNumber"
-              [position]="player.position"
-              [compact]="true"
-              [tone]="'active'"
-              [selected]="isActiveSelected(player.playerId)"
-              [note]="isActiveSelected(player.playerId) ? ('live.notes.outgoingSelected' | t) : ''"
-              [timeLabel]="playerTimeSummary(currentGame, player)"
-              [quickActions]="pointActions(player)"
-              [actionLabel]="isActiveSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubOut' | t)"
-              (quickActionPressed)="handleQuickAction(player.playerId, $event)"
-              (actionPressed)="toggleActivePlayer(player.playerId)">
-            </app-player-card>
-          }
-        </div>
-      </section>
-
-      <section class="surface-card surface-card--bench">
-        <div class="section-heading">
-          <div>
-            <h2>{{ 'live.bench.title' | t }}</h2>
+          <div class="stack live-player-list">
+            @for (player of currentGame.activePlayers; track player.playerId) {
+              <app-player-card
+                [playerName]="player.name"
+                [jerseyNumber]="player.jerseyNumber"
+                [position]="player.position"
+                [compact]="true"
+                [tone]="'active'"
+                [selected]="isActiveSelected(player.playerId)"
+                [note]="isActiveSelected(player.playerId) ? ('live.notes.outgoingSelected' | t) : ''"
+                [timeLabel]="playerTimeSummary(currentGame, player)"
+                [quickActions]="pointActions(player)"
+                [actionLabel]="isActiveSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubOut' | t)"
+                (quickActionPressed)="handleQuickAction(player.playerId, $event)"
+                (actionPressed)="toggleActivePlayer(player.playerId)">
+              </app-player-card>
+            }
           </div>
-        </div>
+        </section>
 
-        <div class="stack live-player-list">
-          @for (player of currentGame.benchPlayers; track player.playerId) {
-            <app-player-card
-              [playerName]="player.name"
-              [jerseyNumber]="player.jerseyNumber"
-              [position]="player.position"
-              [compact]="true"
-              [tone]="'bench'"
-              [selected]="isBenchSelected(player.playerId)"
-              [note]="isBenchSelected(player.playerId) ? ('live.notes.incomingSelected' | t) : ''"
-              [timeLabel]="playerTimeSummary(currentGame, player)"
-              [actionLabel]="isBenchSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubIn' | t)"
-              (actionPressed)="toggleBenchPlayer(player.playerId)">
-            </app-player-card>
-          }
-        </div>
-      </section>
+        <section class="surface-card surface-card--bench" id="live-roster-bench">
+          <div class="section-heading">
+            <div>
+              <h2>{{ 'live.bench.title' | t }}</h2>
+              <p>{{ 'live.bench.subtitle' | t }}</p>
+            </div>
+          </div>
+
+          <div class="stack live-player-list">
+            @for (player of currentGame.benchPlayers; track player.playerId) {
+              <app-player-card
+                [playerName]="player.name"
+                [jerseyNumber]="player.jerseyNumber"
+                [position]="player.position"
+                [compact]="true"
+                [tone]="'bench'"
+                [selected]="isBenchSelected(player.playerId)"
+                [note]="isBenchSelected(player.playerId) ? ('live.notes.incomingSelected' | t) : ''"
+                [timeLabel]="playerTimeSummary(currentGame, player)"
+                [actionLabel]="isBenchSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubIn' | t)"
+                (actionPressed)="toggleBenchPlayer(player.playerId)">
+              </app-player-card>
+            }
+          </div>
+        </section>
+      </div>
     }
   } @else {
     <section class="page">

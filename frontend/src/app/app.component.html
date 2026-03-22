@@ -1,36 +1,54 @@
-<div class="shell">
-  <a class="shell__brand" routerLink="/" aria-label="BenchMaster">
-    <img class="shell__brand-logo" src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
-  </a>
+<div
+  class="shell"
+  [class.shell--sidebar-collapsed]="isSidebarCollapsed"
+  [class.shell--focus]="isLiveMatchRoute">
+  <header class="shell__header">
+    <a class="shell__brand" routerLink="/" aria-label="BenchMaster">
+      <img class="shell__brand-logo" src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
+    </a>
+
+    <nav class="tabbar" [attr.aria-label]="'app.nav.primaryAria' | t">
+      @for (item of navigationItems; track item.link) {
+        <a
+          class="tabbar__item"
+          [routerLink]="item.link"
+          routerLinkActive="tabbar__item--active"
+          [routerLinkActiveOptions]="{ exact: item.link === '/' }">
+          <span class="tabbar__icon" aria-hidden="true">
+            @if (item.icon === 'home') {
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M3 10.75L12 3l9 7.75" />
+                <path d="M6.75 9.5V21h10.5V9.5" />
+                <path d="M10 21v-5.5h4V21" />
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+                <path d="M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0" />
+              </svg>
+            }
+          </span>
+          <span class="tabbar__label">{{ item.labelKey | t }}</span>
+        </a>
+      }
+    </nav>
+
+    <button
+      type="button"
+      class="shell__sidebar-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isSidebarCollapsed ? 'Ouvrir la barre latérale' : 'Fermer la barre latérale'"
+      [attr.title]="isSidebarCollapsed ? 'Ouvrir la barre latérale' : 'Fermer la barre latérale'">
+      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+        <path d="M15 18l-6-6l6-6" />
+      </svg>
+    </button>
+  </header>
 
   <main class="shell__content">
-    <router-outlet />
+    <div class="shell__content-inner" [class.shell__content-inner--wide]="isLiveMatchRoute">
+      <router-outlet />
+    </div>
   </main>
-
-  <nav class="tabbar" [attr.aria-label]="'app.nav.primaryAria' | t">
-    @for (item of navigationItems; track item.link) {
-      <a
-        class="tabbar__item"
-        [routerLink]="item.link"
-        routerLinkActive="tabbar__item--active"
-        [routerLinkActiveOptions]="{ exact: item.link === '/' }">
-        <span class="tabbar__icon" aria-hidden="true">
-          @if (item.icon === 'home') {
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M3 10.75L12 3l9 7.75" />
-              <path d="M6.75 9.5V21h10.5V9.5" />
-              <path d="M10 21v-5.5h4V21" />
-            </svg>
-          } @else {
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M12 5v14" />
-              <path d="M5 12h14" />
-              <path d="M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0" />
-            </svg>
-          }
-        </span>
-        <span class="tabbar__label">{{ item.labelKey | t }}</span>
-      </a>
-    }
-  </nav>
 </div>

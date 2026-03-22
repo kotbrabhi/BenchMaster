@@ -1,3 +1,7 @@
+.page--live {
+  min-height: auto;
+}
+
 .live-clock-card {
   display: flex;
   flex-direction: column;
@@ -24,6 +28,10 @@
 .live-clock-card__actions {
   flex-wrap: nowrap;
   flex-shrink: 0;
+}
+
+.live-clock-card__control-label {
+  display: none;
 }
 
 .button--icon {
@@ -60,17 +68,27 @@
 .substitution-banner {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+.live-clock-card__control[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 1px rgba(158, 45, 26, 0.16);
 }
 
 .substitution-banner strong {
   display: block;
+  font-size: 0.95rem;
+  line-height: 1.1;
 }
 
 .substitution-banner p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.3;
 }
 
 .substitution-banner__status {
@@ -80,15 +98,67 @@
 .substitution-banner__actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+.substitution-banner .button {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+}
+
+.substitution-banner .button--icon {
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
 }
 
 .live-player-list {
   gap: 10px;
 }
 
+.live-roster-switch-wrap {
+  display: none;
+}
+
+.live-roster-switch {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 251, 246, 0.72);
+}
+
+.live-roster-switch .pill {
+  flex: 1;
+  min-height: 42px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.live-roster-switch__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.live-match__roster-grid {
+  display: grid;
+  gap: 16px;
+}
+
 @media (max-width: 767px) {
+  .live-roster-switch-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .live-clock-card strong {
     font-size: 1.55rem;
   }
@@ -116,14 +186,60 @@
   .substitution-banner__actions .button:first-child {
     flex: 1;
   }
+
+  .live-match__roster-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .live-match__roster-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .live-match__roster-grid > .surface-card {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 }
 
 @media (min-width: 768px) {
+  .page--live {
+    gap: 12px;
+    padding: 12px 0 16px;
+  }
+
   .live-clock-card__row {
     gap: 18px;
   }
 
+  .live-match__roster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    overflow: visible;
+  }
+
   .live-clock-card__metric {
     gap: 14px;
+  }
+
+  .live-clock-card__control {
+    width: auto;
+    min-width: 44px;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .live-clock-card__control--fixed-width {
+    width: 200px;
+  }
+
+  .live-clock-card__control-label {
+    display: inline;
+    white-space: nowrap;
   }
 }
