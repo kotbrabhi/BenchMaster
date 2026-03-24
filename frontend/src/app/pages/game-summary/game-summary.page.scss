@@ -1,9 +1,12 @@
 .summary-table-wrap {
   margin: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .summary-table {
   width: 100%;
+  min-width: 540px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -17,11 +20,7 @@
 }
 
 .summary-table th {
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  padding: 0;
 }
 
 .summary-table th.summary-table__player,
@@ -37,10 +36,54 @@
   border-bottom: 0;
 }
 
+.summary-table tfoot th,
+.summary-table tfoot td {
+  border-top: 2px solid var(--color-ink-strong);
+  border-bottom: 0;
+  background: var(--color-surface-warm);
+  font-weight: 800;
+}
+
+.summary-table__sort-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--tap-target-min);
+  padding: 9px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-table__sort-button--player {
+  justify-content: flex-start;
+}
+
+.summary-table__minutes .summary-table__sort-button,
+.summary-table__stat .summary-table__sort-button {
+  justify-content: center;
+}
+
+.summary-table__sort-button--active {
+  color: var(--color-accent-strong);
+}
+
 .summary-table__minutes,
 .summary-table__stat {
   white-space: nowrap;
   text-align: center;
+}
+
+.summary-table td.summary-table__minutes,
+.summary-table td.summary-table__stat,
+.summary-table tfoot td.summary-table__minutes,
+.summary-table tfoot td.summary-table__stat {
+  text-align: right;
 }
 
 .summary-table__minutes {
@@ -63,7 +106,13 @@
   }
 
   .summary-table th {
-    font-size: 0.7rem;
+    padding: 0;
+  }
+
+  .summary-table__sort-button {
+    min-height: var(--tap-target-min);
+    padding: 8px 4px;
+    font-size: var(--state-label-size);
     letter-spacing: 0.03em;
   }
 

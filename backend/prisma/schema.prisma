@@ -20,13 +20,24 @@ enum PeriodStatus {
   COMPLETED
 }
 
+enum TeamGender {
+  MIXED
+  FEMININE
+  MASCULINE
+}
+
 model Team {
   id        Int      @id @default(autoincrement())
+  userId    Int?
   name      String
+  gender    TeamGender @default(MIXED)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   players   Player[]
   games     Game[]
+
+  @@index([userId])
 }
 
 model Player {
@@ -75,6 +86,7 @@ model User {
   passwordSalt String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  teams        Team[]
 }
 
 model GamePlayer {

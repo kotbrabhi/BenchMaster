@@ -2,6 +2,7 @@ export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
 export type PlayerStatType = 'assists' | 'blocks' | 'rebounds';
 export type AppMode = 'guest' | 'authenticated';
+export type TeamGender = 'MIXED' | 'FEMININE' | 'MASCULINE';
 
 export interface Player {
   id: number;
@@ -14,6 +15,7 @@ export interface Player {
 export interface Team {
   id: number;
   name: string;
+  gender: TeamGender;
   playerCount: number;
   createdAt?: string;
   updatedAt?: string;
@@ -44,6 +46,7 @@ export interface GameListItem {
   createdAt: string;
   teamId: number;
   teamName: string;
+  teamGender: TeamGender;
   selectedCount: number;
   activeCount: number;
 }
@@ -65,6 +68,7 @@ export interface GameDetail {
   team: {
     id: number;
     name: string;
+    gender: TeamGender;
   };
   selectedPlayers: GamePlayerState[];
   activePlayers: GamePlayerState[];
@@ -80,6 +84,7 @@ export interface GameSummary {
   team: {
     id: number;
     name: string;
+    gender: TeamGender;
   };
   totalGameSeconds: number;
   maxPlayerSeconds: number;

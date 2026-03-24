@@ -7,12 +7,15 @@ import {
   GameStatus,
   Player,
   PlayerStatType,
-  Team
+  Team,
+  TeamGender
 } from '../core/models';
+import { getTeamLabelSet } from '../core/team-labels';
 
 interface GuestTeamRecord {
   id: number;
   name: string;
+  gender: TeamGender;
   createdAt: string;
   updatedAt: string;
   players: Player[];
@@ -29,6 +32,12 @@ interface TeamSeedPlayerPayload {
   name: string;
   jerseyNumber: string;
   position?: string | null;
+}
+
+interface TeamPayload {
+  name: string;
+  gender?: TeamGender;
+  players?: TeamSeedPlayerPayload[];
 }
 
 interface CreateGamePayload {
@@ -86,6 +95,10 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function diffSeconds(from: string, to: Date) {
   return Math.max(0, Math.floor((to.getTime() - new Date(from).getTime()) / 1000));
 }
@@ -118,9 +131,10 @@ function ensureLiveState(game: GameDetail) {
 
 function ensureExactlyFiveStarters(game: GameDetail) {
   const starters = game.selectedPlayers.filter((player) => player.isStarter);
+  const labels = getTeamLabelSet(game.team.gender);
 
   if (game.selectedPlayers.length < 5 || starters.length !== 5) {
-    throw new Error('Un match en direct nécessite au moins cinq joueur·euses sélectionné·es et exactement cinq titulaires.');
+    throw new Error(`Un match en direct nécessite au moins cinq ${labels.playerPlural} sélectionné·es et exactement cinq titulaires.`);
   }
 }
 
@@ -168,8 +182,9 @@ function defaultGameLabel() {
   return `Match ${formatter.format(new Date())}`;
 }
 
-function normalizeSeedPlayers(players: TeamSeedPlayerPayload[] | undefined) {
+function normalizeSeedPlayers(players: TeamSeedPlayerPayload[] | undefined, teamGender: TeamGender = 'MIXED') {
   const usedJerseyNumbers = new Set<string>();
+  const labels = getTeamLabelSet(teamGender);
 
   return (players ?? []).map((player, index) => {
     const name = player.name.trim();
@@ -177,11 +192,11 @@ function normalizeSeedPlayers(players: TeamSeedPlayerPayload[] | undefined) {
     const position = player.position?.trim() || null;
 
     if (!name) {
-      throw new Error(`Le nom du/de la joueur·euse n°${index + 1} est obligatoire.`);
+      throw new Error(`Le nom ${labels.playerOfDefiniteSingular} n°${index + 1} est obligatoire.`);
     }
 
     if (!/^\d+$/.test(jerseyNumber)) {
-      throw new Error(`Le numéro du/de la joueur·euse ${name} doit contenir uniquement des chiffres.`);
+      throw new Error(`Le numéro ${labels.playerOfDefiniteSingular} ${name} doit contenir uniquement des chiffres.`);
     }
 
     if (usedJerseyNumbers.has(jerseyNumber)) {
@@ -205,10 +220,11 @@ export class GuestStorageService {
     return state.team ? [this.toTeam(state.team)] : [];
   }
 
-  async createTeam(payload: { name: string; players?: TeamSeedPlayerPayload[] }) {
+  async createTeam(payload: TeamPayload) {
     const state = this.readState();
     const name = payload.name.trim();
-    const players = normalizeSeedPlayers(payload.players);
+    const gender = payload.gender ?? 'MIXED';
+    const players = normalizeSeedPlayers(payload.players, gender);
 
     if (!name) {
       throw new Error("Le nom de l'équipe est obligatoire.");
@@ -222,6 +238,7 @@ export class GuestStorageService {
     state.team = {
       id: GUEST_TEAM_ID,
       name,
+      gender,
       createdAt,
       updatedAt: nowIso(),
       players: players.map((player, index) => ({
@@ -236,11 +253,12 @@ export class GuestStorageService {
 
     return {
       id: state.team.id,
-      name: state.team.name
+      name: state.team.name,
+      gender: state.team.gender
     };
   }
 
-  async updateTeam(teamId: number, payload: { name: string }) {
+  async updateTeam(teamId: number, payload: { name: string; gender?: TeamGender }) {
     const state = this.readState();
     const team = this.requireTeam(state, teamId);
     const name = payload.name.trim();
@@ -250,6 +268,7 @@ export class GuestStorageService {
     }
 
     team.name = name;
+    team.gender = payload.gender ?? 'MIXED';
     team.updatedAt = nowIso();
     this.syncGameWithRoster(state);
     this.writeState(state);
@@ -271,7 +290,7 @@ export class GuestStorageService {
   async createPlayer(teamId: number, payload: { name: string; jerseyNumber: string; position?: string | null }) {
     const state = this.readState();
     const team = this.requireTeam(state, teamId);
-    const playerPayload = this.validatePlayerPayload(payload, team.players);
+    const playerPayload = this.validatePlayerPayload(payload, team.players, team.gender);
     const player: Player = {
       id: state.nextPlayerId,
       teamId: team.id,
@@ -296,10 +315,10 @@ export class GuestStorageService {
     const player = team.players.find((entry) => entry.id === playerId);
 
     if (!player) {
-      throw new Error('Joueur·euse introuvable.');
+      throw new Error(`${capitalize(getTeamLabelSet(team.gender).playerSingular)} introuvable.`);
     }
 
-    const playerPayload = this.validatePlayerPayload(payload, team.players, playerId);
+    const playerPayload = this.validatePlayerPayload(payload, team.players, team.gender, playerId);
     player.name = playerPayload.name;
     player.jerseyNumber = playerPayload.jerseyNumber;
     player.position = playerPayload.position;
@@ -314,13 +333,13 @@ export class GuestStorageService {
     const team = this.requireTeam(state, teamId);
 
     if (state.game && state.game.status !== 'FINISHED' && state.game.selectedPlayers.some((player) => player.playerId === playerId)) {
-      throw new Error('Ce·tte joueur·euse est déjà lié·e à un match local en cours et ne peut pas être supprimé·e.');
+      throw new Error(`${capitalize(getTeamLabelSet(team.gender).playerDemonstrativeSingular)} est déjà lié·e à un match local en cours et ne peut pas être supprimé·e.`);
     }
 
     const nextPlayers = team.players.filter((player) => player.id !== playerId);
 
     if (nextPlayers.length === team.players.length) {
-      throw new Error('Joueur·euse introuvable.');
+      throw new Error(`${capitalize(getTeamLabelSet(team.gender).playerSingular)} introuvable.`);
     }
 
     team.players = nextPlayers;
@@ -337,16 +356,17 @@ export class GuestStorageService {
   async createGame(payload: CreateGamePayload) {
     const state = this.readState();
     const team = this.requireTeam(state, payload.teamId);
+    const labels = getTeamLabelSet(team.gender);
 
     const availablePlayerIds = payload.availablePlayerIds.map(Number);
     const starterPlayerIds = payload.starterPlayerIds.map(Number);
 
     if (!availablePlayerIds.length) {
-      throw new Error('Sélectionnez au moins un·e joueur·euse disponible.');
+      throw new Error(`Sélectionnez au moins ${labels.playerIndefiniteSingular} disponible.`);
     }
 
     if (new Set(availablePlayerIds).size !== availablePlayerIds.length) {
-      throw new Error('La liste des joueur·euses disponibles contient des doublons.');
+      throw new Error(`La liste des ${labels.playerPlural} disponibles contient des doublons.`);
     }
 
     if (new Set(starterPlayerIds).size !== starterPlayerIds.length) {
@@ -360,14 +380,14 @@ export class GuestStorageService {
     const missingStarter = starterPlayerIds.find((playerId) => !availablePlayerIds.includes(playerId));
 
     if (missingStarter) {
-      throw new Error('Les titulaires doivent être choisi·es parmi les joueur·euses disponibles.');
+      throw new Error(`Les titulaires doivent être choisi·es parmi les ${labels.playerPlural} disponibles.`);
     }
 
     const rosterMap = new Map(team.players.map((player) => [player.id, player]));
     const invalidPlayerId = availablePlayerIds.find((playerId) => !rosterMap.has(playerId));
 
     if (invalidPlayerId) {
-      throw new Error("Les joueur·euses sélectionné·es doivent appartenir à l'équipe choisie.");
+      throw new Error(`Les ${labels.playerPlural} sélectionné·es doivent appartenir à l'équipe choisie.`);
     }
 
     const createdAt = nowIso();
@@ -409,7 +429,8 @@ export class GuestStorageService {
       createdAt,
       team: {
         id: team.id,
-        name: team.name
+        name: team.name,
+        gender: team.gender
       },
       selectedPlayers,
       activePlayers: [],
@@ -488,6 +509,7 @@ export class GuestStorageService {
 
   async resumeGame(gameId: number) {
     return this.updateGame(gameId, (game) => {
+      const labels = getTeamLabelSet(game.team.gender);
       ensureLiveState(game);
 
       if (game.status !== 'PAUSED' || game.isClockRunning) {
@@ -501,7 +523,7 @@ export class GuestStorageService {
       const onCourtPlayers = game.selectedPlayers.filter((player) => player.isOnCourt);
 
       if (onCourtPlayers.length !== 5) {
-        throw new Error('La reprise nécessite exactement cinq joueur·euses actif·ves.');
+        throw new Error(`La reprise nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
       }
 
       const now = nowIso();
@@ -548,6 +570,7 @@ export class GuestStorageService {
 
   async startNextPeriod(gameId: number) {
     return this.updateGame(gameId, (game) => {
+      const labels = getTeamLabelSet(game.team.gender);
       ensureLiveState(game);
 
       if (game.status !== 'PAUSED') {
@@ -561,7 +584,7 @@ export class GuestStorageService {
       const onCourtPlayers = game.selectedPlayers.filter((player) => player.isOnCourt);
 
       if (onCourtPlayers.length !== 5) {
-        throw new Error('Le démarrage d’une nouvelle période nécessite exactement cinq joueur·euses actif·ves.');
+        throw new Error(`Le démarrage d’une nouvelle période nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
       }
 
       const now = nowIso();
@@ -602,16 +625,17 @@ export class GuestStorageService {
 
   async substitutePlayers(gameId: number, playerInIds: number[], playerOutIds: number[]) {
     return this.updateGame(gameId, (game) => {
+      const labels = getTeamLabelSet(game.team.gender);
       if (!playerInIds.length || !playerOutIds.length) {
-        throw new Error('Sélectionnez au moins un·e joueur·euse entrant·e et un·e joueur·euse sortant·e.');
+        throw new Error(`Sélectionnez au moins ${labels.playerIndefiniteSingular} ${labels.incomingSingular} et ${labels.playerIndefiniteSingular} ${labels.outgoingSingular}.`);
       }
 
       if (playerInIds.length !== playerOutIds.length) {
-        throw new Error('Le nombre de joueur·euses entrant·es doit correspondre au nombre de joueur·euses sortant·es.');
+        throw new Error(`Le nombre de ${labels.incomingPlural} doit correspondre au nombre de ${labels.outgoingPlural}.`);
       }
 
       if (new Set(playerInIds).size !== playerInIds.length || new Set(playerOutIds).size !== playerOutIds.length) {
-        throw new Error('Chaque joueur·euse ne peut être sélectionné·e qu’une seule fois par série de remplacements.');
+        throw new Error(`Chaque ${labels.playerSingular} ne peut être sélectionné·e qu’une seule fois par série de remplacements.`);
       }
 
       ensureTrackableLiveGame(game);
@@ -620,19 +644,19 @@ export class GuestStorageService {
       const playerOuts = playerOutIds.map((playerId) => game.selectedPlayers.find((player) => player.playerId === playerId));
 
       if (playerIns.some((player) => !player) || playerOuts.some((player) => !player)) {
-        throw new Error('Tous les remplacements doivent concerner des joueur·euses de la feuille de match.');
+        throw new Error(`Tous les remplacements doivent concerner des ${labels.playerPlural} de la feuille de match.`);
       }
 
       if (playerIns.some((player) => player!.isOnCourt)) {
-        throw new Error('Au moins un·e joueur·euse entrant·e est déjà sur le terrain.');
+        throw new Error(`Au moins un·e ${labels.incomingSingular} est déjà sur le terrain.`);
       }
 
       if (playerOuts.some((player) => !player!.isOnCourt)) {
-        throw new Error('Au moins un·e joueur·euse sortant·e n’est pas actuellement sur le terrain.');
+        throw new Error(`Au moins un·e ${labels.outgoingSingular} n’est pas actuellement sur le terrain.`);
       }
 
       if (game.activePlayers.length !== 5) {
-        throw new Error('Un match en direct doit conserver exactement cinq joueur·euses actif·ves.');
+        throw new Error(`Un match en direct doit conserver exactement cinq ${labels.playerPlural} actif·ves.`);
       }
 
       const now = nowIso();
@@ -672,6 +696,7 @@ export class GuestStorageService {
 
   async recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
     return this.updateGame(gameId, (game) => {
+      const labels = getTeamLabelSet(game.team.gender);
       if (!Number.isInteger(points) || points < 1 || points > 3) {
         throw new Error('Seuls les ajouts de 1, 2 ou 3 points sont autorisés.');
       }
@@ -680,11 +705,11 @@ export class GuestStorageService {
       const player = game.selectedPlayers.find((entry) => entry.playerId === playerId);
 
       if (!player) {
-        throw new Error('Joueur·euse introuvable pour ce match.');
+        throw new Error(`${capitalize(labels.playerSingular)} introuvable pour ce match.`);
       }
 
       if (!player.isOnCourt) {
-        throw new Error('Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir des points.');
+        throw new Error(`Seul·e un·e ${labels.playerSingular} actuellement sur le terrain peut recevoir des points.`);
       }
 
       if (correction && player.points < points) {
@@ -698,17 +723,16 @@ export class GuestStorageService {
 
   async recordPlayerStat(gameId: number, playerId: number, stat: PlayerStatType, correction = false) {
     return this.updateGame(gameId, (game) => {
+      const labels = getTeamLabelSet(game.team.gender);
       ensureTrackableLiveGame(game);
       const player = game.selectedPlayers.find((entry) => entry.playerId === playerId);
 
       if (!player) {
-        throw new Error('Joueur·euse introuvable pour ce match.');
+        throw new Error(`${capitalize(labels.playerSingular)} introuvable pour ce match.`);
       }
 
       if (!player.isOnCourt) {
-        throw new Error(
-          `Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir un ${statLabels[stat]}.`
-        );
+        throw new Error(`Seul·e un·e ${labels.playerSingular} actuellement sur le terrain peut recevoir un ${statLabels[stat]}.`);
       }
 
       if (correction && player[stat] < 1) {
@@ -734,6 +758,7 @@ export class GuestStorageService {
     return {
       id: team.id,
       name: team.name,
+      gender: team.gender,
       playerCount: team.players.length,
       createdAt: team.createdAt,
       updatedAt: team.updatedAt
@@ -748,6 +773,7 @@ export class GuestStorageService {
       createdAt: game.createdAt,
       teamId: game.team.id,
       teamName: game.team.name,
+      teamGender: game.team.gender,
       selectedCount: game.selectedPlayers.length,
       activeCount: game.activePlayers.length
     };
@@ -756,14 +782,16 @@ export class GuestStorageService {
   private validatePlayerPayload(
     payload: { name: string; jerseyNumber: string; position?: string | null },
     existingPlayers: Player[],
+    teamGender: TeamGender = 'MIXED',
     excludedPlayerId?: number
   ) {
     const name = payload.name.trim();
     const jerseyNumber = payload.jerseyNumber.trim();
     const position = payload.position?.trim() || null;
+    const labels = getTeamLabelSet(teamGender);
 
     if (!name) {
-      throw new Error('Le nom du/de la joueur·euse est obligatoire.');
+      throw new Error(`Le nom ${labels.playerOfDefiniteSingular} est obligatoire.`);
     }
 
     if (!/^\d+$/.test(jerseyNumber)) {
@@ -775,7 +803,7 @@ export class GuestStorageService {
         (player) => player.id !== excludedPlayerId && player.jerseyNumber === jerseyNumber
       )
     ) {
-      throw new Error('Un·e joueur·euse utilise déjà ce numéro dans cette équipe.');
+      throw new Error(`${capitalize(labels.playerIndefiniteSingular)} utilise déjà ce numéro dans cette équipe.`);
     }
 
     return {
@@ -793,6 +821,7 @@ export class GuestStorageService {
     }
 
     state.game.team.name = team.name;
+    state.game.team.gender = team.gender;
     state.game.selectedPlayers = state.game.selectedPlayers.map((player) => {
       const rosterPlayer = team.players.find((entry) => entry.id === player.playerId);
 
@@ -836,9 +865,27 @@ export class GuestStorageService {
 
     try {
       const parsedState = JSON.parse(rawState) as GuestState;
+      const normalizedTeam = parsedState.team
+        ? {
+            ...parsedState.team,
+            gender: parsedState.team.gender ?? 'MIXED'
+          }
+        : null;
+      const normalizedGame = parsedState.game
+        ? {
+            ...parsedState.game,
+            team: {
+              ...parsedState.game.team,
+              gender: parsedState.game.team.gender ?? 'MIXED'
+            }
+          }
+        : null;
+
       return {
         ...defaultState(),
-        ...parsedState
+        ...parsedState,
+        team: normalizedTeam,
+        game: normalizedGame
       };
     } catch {
       return defaultState();

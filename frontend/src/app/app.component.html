@@ -126,10 +126,19 @@
         <button class="button button--secondary" type="button" (click)="closeAuthPanel()">
           {{ 'common.actions.cancel' | t }}
         </button>
-        <button class="button" type="button" [disabled]="!canSubmitAuth() || isRestoringSession()" (click)="submitAuth()">
+        <button
+          class="button"
+          type="button"
+          [disabled]="!canSubmitAuth() || isRestoringSession()"
+          [attr.aria-busy]="authSubmitting() || isRestoringSession()"
+          (click)="submitAuth()">
           {{ authIntentLabel() | t }}
         </button>
       </div>
+
+      @if (authDisabledReason(); as disabledReason) {
+        <p class="control-reason">{{ disabledReason | t }}</p>
+      }
     </section>
   </div>
 }

@@ -6,6 +6,7 @@ import { getErrorMessage } from '../../core/api';
 import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
 import { Player } from '../../core/models';
+import { buildTeamLabelParams } from '../../core/team-labels';
 import { GameService } from '../../services/game.service';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
@@ -31,11 +32,14 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly teams = this.teamService.teams;
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
+  readonly isCreatingGame = signal(false);
   readonly selectedTeamId = signal<number | null>(null);
+  readonly selectedTeam = computed(() => this.teams().find((team) => team.id === this.selectedTeamId()) ?? null);
   readonly availablePlayerIds = signal<number[]>([]);
   readonly starterPlayerIds = signal<number[]>([]);
   readonly invalidStarterPlayerId = signal<number | null>(null);
   readonly t = this.i18n.t;
+  readonly labelParams = computed(() => buildTeamLabelParams(this.selectedTeam()?.gender ?? 'MIXED'));
   readonly sortedRoster = computed(() =>
     [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
   );
@@ -113,6 +117,7 @@ export class NewGameSetupPageComponent implements OnInit {
     }
 
     try {
+      this.isCreatingGame.set(true);
       if (this.appModeService.isGuestMode() && this.games().length) {
         const confirmed = window.confirm(this.t('newGame.confirmReplaceGuestGame'));
 
@@ -132,6 +137,8 @@ export class NewGameSetupPageComponent implements OnInit {
       this.router.navigate(['/games', game.id, 'live']);
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.isCreatingGame.set(false);
     }
   }
 
@@ -163,8 +170,32 @@ export class NewGameSetupPageComponent implements OnInit {
     return !!this.selectedTeamId() && this.availablePlayerIds().length >= 5 && this.starterPlayerIds().length === 5;
   }
 
+  createGameDisabledReason() {
+    if (!this.selectedTeamId()) {
+      return this.t('newGame.available.reason.selectTeam');
+    }
+
+    if (this.availablePlayerIds().length < 5) {
+      return this.t('newGame.available.reason.needAvailablePlayers', this.labelParams());
+    }
+
+    if (this.starterPlayerIds().length !== 5) {
+      return this.t('newGame.startingFive.reason.needFive');
+    }
+
+    return '';
+  }
+
   trackByPlayer(_index: number, player: Player) {
     return player.id;
+  }
+
+  availableSummaryParams() {
+    return {
+      availableCount: this.availablePlayerIds().length,
+      starterCount: this.starterPlayerIds().length,
+      ...this.labelParams()
+    };
   }
 
   private clearInvalidStarterAttempt(playerId?: number) {

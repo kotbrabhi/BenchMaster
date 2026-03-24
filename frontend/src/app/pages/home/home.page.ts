@@ -5,7 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
 import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
-import { GameListItem, Team } from '../../core/models';
+import { GameListItem, Team, TeamGender } from '../../core/models';
+import { buildTeamLabelParams } from '../../core/team-labels';
+import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
 import { TeamService } from '../../services/team.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -28,9 +30,16 @@ export class HomePageComponent implements OnInit {
   readonly teams = this.teamService.teams;
   readonly games = this.gameService.games;
   readonly errorMessage = signal('');
+  readonly isSubmittingTeam = signal(false);
   readonly t = this.i18n.t;
+  readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
+    { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
+    { value: 'FEMININE', labelKey: 'common.teamGender.feminine' },
+    { value: 'MASCULINE', labelKey: 'common.teamGender.masculine' }
+  ];
 
   teamName = '';
+  teamGender: TeamGender = 'MIXED';
   teamPlayerNames = '';
   editingTeamId: number | null = null;
 
@@ -40,12 +49,14 @@ export class HomePageComponent implements OnInit {
 
   async submitTeam() {
     try {
+      this.isSubmittingTeam.set(true);
       if (this.editingTeamId) {
-        await this.teamService.updateTeam(this.editingTeamId, { name: this.teamName });
+        await this.teamService.updateTeam(this.editingTeamId, { name: this.teamName, gender: this.teamGender });
         this.resetTeamForm();
       } else {
         const createdTeam = await this.teamService.createTeam({
           name: this.teamName,
+          gender: this.teamGender,
           players: this.parseSeedPlayers(this.teamPlayerNames)
         });
         this.resetTeamForm();
@@ -57,12 +68,15 @@ export class HomePageComponent implements OnInit {
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.isSubmittingTeam.set(false);
     }
   }
 
   editTeam(team: Team) {
     this.editingTeamId = team.id;
     this.teamName = team.name;
+    this.teamGender = team.gender;
     this.teamPlayerNames = '';
   }
 
@@ -85,6 +99,7 @@ export class HomePageComponent implements OnInit {
 
   resetTeamForm() {
     this.teamName = '';
+    this.teamGender = 'MIXED';
     this.teamPlayerNames = '';
     this.editingTeamId = null;
   }
@@ -119,6 +134,25 @@ export class HomePageComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     }).format(new Date(createdAt));
+  }
+
+  canSubmitTeam() {
+    return this.teamName.trim().length > 0;
+  }
+
+  teamFormDisabledReason() {
+    return this.canSubmitTeam() ? '' : this.t('common.reasons.teamNameRequired');
+  }
+
+  teamLabelParams(teamGender: TeamGender = this.teamGender) {
+    return buildTeamLabelParams(teamGender);
+  }
+
+  teamCountParams(team: Team) {
+    return {
+      count: team.playerCount,
+      ...this.teamLabelParams(team.gender)
+    };
   }
 
   private async refresh() {

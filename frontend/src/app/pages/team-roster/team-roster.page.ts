@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
 import { I18nService } from '../../core/i18n.service';
-import { Team } from '../../core/models';
+import { Team, TeamGender } from '../../core/models';
+import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
@@ -31,7 +32,15 @@ export class TeamRosterPageComponent implements OnInit {
 
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
+  readonly isSavingTeamName = signal(false);
+  readonly isAddingPlayer = signal(false);
+  readonly isSavingEditedPlayer = signal(false);
   readonly t = this.i18n.t;
+  readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
+    { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
+    { value: 'FEMININE', labelKey: 'common.teamGender.feminine' },
+    { value: 'MASCULINE', labelKey: 'common.teamGender.masculine' }
+  ];
   readonly basePositionOptions: PositionOption[] = [
     { value: '', labelKey: 'common.position.none' },
     { value: 'PG', labelKey: 'common.position.pg' },
@@ -45,6 +54,7 @@ export class TeamRosterPageComponent implements OnInit {
   readonly team = computed(() => this.teamService.teams().find((team) => team.id === this.teamId) ?? null);
 
   teamName = '';
+  teamGender: TeamGender = 'MIXED';
   editingTeamName = false;
   newPlayerName = '';
   newJerseyNumber = '';
@@ -61,21 +71,26 @@ export class TeamRosterPageComponent implements OnInit {
 
   async saveTeam() {
     try {
-      await this.teamService.updateTeam(this.teamId, { name: this.teamName });
+      this.isSavingTeamName.set(true);
+      await this.teamService.updateTeam(this.teamId, { name: this.teamName, gender: this.teamGender });
       this.editingTeamName = false;
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.isSavingTeamName.set(false);
     }
   }
 
   startEditingTeamName() {
     this.teamName = this.team()?.name ?? this.teamName;
+    this.teamGender = this.team()?.gender ?? 'MIXED';
     this.editingTeamName = true;
   }
 
   cancelEditingTeamName() {
     this.teamName = this.team()?.name ?? '';
+    this.teamGender = this.team()?.gender ?? 'MIXED';
     this.editingTeamName = false;
   }
 
@@ -83,11 +98,12 @@ export class TeamRosterPageComponent implements OnInit {
     const jerseyNumber = this.normalizeJerseyNumber(this.newJerseyNumber);
 
     if (!this.newPlayerName.trim() || jerseyNumber === null) {
-      this.errorMessage.set('Enter a player name and a valid jersey number.');
+      this.errorMessage.set(this.t('common.reasons.playerFormIncomplete'));
       return;
     }
 
     try {
+      this.isAddingPlayer.set(true);
       await this.playerService.createPlayer(this.teamId, {
         name: this.newPlayerName,
         jerseyNumber,
@@ -97,6 +113,8 @@ export class TeamRosterPageComponent implements OnInit {
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.isAddingPlayer.set(false);
     }
   }
 
@@ -111,11 +129,12 @@ export class TeamRosterPageComponent implements OnInit {
     const jerseyNumber = this.normalizeJerseyNumber(this.editingJerseyNumber);
 
     if (!this.editingPlayerId || !this.editingPlayerName.trim() || jerseyNumber === null) {
-      this.errorMessage.set('Enter a player name and a valid jersey number.');
+      this.errorMessage.set(this.t('common.reasons.playerFormIncomplete'));
       return;
     }
 
     try {
+      this.isSavingEditedPlayer.set(true);
       await this.playerService.updatePlayer(this.teamId, this.editingPlayerId, {
         name: this.editingPlayerName,
         jerseyNumber,
@@ -126,11 +145,13 @@ export class TeamRosterPageComponent implements OnInit {
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.isSavingEditedPlayer.set(false);
     }
   }
 
   async deletePlayer(playerId: number) {
-    const confirmed = window.confirm(this.t('teamRoster.confirmDeletePlayer'));
+    const confirmed = window.confirm(this.t('teamRoster.confirmDeletePlayer', this.labelParams()));
 
     if (!confirmed) {
       return;
@@ -170,6 +191,33 @@ export class TeamRosterPageComponent implements OnInit {
     return this.editingPlayerName.trim().length > 0 && this.normalizeJerseyNumber(this.editingJerseyNumber) !== null;
   }
 
+  canSaveTeamName() {
+    return this.teamName.trim().length > 0;
+  }
+
+  labelParams() {
+    return buildTeamLabelParams(this.teamGender ?? this.team()?.gender ?? 'MIXED');
+  }
+
+  rosterSubtitleParams() {
+    return {
+      count: this.roster().length,
+      ...this.labelParams()
+    };
+  }
+
+  teamNameDisabledReason() {
+    return this.canSaveTeamName() ? '' : this.t('common.reasons.teamNameRequired');
+  }
+
+  newPlayerDisabledReason() {
+    return this.canAddPlayer() ? '' : this.t('common.reasons.playerFormIncomplete');
+  }
+
+  editedPlayerDisabledReason() {
+    return this.canSaveEditedPlayer() ? '' : this.t('common.reasons.playerFormIncomplete');
+  }
+
   getPositionOptions(currentPosition?: string | null) {
     if (!currentPosition || this.basePositionOptions.some((option) => option.value === currentPosition)) {
       return this.basePositionOptions;
@@ -182,7 +230,7 @@ export class TeamRosterPageComponent implements OnInit {
     const option = this.basePositionOptions.find((entry) => entry.value === (position ?? ''));
 
     if (option?.labelKey) {
-      return this.t(option.labelKey);
+      return this.t(option.labelKey, this.labelParams());
     }
 
     return position || this.t('common.position.flexibleRole');
@@ -205,6 +253,7 @@ export class TeamRosterPageComponent implements OnInit {
 
       const team = teams.find((entry) => entry.id === this.teamId) as Team | undefined;
       this.teamName = team?.name ?? '';
+      this.teamGender = team?.gender ?? 'MIXED';
       this.syncSuggestedJerseyNumber(true);
       this.errorMessage.set('');
     } catch (error) {

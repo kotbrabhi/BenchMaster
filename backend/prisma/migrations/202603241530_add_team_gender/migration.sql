@@ -1,0 +1,4 @@
+CREATE TYPE "TeamGender" AS ENUM ('MIXED', 'FEMININE', 'MASCULINE');
+
+ALTER TABLE "Team"
+ADD COLUMN "gender" "TeamGender";

@@ -72,7 +72,8 @@ export function serializeGame(game: GameWithRoster) {
     createdAt: game.createdAt.toISOString(),
     team: {
       id: game.team.id,
-      name: game.team.name
+      name: game.team.name,
+      gender: game.team.gender ?? 'MIXED'
     },
     selectedPlayers,
     activePlayers,
@@ -90,6 +91,7 @@ export function serializeGameListItem(game: GameWithRoster) {
     createdAt: game.createdAt.toISOString(),
     teamId: game.teamId,
     teamName: game.team.name,
+    teamGender: game.team.gender ?? 'MIXED',
     selectedCount: game.players.length,
     activeCount
   };
@@ -107,7 +109,8 @@ export function serializeSummary(game: GameWithRoster) {
     endedAt: game.endedAt?.toISOString() ?? null,
     team: {
       id: game.team.id,
-      name: game.team.name
+      name: game.team.name,
+      gender: game.team.gender ?? 'MIXED'
     },
     totalGameSeconds:
       game.clockElapsedSeconds +

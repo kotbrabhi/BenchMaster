@@ -8,144 +8,156 @@
       <div class="error-banner">{{ errorMessage() }}</div>
     }
 
-    <section class="surface-card live-clock-card">
-      <div class="live-clock-card__row">
-        <div class="live-clock-card__metric">
-          <p class="live-clock-card__label">{{ 'live.clock.matchLabel' | t }}</p>
-          <strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong>
-        </div>
-
-        <div class="cluster live-clock-card__actions">
-          @if (canPause(currentGame)) {
-            <button
-              class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
-              type="button"
-              [attr.aria-label]="'common.actions.pause' | t"
-              [attr.title]="'common.actions.pause' | t"
-              (click)="pauseGame()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="8" />
-                <path d="M10 9v6M14 9v6" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ 'common.actions.pause' | t }}</span>
-            </button>
-          }
-
-          @if (canResume(currentGame)) {
-            <button
-              class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
-              type="button"
-              [attr.aria-label]="'common.actions.resume' | t"
-              [attr.title]="'common.actions.resume' | t"
-              (click)="resumeGame()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 5 11 7-11 7V5Z" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ 'common.actions.resume' | t }}</span>
-            </button>
-          }
-
-          @if (currentGame.status !== 'FINISHED' && currentGame.status !== 'DRAFT') {
-            <button
-              class="button button--danger button--icon live-clock-card__control live-clock-card__control--fixed-width"
-              type="button"
-              [attr.aria-label]="'live.actions.end' | t"
-              [attr.title]="'live.actions.end' | t"
-              (click)="endGame()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 4v16" />
-                <path d="M8 5h8l-2.5 3L16 11H8" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ 'live.actions.end' | t }}</span>
-            </button>
-          }
-
-          @if (currentGame.status === 'FINISHED') {
-            <a
-              class="button button--icon"
-              [routerLink]="['/games', currentGame.id, 'summary']"
-              [attr.aria-label]="'live.actions.viewSummary' | t"
-              [attr.title]="'live.actions.viewSummary' | t">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 5v14h14" />
-                <path d="m9 15 3-3 2 2 5-6" />
-              </svg>
-            </a>
-          }
+    <section class="surface-card live-control-panel live-control-panel--clock">
+      <div class="section-heading live-control-panel__heading">
+        <div>
+          <h2>{{ 'live.clock.title' | t }}</h2>
+          <p>{{ 'live.clock.subtitle' | t }}</p>
         </div>
       </div>
 
-      <div class="live-clock-card__row">
-        <div class="live-clock-card__metric">
-          <p class="live-clock-card__label">
-            {{ 'live.period.label' | t : { number: currentGame.currentPeriodNumber } }}
-          </p>
-          <strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong>
+      <div class="live-clock-card">
+        <div class="live-clock-card__row">
+          <div class="live-clock-card__metric">
+            <div class="live-clock-card__metric-header">
+              <p class="live-clock-card__label">{{ 'live.clock.matchLabel' | t }}</p>
+              <span
+                class="state-chip live-clock-card__status-chip"
+                [class.state-chip--selected]="currentGame.status === 'LIVE' || currentGame.status === 'DRAFT'"
+                [class.state-chip--danger]="currentGame.status === 'PAUSED'">
+                {{ statusLabel(currentGame) }}
+              </span>
+            </div>
+            <strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong>
+          </div>
+
+          <div class="cluster live-clock-card__actions">
+            @if (canPause(currentGame)) {
+              <button
+                class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                type="button"
+                [attr.aria-busy]="isActionBusy('pause')"
+                [attr.aria-label]="'live.actions.pauseClock' | t"
+                [attr.title]="'live.actions.pauseClock' | t"
+                (click)="pauseGame()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" />
+                  <path d="M10 9v6M14 9v6" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.pauseClock' | t }}</span>
+              </button>
+            }
+
+            @if (canResume(currentGame)) {
+              <button
+                class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                type="button"
+                [attr.aria-busy]="isActionBusy('resume')"
+                [attr.aria-label]="'live.actions.resumeClock' | t"
+                [attr.title]="'live.actions.resumeClock' | t"
+                (click)="resumeGame()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m8 5 11 7-11 7V5Z" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.resumeClock' | t }}</span>
+              </button>
+            }
+
+            @if (currentGame.status !== 'FINISHED' && currentGame.status !== 'DRAFT') {
+              <button
+                class="button button--danger button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                type="button"
+                [attr.aria-busy]="isActionBusy('end-game')"
+                [attr.aria-label]="'live.actions.end' | t"
+                [attr.title]="'live.actions.end' | t"
+                (click)="endGame()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 4v16" />
+                  <path d="M8 5h8l-2.5 3L16 11H8" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.end' | t }}</span>
+              </button>
+            }
+
+            @if (currentGame.status === 'FINISHED') {
+              <a
+                class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                [routerLink]="['/games', currentGame.id, 'summary']"
+                [attr.aria-label]="'live.actions.viewSummary' | t"
+                [attr.title]="'live.actions.viewSummary' | t">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 5v14h14" />
+                  <path d="m9 15 3-3 2 2 5-6" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.viewSummary' | t }}</span>
+              </a>
+            }
+          </div>
         </div>
 
-        <div class="cluster live-clock-card__actions">
-          @if (currentGame.status === 'DRAFT') {
-            <button
-              class="button button--icon live-clock-card__control"
-              type="button"
-              [attr.aria-label]="'live.actions.start' | t"
-              [attr.title]="'live.actions.start' | t"
-              (click)="startGame()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 5 11 7-11 7V5Z" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ 'live.actions.start' | t }}</span>
-            </button>
-          }
-
-          @if (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED') {
-            <button
-              class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
-              type="button"
-              [class.button--secondary]="!correctionMode()"
-              [class.button--danger]="correctionMode()"
-              [attr.aria-label]="correctionActionKey() | t"
-              [attr.title]="correctionActionKey() | t"
-              [attr.aria-pressed]="correctionMode()"
-              (click)="toggleCorrectionMode()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 16 7.5-7.5a2.12 2.12 0 1 1 3 3L11 19H6a1 1 0 0 1-.7-.3l-1-1a1 1 0 0 1 0-1.4L9 11" />
-                <path d="m13.5 10.5 3 3" />
-                <path d="M6 19h9" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ correctionActionKey() | t }}</span>
-            </button>
-          }
-
-          @if (canCompletePeriod(currentGame)) {
-            <button
-              class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
-              type="button"
-              [attr.aria-label]="'live.actions.completePeriod' | t"
-              [attr.title]="'live.actions.completePeriod' | t"
-              (click)="completePeriod()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="7" y="7" width="10" height="10" rx="1.5" />
-              </svg>
-              <span class="live-clock-card__control-label">{{ 'live.actions.completePeriod' | t }}</span>
-            </button>
-          }
-
-          @if (canStartNextPeriod(currentGame)) {
-            <button
-              class="button button--icon live-clock-card__control"
-              type="button"
-              [attr.aria-label]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
-              [attr.title]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
-              (click)="startNextPeriod()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 5 11 7-11 7V5Z" />
-              </svg>
-              <span class="live-clock-card__control-label">
-                {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+        <div class="live-clock-card__row">
+          <div class="live-clock-card__metric">
+            <div class="live-clock-card__metric-header">
+              <p class="live-clock-card__label">
+                {{ 'live.period.label' | t : { number: currentGame.currentPeriodNumber } }}
+              </p>
+              <span
+                class="state-chip live-clock-card__status-chip"
+                [class.state-chip--selected]="effectivePeriodStatus(currentGame) === 'LIVE'">
+                {{ periodStatusLabel(currentGame) }}
               </span>
-            </button>
-          }
+            </div>
+            <strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong>
+          </div>
+
+          <div class="cluster live-clock-card__actions">
+            @if (currentGame.status === 'DRAFT') {
+              <button
+                class="button button--icon live-clock-card__control"
+                type="button"
+                [attr.aria-busy]="isActionBusy('start')"
+                [attr.aria-label]="'live.actions.start' | t"
+                [attr.title]="'live.actions.start' | t"
+                (click)="startGame()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m8 5 11 7-11 7V5Z" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.start' | t }}</span>
+              </button>
+            }
+
+            @if (canCompletePeriod(currentGame)) {
+              <button
+                class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                type="button"
+                [attr.aria-busy]="isActionBusy('complete-period')"
+                [attr.aria-label]="'live.actions.completePeriod' | t"
+                [attr.title]="'live.actions.completePeriod' | t"
+                (click)="completePeriod()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="7" y="7" width="10" height="10" rx="1.5" />
+                </svg>
+                <span class="live-clock-card__control-label">{{ 'live.actions.completePeriod' | t }}</span>
+              </button>
+            }
+
+            @if (canStartNextPeriod(currentGame)) {
+              <button
+                class="button button--icon live-clock-card__control"
+                type="button"
+                [attr.aria-busy]="isActionBusy('start-next-period')"
+                [attr.aria-label]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
+                [attr.title]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
+                (click)="startNextPeriod()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m8 5 11 7-11 7V5Z" />
+                </svg>
+                <span class="live-clock-card__control-label">
+                  {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+                </span>
+              </button>
+            }
+          </div>
         </div>
       </div>
     </section>
@@ -176,42 +188,99 @@
     }
 
     @if (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED') {
-      @if (showSubstitutionBanner()) {
-        <section class="surface-card substitution-banner">
+      <section
+        class="surface-card live-control-panel live-control-panel--players"
+        [class.live-control-panel--danger]="correctionMode()">
+        <div class="section-heading live-control-panel__heading">
           <div>
-            <strong>{{ pendingCountsLabel() }}</strong>
-            <p>{{ 'live.pending.subtitle' | t }}</p>
-            <p class="substitution-banner__status">
-              @if (canApplySubstitutionBatch()) {
-                {{ 'live.pending.ready' | t }}
-              } @else {
-                {{ 'live.pending.mismatch' | t }}
-              }
-            </p>
+            <h2>{{ 'live.players.title' | t : labelParams() }}</h2>
+            <p>{{ 'live.players.subtitle' | t }}</p>
           </div>
 
-          <div class="substitution-banner__actions">
-            <button
-              class="button"
-              type="button"
-              [disabled]="!canApplySubstitutionBatch()"
-              (click)="substituteBatch()">
-              {{ 'live.actions.applyChanges' | t }}
-            </button>
+          <button
+            class="button live-player-controls__correction"
+            type="button"
+            [class.button--secondary]="!correctionMode()"
+            [class.button--danger]="correctionMode()"
+            [attr.aria-label]="correctionActionKey() | t"
+            [attr.title]="correctionActionKey() | t"
+            [attr.aria-pressed]="correctionMode()"
+            (click)="toggleCorrectionMode()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m8 16 7.5-7.5a2.12 2.12 0 1 1 3 3L11 19H6a1 1 0 0 1-.7-.3l-1-1a1 1 0 0 1 0-1.4L9 11" />
+              <path d="m13.5 10.5 3 3" />
+              <path d="M6 19h9" />
+            </svg>
+            <span>{{ correctionActionKey() | t }}</span>
+          </button>
+        </div>
 
-            <button
-              class="button button--secondary button--icon"
-              type="button"
-              [attr.aria-label]="'common.actions.clear' | t"
-              [attr.title]="'common.actions.clear' | t"
-              (click)="clearSelections()">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
+        @if (correctionMode()) {
+          <div class="live-control-panel__focus live-control-panel__focus--danger">
+            <span class="state-chip state-chip--danger">{{ 'live.correction.armedTitle' | t }}</span>
+            <p>{{ 'live.correction.armedSubtitle' | t }}</p>
+          </div>
+        } @else {
+          <p class="live-control-panel__focus">{{ 'live.players.hint' | t }}</p>
+        }
+      </section>
+
+      <section class="surface-card substitution-banner" [class.substitution-banner--active]="hasPendingSelections()">
+        <div class="substitution-banner__copy">
+          <strong>{{ pendingHeadline() }}</strong>
+          <p>{{ pendingInstructionMessage() }}</p>
+        </div>
+
+        @if (selectedOutgoingPlayers(currentGame).length || selectedIncomingPlayers(currentGame).length) {
+          <div class="substitution-banner__selection-grid">
+            <div class="substitution-banner__selection-group">
+              <span class="substitution-banner__selection-label">{{ 'live.pending.outgoingLabel' | t : labelParams() }}</span>
+
+              <div class="substitution-banner__selection-list">
+                @for (player of selectedOutgoingPlayers(currentGame); track player.playerId) {
+                  <span class="state-chip">{{ player.name }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="substitution-banner__selection-group">
+              <span class="substitution-banner__selection-label">{{ 'live.pending.incomingLabel' | t : labelParams() }}</span>
+
+              <div class="substitution-banner__selection-list">
+                @for (player of selectedIncomingPlayers(currentGame); track player.playerId) {
+                  <span class="state-chip state-chip--selected">{{ player.name }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="substitution-banner__actions">
+          <button
+            class="button"
+            type="button"
+            [disabled]="!canApplySubstitutionBatch()"
+            [attr.aria-busy]="isActionBusy('apply-substitution')"
+            (click)="substituteBatch()">
+            {{ 'live.actions.applyChanges' | t }}
+          </button>
+
+          <button
+            class="button button--secondary button--icon"
+            type="button"
+            [disabled]="!hasPendingSelections()"
+            [attr.aria-label]="'live.actions.clearSelection' | t"
+            [attr.title]="'live.actions.clearSelection' | t"
+            (click)="clearSelections()">
+            <span class="button__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
                 <path d="M6 6l12 12M18 6 6 18" />
               </svg>
-            </button>
-          </div>
-        </section>
-      }
+            </span>
+            <span class="substitution-banner__action-label">{{ 'live.actions.clearSelection' | t }}</span>
+          </button>
+        </div>
+      </section>
 
       <div class="live-roster-switch-wrap">
         <div class="live-roster-switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
@@ -221,8 +290,8 @@
             role="tab"
             [class.pill--active]="mobileRosterView() === 'court'"
             [attr.aria-selected]="mobileRosterView() === 'court'"
-            (click)="scrollMobileRoster(rosterScroller, 'court')">
-            {{ 'live.onCourt.title' | t }}
+            (click)="setMobileRosterView('court')">
+            {{ mobileRosterTabLabel('court') }}
           </button>
 
           <button
@@ -231,20 +300,21 @@
             role="tab"
             [class.pill--active]="mobileRosterView() === 'bench'"
             [attr.aria-selected]="mobileRosterView() === 'bench'"
-            (click)="scrollMobileRoster(rosterScroller, 'bench')">
-            {{ 'live.bench.title' | t }}
+            (click)="setMobileRosterView('bench')">
+            {{ mobileRosterTabLabel('bench') }}
           </button>
         </div>
-
-        <p class="live-roster-switch__hint">{{ mobileRosterSwipeHint() }}</p>
       </div>
 
-      <div class="live-match__roster-grid" #rosterScroller (scroll)="syncMobileRosterView(rosterScroller)">
+      <div
+        class="live-match__roster-grid"
+        [class.live-match__roster-grid--court]="mobileRosterView() === 'court'"
+        [class.live-match__roster-grid--bench]="mobileRosterView() === 'bench'">
         <section class="surface-card surface-card--court" id="live-roster-court">
           <div class="section-heading">
             <div>
               <h2>{{ 'live.onCourt.title' | t }}</h2>
-              <p>{{ 'live.onCourt.subtitle' | t : { count: currentGame.activePlayers.length } }}</p>
+              <p>{{ 'live.onCourt.subtitle' | t : onCourtSubtitleParams(currentGame) }}</p>
             </div>
           </div>
 
@@ -257,10 +327,13 @@
                 [compact]="true"
                 [tone]="'active'"
                 [selected]="isActiveSelected(player.playerId)"
-                [note]="isActiveSelected(player.playerId) ? ('live.notes.outgoingSelected' | t) : ''"
+                [stateLabel]="playerSelectionStateLabel(player.playerId, 'court')"
+                [note]="livePlayerNote('court')"
                 [timeLabel]="playerTimeSummary(currentGame, player)"
+                [stats]="playerStats(player)"
                 [quickActions]="pointActions(player)"
-                [actionLabel]="isActiveSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubOut' | t)"
+                [quickActionsTone]="correctionMode() ? 'danger' : 'default'"
+                [actionLabel]="activePlayerActionLabel(player.playerId)"
                 (quickActionPressed)="handleQuickAction(player.playerId, $event)"
                 (actionPressed)="toggleActivePlayer(player.playerId)">
               </app-player-card>
@@ -285,9 +358,11 @@
                 [compact]="true"
                 [tone]="'bench'"
                 [selected]="isBenchSelected(player.playerId)"
-                [note]="isBenchSelected(player.playerId) ? ('live.notes.incomingSelected' | t) : ''"
+                [stateLabel]="playerSelectionStateLabel(player.playerId, 'bench')"
+                [note]="livePlayerNote('bench')"
                 [timeLabel]="playerTimeSummary(currentGame, player)"
-                [actionLabel]="isBenchSelected(player.playerId) ? ('live.actions.selected' | t) : ('live.actions.selectSubIn' | t)"
+                [stats]="playerStats(player)"
+                [actionLabel]="benchPlayerActionLabel(player.playerId)"
                 (actionPressed)="toggleBenchPlayer(player.playerId)">
               </app-player-card>
             }

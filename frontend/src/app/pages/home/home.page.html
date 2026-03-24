@@ -23,6 +23,17 @@
                 [attr.aria-label]="'home.teamForm.nameLabel' | t"
                 [placeholder]="editingTeamId ? ('home.teamForm.editTitle' | t) : ('home.teamForm.namePlaceholder' | t)" />
 
+              <select
+                id="teamGender"
+                name="teamGender"
+                class="team-card__input"
+                [(ngModel)]="teamGender"
+                [attr.aria-label]="'common.teamGender.label' | t">
+                @for (option of teamGenderOptions; track option.labelKey) {
+                  <option [ngValue]="option.value">{{ option.labelKey | t }}</option>
+                }
+              </select>
+
               @if (!editingTeamId) {
                 <textarea
                   id="teamPlayerNames"
@@ -30,7 +41,7 @@
                   class="team-card__textarea"
                   rows="4"
                   [(ngModel)]="teamPlayerNames"
-                  [attr.aria-label]="'home.teamForm.playerListLabel' | t"
+                  [attr.aria-label]="'home.teamForm.playerListLabel' | t : teamLabelParams()"
                   [placeholder]="'home.teamForm.playerListPlaceholder' | t"></textarea>
 
                 <p class="team-card__hint">{{ 'home.teamForm.playerListHint' | t }}</p>
@@ -43,25 +54,33 @@
               <button
                 class="button button--icon"
                 type="button"
-                [disabled]="!teamName.trim()"
-                [attr.aria-label]="'common.actions.save' | t"
-                [attr.title]="'common.actions.save' | t"
+                [disabled]="!canSubmitTeam()"
+                [attr.aria-busy]="isSubmittingTeam()"
+                [attr.aria-label]="'home.teamForm.saveAction' | t"
+                [attr.title]="'home.teamForm.saveAction' | t"
                 (click)="submitTeam()">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m5 12 4 4L19 6" />
-                </svg>
+                <span class="button__icon" aria-hidden="true">
+                  <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                </span>
+                <span class="button__label">{{ 'home.teamForm.saveAction' | t }}</span>
               </button>
             } @else {
               <button
                 class="button button--icon"
                 type="button"
-                [disabled]="!teamName.trim()"
-                [attr.aria-label]="'common.actions.create' | t"
-                [attr.title]="'common.actions.create' | t"
+                [disabled]="!canSubmitTeam()"
+                [attr.aria-busy]="isSubmittingTeam()"
+                [attr.aria-label]="'home.teamForm.createAction' | t"
+                [attr.title]="'home.teamForm.createAction' | t"
                 (click)="submitTeam()">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
+                <span class="button__icon" aria-hidden="true">
+                  <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+                <span class="button__label">{{ 'home.teamForm.createAction' | t }}</span>
               </button>
             }
 
@@ -69,15 +88,22 @@
               <button
                 class="button button--secondary button--icon"
                 type="button"
-                [attr.aria-label]="'common.actions.cancel' | t"
-                [attr.title]="'common.actions.cancel' | t"
+                [attr.aria-label]="'home.teamForm.cancelAction' | t"
+                [attr.title]="'home.teamForm.cancelAction' | t"
                 (click)="resetTeamForm()">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
+                <span class="button__icon" aria-hidden="true">
+                  <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </span>
+                <span class="button__label">{{ 'home.teamForm.cancelAction' | t }}</span>
               </button>
             }
           </div>
+
+          @if (teamFormDisabledReason(); as disabledReason) {
+            <p class="control-reason">{{ disabledReason }}</p>
+          }
         </article>
       }
 
@@ -86,7 +112,7 @@
           <div class="team-card__content">
             <div class="team-card__header">
               <h3>{{ team.name }}</h3>
-              <p class="team-card__meta">{{ 'home.teams.playersCount' | t : { count: team.playerCount } }}</p>
+              <p class="team-card__meta">{{ 'home.teams.playersCount' | t : teamCountParams(team) }}</p>
             </div>
           </div>
 
@@ -94,48 +120,60 @@
             <a
               class="button button--secondary button--icon"
               [routerLink]="['/teams', team.id]"
-              [attr.aria-label]="'home.teams.roster' | t"
-              [attr.title]="'home.teams.roster' | t">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 6h12M8 12h12M8 18h12" />
-                <circle cx="4" cy="6" r="1.25" />
-                <circle cx="4" cy="12" r="1.25" />
-                <circle cx="4" cy="18" r="1.25" />
-              </svg>
+              [attr.aria-label]="'home.teams.rosterAction' | t"
+              [attr.title]="'home.teams.rosterAction' | t">
+              <span class="button__icon" aria-hidden="true">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                  <path d="M8 6h12M8 12h12M8 18h12" />
+                  <circle cx="4" cy="6" r="1.25" />
+                  <circle cx="4" cy="12" r="1.25" />
+                  <circle cx="4" cy="18" r="1.25" />
+                </svg>
+              </span>
+              <span class="button__label">{{ 'home.teams.rosterAction' | t }}</span>
             </a>
             <a
               class="button button--ghost button--icon"
               [routerLink]="['/games/new']"
               [queryParams]="{ teamId: team.id }"
-              [attr.aria-label]="'home.teams.newGame' | t"
-              [attr.title]="'home.teams.newGame' | t">
-              <svg class="icon icon--fill" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m8 5 11 7-11 7V5Z" />
-              </svg>
+              [attr.aria-label]="'home.teams.newGameAction' | t"
+              [attr.title]="'home.teams.newGameAction' | t">
+              <span class="button__icon" aria-hidden="true">
+                <svg class="icon icon--fill" viewBox="0 0 24 24">
+                  <path d="m8 5 11 7-11 7V5Z" />
+                </svg>
+              </span>
+              <span class="button__label">{{ 'home.teams.newGameAction' | t }}</span>
             </a>
             <button
               class="button button--ghost button--icon"
               type="button"
-              [attr.aria-label]="'common.actions.edit' | t"
-              [attr.title]="'common.actions.edit' | t"
+              [attr.aria-label]="'home.teams.editAction' | t"
+              [attr.title]="'home.teams.editAction' | t"
               (click)="editTeam(team)">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 20h4l10-10-4-4L4 16v4Z" />
-                <path d="m12 6 4 4" />
-              </svg>
+              <span class="button__icon" aria-hidden="true">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                  <path d="M4 20h4l10-10-4-4L4 16v4Z" />
+                  <path d="m12 6 4 4" />
+                </svg>
+              </span>
+              <span class="button__label">{{ 'home.teams.editAction' | t }}</span>
             </button>
             <button
               class="button button--danger button--icon"
               type="button"
-              [attr.aria-label]="'common.actions.delete' | t"
-              [attr.title]="'common.actions.delete' | t"
+              [attr.aria-label]="'home.teams.deleteAction' | t"
+              [attr.title]="'home.teams.deleteAction' | t"
               (click)="deleteTeam(team.id)">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 7h16" />
-                <path d="M9 7V4h6v3" />
-                <path d="M7 7l1 13h8l1-13" />
-                <path d="M10 11v5M14 11v5" />
-              </svg>
+              <span class="button__icon" aria-hidden="true">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                  <path d="M4 7h16" />
+                  <path d="M9 7V4h6v3" />
+                  <path d="M7 7l1 13h8l1-13" />
+                  <path d="M10 11v5M14 11v5" />
+                </svg>
+              </span>
+              <span class="button__label">{{ 'home.teams.deleteAction' | t }}</span>
             </button>
           </div>
         </article>

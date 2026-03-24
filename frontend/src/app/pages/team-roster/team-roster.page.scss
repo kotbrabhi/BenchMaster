@@ -1,29 +1,42 @@
 .team-card-inline {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  gap: var(--mobile-card-gap);
 }
 
-.team-card-inline__identity {
+.team-card-inline__content,
+.team-card-inline__identity,
+.team-card-inline__footer,
+.team-card-inline__actions {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
+  flex-direction: column;
+  gap: var(--mobile-card-gap);
+}
+
+.team-card-inline__label {
+  font-size: var(--state-label-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
 }
 
 .team-card-inline__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 1.05rem;
+  font-size: var(--player-name-size);
+  font-weight: var(--player-name-weight);
+  line-height: 1.2;
+}
+
+.team-card-inline__summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+  line-height: 1.5;
 }
 
 .team-card-inline__input {
   width: 100%;
-  min-width: 0;
-  min-height: 44px;
+  min-height: var(--tap-target-min);
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
@@ -31,66 +44,65 @@
   color: var(--color-ink);
 }
 
-.team-card-inline__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.team-card-inline__action,
+.team-card-inline__cta,
+.roster-editor-card__action,
+.roster-player-card__action {
+  width: 100%;
 }
 
-.team-card-inline__edit {
-  flex-shrink: 0;
-}
-
-.team-card-inline__cta {
-  flex-shrink: 0;
-}
-
-.roster-table {
+.roster-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  overflow-x: hidden;
-  padding-bottom: 2px;
+  gap: var(--mobile-card-gap);
 }
 
-.roster-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(0, 0.7fr) minmax(0, 1fr) 96px;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 14px;
+.roster-editor-card,
+.roster-player-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mobile-card-gap);
+  padding: var(--mobile-card-padding);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: var(--color-surface-glass);
+  border-radius: var(--mobile-card-radius);
 }
 
-.roster-row--header {
-  padding-top: 0;
-  padding-bottom: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.roster-editor-card {
+  background: linear-gradient(180deg, var(--color-accent-soft), var(--color-surface-glass-strong));
 }
 
-.roster-row--header span:last-child {
-  text-align: right;
+.roster-editor-card--editing {
+  border-color: var(--color-accent-strong-soft);
 }
 
-.roster-row--editor {
-  background: var(--color-accent-soft);
-}
-
-.roster-row input,
-.roster-row select {
-  width: 100%;
+.roster-editor-card__header,
+.roster-player-card__copy {
   min-width: 0;
-  min-height: 46px;
+}
+
+.roster-editor-card__header h3,
+.roster-player-card__copy h3 {
+  margin: 0;
+  font-size: var(--player-name-size);
+  font-weight: var(--player-name-weight);
+}
+
+.roster-editor-card__header p,
+.roster-player-card__copy p {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+  line-height: 1.45;
+}
+
+.roster-editor-card__grid {
+  display: grid;
+  gap: var(--mobile-card-gap);
+}
+
+.roster-editor-card__grid input,
+.roster-editor-card__grid select {
+  min-height: var(--tap-target-min);
   padding: 0 14px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
@@ -117,117 +129,85 @@
   color: var(--color-ink);
 }
 
-.roster-name,
-.roster-number,
-.roster-position {
+.roster-editor-card__actions,
+.roster-player-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--action-gap-min);
+}
+
+.roster-player-card {
+  background: linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-glass));
+}
+
+.roster-player-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roster-player-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.roster-player-card__number {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--color-ink-soft);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.roster-player-card__copy h3,
+.roster-player-card__copy p {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.roster-name {
-  font-size: 1rem;
+.roster-player-card__copy h3 {
+  line-height: 1.2;
 }
 
-.roster-number,
-.roster-position {
-  color: var(--color-text-muted);
+.roster-player-card__pill {
+  align-self: flex-start;
+  min-height: var(--tap-target-min);
+  padding: 0 12px;
 }
 
-.roster-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: nowrap;
-}
-
-.button--icon {
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border-radius: 14px;
-}
-
-.button--icon svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-@media (max-width: 767px) {
+@media (min-width: 768px) {
   .team-card-inline {
-    align-items: stretch;
-    flex-direction: column;
+    gap: 18px;
   }
 
-  .team-card-inline__identity,
-  .team-card-inline__cta {
-    width: 100%;
+  .team-card-inline__footer,
+  .team-card-inline__actions,
+  .roster-editor-card__actions,
+  .roster-player-card__actions {
+    flex-direction: row;
   }
 
-  .team-card-inline__cta {
-    justify-content: center;
+  .team-card-inline__action,
+  .team-card-inline__cta,
+  .roster-editor-card__action,
+  .roster-player-card__action {
+    width: auto;
+    min-width: 160px;
   }
 
-  .roster-table {
-    overflow-x: hidden;
-    padding-bottom: 2px;
+  .roster-editor-card__grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.8fr) minmax(0, 1fr);
+    align-items: end;
   }
 
-  .roster-row {
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.55fr) minmax(0, 0.9fr) 78px;
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .roster-row input,
-  .roster-row select {
-    min-height: 40px;
-    padding: 0 10px;
-    font-size: 0.88rem;
-  }
-
-  .roster-position-select {
-    padding-right: 28px;
-    background-position:
-      calc(100% - 16px) calc(50% - 2px),
-      calc(100% - 11px) calc(50% - 2px);
-    background-size: 5px 5px;
-    font-size: 0.85rem;
-  }
-
-  .roster-name {
-    font-size: 0.92rem;
-  }
-
-  .roster-number,
-  .roster-position {
-    font-size: 0.8rem;
-  }
-
-  .roster-actions {
-    gap: 6px;
-  }
-
-  .button--icon {
-    width: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 12px;
-  }
-
-  .button--icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .roster-row--header {
-    font-size: 0.68rem;
-    letter-spacing: 0.02em;
+  .roster-player-card__header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
   }
 }

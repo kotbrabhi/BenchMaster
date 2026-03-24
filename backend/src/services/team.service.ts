@@ -1,7 +1,8 @@
+import { TeamGender } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../utils/http-error';
 import { normalizeJerseyNumber } from '../utils/jersey-number';
-import { rethrowPrismaError } from '../utils/prisma-error';
+import { getTeamLabelSet } from '../utils/team-labels';
 
 interface TeamPlayerInput {
   name: string;
@@ -11,7 +12,26 @@ interface TeamPlayerInput {
 
 export interface TeamInput {
   name: string;
+  gender?: TeamGender;
   players?: TeamPlayerInput[];
+}
+
+function serializeTeamListItem(team: {
+  id: number;
+  name: string;
+  gender: TeamGender | null;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: { players: number };
+}) {
+  return {
+    id: team.id,
+    name: team.name,
+    gender: team.gender ?? 'MIXED',
+    createdAt: team.createdAt,
+    updatedAt: team.updatedAt,
+    playerCount: team._count.players
+  };
 }
 
 function normalizeTeamName(name: string) {
@@ -26,16 +46,17 @@ function sanitizePlayers(players: TeamPlayerInput[] | undefined) {
   }));
 }
 
-function ensureValidPlayers(players: ReturnType<typeof sanitizePlayers>) {
+function ensureValidPlayers(players: ReturnType<typeof sanitizePlayers>, teamGender: TeamGender = 'MIXED') {
   const usedJerseyNumbers = new Set<string>();
+  const labels = getTeamLabelSet(teamGender);
 
   return players.map((player, index) => {
     if (!player.name) {
-      throw new HttpError(400, `Le nom du/de la joueur·euse n°${index + 1} est obligatoire.`);
+      throw new HttpError(400, `Le nom ${labels.playerOfDefiniteSingular} n°${index + 1} est obligatoire.`);
     }
 
     if (!player.jerseyNumber) {
-      throw new HttpError(400, `Le numéro du/de la joueur·euse ${player.name} doit contenir uniquement des chiffres.`);
+      throw new HttpError(400, `Le numéro ${labels.playerOfDefiniteSingular} ${player.name} doit contenir uniquement des chiffres.`);
     }
 
     if (usedJerseyNumbers.has(player.jerseyNumber)) {
@@ -52,11 +73,15 @@ function ensureValidPlayers(players: ReturnType<typeof sanitizePlayers>) {
   });
 }
 
-export async function listTeams() {
+export async function listTeams(userId: number) {
   const teams = await prisma.team.findMany({
+    where: {
+      userId
+    },
     select: {
       id: true,
       name: true,
+      gender: true,
       createdAt: true,
       updatedAt: true,
       _count: {
@@ -70,18 +95,13 @@ export async function listTeams() {
     }
   });
 
-  return teams.map((team) => ({
-    id: team.id,
-    name: team.name,
-    createdAt: team.createdAt,
-    updatedAt: team.updatedAt,
-    playerCount: team._count.players
-  }));
+  return teams.map(serializeTeamListItem);
 }
 
-export async function createTeam(input: TeamInput) {
+export async function createTeam(userId: number, input: TeamInput) {
   const name = normalizeTeamName(input.name);
-  const players = ensureValidPlayers(sanitizePlayers(input.players));
+  const gender = input.gender ?? 'MIXED';
+  const players = ensureValidPlayers(sanitizePlayers(input.players), gender);
 
   if (!name) {
     throw new HttpError(400, "Le nom de l'équipe est obligatoire.");
@@ -89,7 +109,9 @@ export async function createTeam(input: TeamInput) {
 
   return prisma.team.create({
     data: {
+      userId,
       name,
+      gender,
       ...(players.length
         ? {
             players: {
@@ -101,33 +123,44 @@ export async function createTeam(input: TeamInput) {
   });
 }
 
-export async function updateTeam(teamId: number, input: TeamInput) {
+export async function updateTeam(userId: number, teamId: number, input: TeamInput) {
   const name = normalizeTeamName(input.name);
+  const gender = input.gender ?? 'MIXED';
 
   if (!name) {
     throw new HttpError(400, "Le nom de l'équipe est obligatoire.");
   }
 
-  try {
-    return await prisma.team.update({
-      where: { id: teamId },
-      data: { name }
-    });
-  } catch (error) {
-    rethrowPrismaError(error, {
-      P2025: new HttpError(404, 'Équipe introuvable.')
-    });
+  const team = await prisma.team.findFirst({
+    where: {
+      id: teamId,
+      userId
+    }
+  });
+
+  if (!team) {
+    throw new HttpError(404, 'Équipe introuvable.');
   }
+
+  return prisma.team.update({
+    where: { id: teamId },
+    data: { name, gender }
+  });
 }
 
-export async function deleteTeam(teamId: number) {
-  try {
-    await prisma.team.delete({
-      where: { id: teamId }
-    });
-  } catch (error) {
-    rethrowPrismaError(error, {
-      P2025: new HttpError(404, 'Équipe introuvable.')
-    });
+export async function deleteTeam(userId: number, teamId: number) {
+  const team = await prisma.team.findFirst({
+    where: {
+      id: teamId,
+      userId
+    }
+  });
+
+  if (!team) {
+    throw new HttpError(404, 'Équipe introuvable.');
   }
+
+  await prisma.team.delete({
+    where: { id: teamId }
+  });
 }

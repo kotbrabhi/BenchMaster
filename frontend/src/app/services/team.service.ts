@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../core/api';
 import { AppModeService } from '../core/app-mode.service';
-import { Team } from '../core/models';
+import { Team, TeamGender } from '../core/models';
 import { GuestStorageService } from './guest-storage.service';
 
 export interface TeamSeedPlayerPayload {
@@ -14,6 +14,7 @@ export interface TeamSeedPlayerPayload {
 
 export interface TeamPayload {
   name: string;
+  gender?: TeamGender;
   players?: TeamSeedPlayerPayload[];
 }
 
@@ -36,12 +37,12 @@ export class TeamService {
   async createTeam(payload: TeamPayload) {
     const team = this.appModeService.isGuestMode()
       ? await this.guestStorageService.createTeam(payload)
-      : await firstValueFrom(this.http.post<Pick<Team, 'id' | 'name'>>(`${API_BASE_URL}/teams`, payload));
+      : await firstValueFrom(this.http.post<Pick<Team, 'id' | 'name' | 'gender'>>(`${API_BASE_URL}/teams`, payload));
     await this.loadTeams();
     return team;
   }
 
-  async updateTeam(teamId: number, payload: { name: string }) {
+  async updateTeam(teamId: number, payload: { name: string; gender?: TeamGender }) {
     if (this.appModeService.isGuestMode()) {
       await this.guestStorageService.updateTeam(teamId, payload);
     } else {

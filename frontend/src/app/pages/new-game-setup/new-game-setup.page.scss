@@ -10,7 +10,7 @@
 .setup-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--mobile-card-gap);
   overflow: hidden;
   padding-bottom: 2px;
 }
@@ -18,22 +18,33 @@
 .setup-card {
   position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--mobile-card-gap);
+  padding: var(--mobile-card-padding);
   border: 1px solid var(--color-border);
-  border-radius: 22px;
+  border-radius: var(--mobile-card-radius);
   background: var(--color-surface-glass);
 }
 
 .setup-card__content {
   min-width: 0;
-  flex: 1;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: 10px;
-  overflow: hidden;
+}
+
+.setup-card__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setup-card__states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .setup-card--selected {
@@ -55,6 +66,8 @@
 .setup-card strong {
   min-width: 0;
   line-height: 1.35;
+  font-size: var(--player-name-size);
+  font-weight: var(--player-name-weight);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,23 +75,21 @@
 
 .setup-card p {
   margin: 0;
-  flex-shrink: 0;
   color: var(--color-text-muted);
-  white-space: nowrap;
+  font-size: var(--player-meta-size);
 }
 
 .setup-card__actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  align-items: stretch;
+  gap: var(--action-gap-min);
+  flex-wrap: wrap;
 }
 
 .button--icon {
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  padding: 0 14px;
   border-radius: 14px;
 }
 
@@ -90,4 +101,8 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.setup-card__actions .button {
+  flex: 1 1 220px;
 }

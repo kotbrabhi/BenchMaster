@@ -12,6 +12,12 @@ export interface PlayerCardQuickAction {
   row?: 'primary' | 'secondary';
 }
 
+export interface PlayerCardStat {
+  label: string;
+  value: string | number;
+  highlighted?: boolean;
+}
+
 @Component({
   selector: 'app-player-card',
   standalone: true,
@@ -25,8 +31,11 @@ export class PlayerCardComponent {
   @Input() position: string | null = null;
   @Input() note = '';
   @Input() timeLabel = '';
+  @Input() stateLabel = '';
   @Input() actionLabel = '';
+  @Input() stats: PlayerCardStat[] = [];
   @Input() quickActions: PlayerCardQuickAction[] = [];
+  @Input() quickActionsTone: 'default' | 'danger' = 'default';
   @Input() actionDisabled = false;
   @Input() selected = false;
   @Input() tone: 'active' | 'bench' | 'summary' = 'bench';

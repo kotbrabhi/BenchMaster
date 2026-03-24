@@ -13,17 +13,83 @@
         <table class="summary-table">
           <thead>
             <tr>
-              <th class="summary-table__player" scope="col">{{ 'summary.table.player' | t }}</th>
-              <th class="summary-table__minutes" scope="col">{{ 'summary.table.minutes' | t }}</th>
-              <th class="summary-table__stat" scope="col">{{ 'summary.table.points' | t }}</th>
-              <th class="summary-table__stat" scope="col">{{ 'summary.table.assists' | t }}</th>
-              <th class="summary-table__stat" scope="col">{{ 'summary.table.blocks' | t }}</th>
-              <th class="summary-table__stat" scope="col">{{ 'summary.table.rebounds' | t }}</th>
+              <th class="summary-table__player" scope="col" [attr.aria-sort]="ariaSort('name')">
+                <button
+                  class="summary-table__sort-button summary-table__sort-button--player"
+                  type="button"
+                  (click)="toggleSort('name')"
+                  [class.summary-table__sort-button--active]="isSortedBy('name')"
+                  [attr.aria-label]="sortButtonLabel('name')"
+                  [attr.title]="sortButtonLabel('name')"
+                >
+                  <span>{{ 'summary.table.player' | t : labelParams() }}</span>
+                </button>
+              </th>
+              <th class="summary-table__minutes" scope="col" [attr.aria-sort]="ariaSort('totalSeconds')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('totalSeconds')"
+                  [class.summary-table__sort-button--active]="isSortedBy('totalSeconds')"
+                  [attr.aria-label]="sortButtonLabel('totalSeconds')"
+                  [attr.title]="sortButtonLabel('totalSeconds')"
+                >
+                  <span>{{ 'summary.table.minutes' | t }}</span>
+                </button>
+              </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('points')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('points')"
+                  [class.summary-table__sort-button--active]="isSortedBy('points')"
+                  [attr.aria-label]="sortButtonLabel('points')"
+                  [attr.title]="sortButtonLabel('points')"
+                >
+                  <span>{{ 'summary.table.points' | t }}</span>
+                </button>
+              </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('assists')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('assists')"
+                  [class.summary-table__sort-button--active]="isSortedBy('assists')"
+                  [attr.aria-label]="sortButtonLabel('assists')"
+                  [attr.title]="sortButtonLabel('assists')"
+                >
+                  <span>{{ 'summary.table.assists' | t }}</span>
+                </button>
+              </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('blocks')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('blocks')"
+                  [class.summary-table__sort-button--active]="isSortedBy('blocks')"
+                  [attr.aria-label]="sortButtonLabel('blocks')"
+                  [attr.title]="sortButtonLabel('blocks')"
+                >
+                  <span>{{ 'summary.table.blocks' | t }}</span>
+                </button>
+              </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('rebounds')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('rebounds')"
+                  [class.summary-table__sort-button--active]="isSortedBy('rebounds')"
+                  [attr.aria-label]="sortButtonLabel('rebounds')"
+                  [attr.title]="sortButtonLabel('rebounds')"
+                >
+                  <span>{{ 'summary.table.rebounds' | t }}</span>
+                </button>
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            @for (player of gameSummary.players; track player.playerId) {
+            @for (player of sortedPlayers(); track player.playerId) {
               <tr>
                 <td class="summary-table__player">{{ player.name }}</td>
                 <td class="summary-table__minutes">{{ playingMinutes(player.totalSeconds) }}</td>
@@ -34,6 +100,19 @@
               </tr>
             }
           </tbody>
+
+          @if (totals(); as totals) {
+            <tfoot>
+              <tr class="summary-table__total-row">
+                <th class="summary-table__player" scope="row">{{ 'summary.table.total' | t }}</th>
+                <td class="summary-table__minutes"></td>
+                <td class="summary-table__stat">{{ totals.points }}</td>
+                <td class="summary-table__stat">{{ totals.assists }}</td>
+                <td class="summary-table__stat">{{ totals.blocks }}</td>
+                <td class="summary-table__stat">{{ totals.rebounds }}</td>
+              </tr>
+            </tfoot>
+          }
         </table>
       </div>
     </section>

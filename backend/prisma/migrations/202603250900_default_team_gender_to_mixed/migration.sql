@@ -1,0 +1,7 @@
+UPDATE "Team"
+SET "gender" = 'MIXED'
+WHERE "gender" IS NULL;
+
+ALTER TABLE "Team"
+ALTER COLUMN "gender" SET DEFAULT 'MIXED',
+ALTER COLUMN "gender" SET NOT NULL;

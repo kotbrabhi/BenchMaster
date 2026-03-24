@@ -2,6 +2,7 @@ import { GameStatus, PeriodStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { serializeGame } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';
+import { getTeamLabelSet } from '../utils/team-labels';
 
 const gameInclude = {
   team: true,
@@ -25,9 +26,16 @@ function diffSeconds(from: Date, to: Date) {
   return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 1000));
 }
 
-async function getGameForUpdate(transaction: Prisma.TransactionClient, gameId: number) {
-  const game = await transaction.game.findUnique({
-    where: { id: gameId },
+async function getGameForUpdate(transaction: Prisma.TransactionClient, gameId: number, userId: number) {
+  const game = await transaction.game.findFirst({
+    where: {
+      id: gameId,
+      team: {
+        is: {
+          userId
+        }
+      }
+    },
     include: gameInclude
   });
 
@@ -99,9 +107,10 @@ function applyFinalizeClockAndPlayers(game: GameForUpdate, now: Date) {
 
 function ensureExactlyFiveStarters(game: Awaited<ReturnType<typeof getGameForUpdate>>) {
   const starters = game.players.filter((player) => player.isStarter);
+  const labels = getTeamLabelSet(game.team.gender);
 
   if (game.players.length < 5 || starters.length !== 5) {
-    throw new HttpError(400, 'Un match en direct nécessite au moins cinq joueur·euses sélectionné·es et exactement cinq titulaires.');
+    throw new HttpError(400, `Un match en direct nécessite au moins cinq ${labels.playerPlural} sélectionné·es et exactement cinq titulaires.`);
   }
 }
 
@@ -170,9 +179,9 @@ async function finalizeClockAndPlayers(
   );
 }
 
-export async function startGame(gameId: number) {
+export async function startGame(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
     ensureLiveState(game);
     ensureExactlyFiveStarters(game);
 
@@ -242,9 +251,9 @@ export async function startGame(gameId: number) {
   });
 }
 
-export async function pauseGame(gameId: number) {
+export async function pauseGame(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
     ensureLiveState(game);
 
     if (game.status !== GameStatus.LIVE || !game.isClockRunning) {
@@ -268,9 +277,10 @@ export async function pauseGame(gameId: number) {
   });
 }
 
-export async function resumeGame(gameId: number) {
+export async function resumeGame(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    const labels = getTeamLabelSet(game.team.gender);
     ensureLiveState(game);
 
     if (game.status !== GameStatus.PAUSED || game.isClockRunning) {
@@ -284,7 +294,7 @@ export async function resumeGame(gameId: number) {
     const onCourtPlayers = game.players.filter((player) => player.playingTime?.isOnCourt);
 
     if (onCourtPlayers.length !== 5) {
-      throw new HttpError(400, 'La reprise nécessite exactement cinq joueur·euses actif·ves.');
+      throw new HttpError(400, `La reprise nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
     }
 
     const now = new Date();
@@ -349,20 +359,24 @@ function ensureTrackableLiveGame(game: Awaited<ReturnType<typeof getGameForUpdat
   }
 }
 
-export async function substitutePlayers(gameId: number, playerInIds: number[], playerOutIds: number[]) {
-  if (!playerInIds.length || !playerOutIds.length) {
-    throw new HttpError(400, 'Sélectionnez au moins un·e joueur·euse entrant·e et un·e joueur·euse sortant·e.');
-  }
-
-  if (playerInIds.length !== playerOutIds.length) {
-    throw new HttpError(400, 'Le nombre de joueur·euses entrant·es doit correspondre au nombre de joueur·euses sortant·es.');
-  }
-
-  ensureUniqueIds(playerInIds, 'joueur·euse entrant·e');
-  ensureUniqueIds(playerOutIds, 'joueur·euse sortant·e');
-
+export async function substitutePlayers(gameId: number, userId: number, playerInIds: number[], playerOutIds: number[]) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    const labels = getTeamLabelSet(game.team.gender);
+
+    if (!playerInIds.length || !playerOutIds.length) {
+      throw new HttpError(
+        400,
+        `Sélectionnez au moins ${labels.playerIndefiniteSingular} ${labels.incomingSingular} et ${labels.playerIndefiniteSingular} ${labels.outgoingSingular}.`
+      );
+    }
+
+    if (playerInIds.length !== playerOutIds.length) {
+      throw new HttpError(400, `Le nombre de ${labels.incomingPlural} doit correspondre au nombre de ${labels.outgoingPlural}.`);
+    }
+
+    ensureUniqueIds(playerInIds, `${labels.playerSingular} ${labels.incomingSingular}`);
+    ensureUniqueIds(playerOutIds, `${labels.playerSingular} ${labels.outgoingSingular}`);
 
     ensureTrackableLiveGame(game);
 
@@ -370,21 +384,21 @@ export async function substitutePlayers(gameId: number, playerInIds: number[], p
     const playerOuts = playerOutIds.map((playerOutId) => game.players.find((player) => player.playerId === playerOutId));
 
     if (playerIns.some((player) => !player) || playerOuts.some((player) => !player)) {
-      throw new HttpError(400, 'Tous les remplacements doivent concerner des joueur·euses de la feuille de match.');
+      throw new HttpError(400, `Tous les remplacements doivent concerner des ${labels.playerPlural} de la feuille de match.`);
     }
 
     if (playerIns.some((player) => player!.playingTime?.isOnCourt)) {
-      throw new HttpError(400, 'Au moins un·e joueur·euse entrant·e est déjà sur le terrain.');
+      throw new HttpError(400, `Au moins un·e ${labels.incomingSingular} est déjà sur le terrain.`);
     }
 
     if (playerOuts.some((player) => !player!.playingTime?.isOnCourt)) {
-      throw new HttpError(400, 'Au moins un·e joueur·euse sortant·e n’est pas actuellement sur le terrain.');
+      throw new HttpError(400, `Au moins un·e ${labels.outgoingSingular} n’est pas actuellement sur le terrain.`);
     }
 
     const activeCount = game.players.filter((player) => player.playingTime?.isOnCourt).length;
 
     if (activeCount !== 5) {
-      throw new HttpError(400, 'Un match en direct doit conserver exactement cinq joueur·euses actif·ves.');
+      throw new HttpError(400, `Un match en direct doit conserver exactement cinq ${labels.playerPlural} actif·ves.`);
     }
 
     const now = new Date();
@@ -482,23 +496,24 @@ export async function substitutePlayers(gameId: number, playerInIds: number[], p
   });
 }
 
-export async function recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
+export async function recordPlayerPoints(gameId: number, userId: number, playerId: number, points: number, correction = false) {
   if (!Number.isInteger(points) || points < 1 || points > 3) {
     throw new HttpError(400, 'Seuls les ajouts de 1, 2 ou 3 points sont autorisés.');
   }
 
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    const labels = getTeamLabelSet(game.team.gender);
     ensureTrackableLiveGame(game);
 
     const player = game.players.find((entry) => entry.playerId === playerId);
 
     if (!player) {
-      throw new HttpError(404, 'Joueur·euse introuvable pour ce match.');
+      throw new HttpError(404, `${labels.playerSingular.charAt(0).toUpperCase()}${labels.playerSingular.slice(1)} introuvable pour ce match.`);
     }
 
     if (!player.playingTime?.isOnCourt) {
-      throw new HttpError(400, 'Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir des points.');
+      throw new HttpError(400, `Seul·e ${labels.playerIndefiniteSingular} actuellement sur le terrain peut recevoir des points.`);
     }
 
     if (correction && (player.playingTime.points ?? 0) < points) {
@@ -535,7 +550,7 @@ export async function recordPlayerPoints(gameId: number, playerId: number, point
   });
 }
 
-export async function recordPlayerStat(gameId: number, playerId: number, stat: string, correction = false) {
+export async function recordPlayerStat(gameId: number, userId: number, playerId: number, stat: string, correction = false) {
   if (!(stat in trackableStats)) {
     throw new HttpError(400, 'Statistique non prise en charge.');
   }
@@ -543,19 +558,20 @@ export async function recordPlayerStat(gameId: number, playerId: number, stat: s
   const trackableStat = stat as TrackableStat;
 
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    const labels = getTeamLabelSet(game.team.gender);
     ensureTrackableLiveGame(game);
 
     const player = game.players.find((entry) => entry.playerId === playerId);
 
     if (!player) {
-      throw new HttpError(404, 'Joueur·euse introuvable pour ce match.');
+      throw new HttpError(404, `${labels.playerSingular.charAt(0).toUpperCase()}${labels.playerSingular.slice(1)} introuvable pour ce match.`);
     }
 
     if (!player.playingTime?.isOnCourt) {
       throw new HttpError(
         400,
-        `Seul·e un·e joueur·euse actuellement sur le terrain peut recevoir un ${trackableStats[trackableStat]}.`
+        `Seul·e ${labels.playerIndefiniteSingular} actuellement sur le terrain peut recevoir un ${trackableStats[trackableStat]}.`
       );
     }
 
@@ -593,9 +609,9 @@ export async function recordPlayerStat(gameId: number, playerId: number, stat: s
   });
 }
 
-export async function completePeriod(gameId: number) {
+export async function completePeriod(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
     ensureLiveState(game);
 
     if (game.status === GameStatus.DRAFT) {
@@ -634,9 +650,10 @@ export async function completePeriod(gameId: number) {
   });
 }
 
-export async function startNextPeriod(gameId: number) {
+export async function startNextPeriod(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    const labels = getTeamLabelSet(game.team.gender);
     ensureLiveState(game);
 
     if (game.status !== GameStatus.PAUSED) {
@@ -650,7 +667,7 @@ export async function startNextPeriod(gameId: number) {
     const onCourtPlayers = game.players.filter((player) => player.playingTime?.isOnCourt);
 
     if (onCourtPlayers.length !== 5) {
-      throw new HttpError(400, 'Le démarrage d’une nouvelle période nécessite exactement cinq joueur·euses actif·ves.');
+      throw new HttpError(400, `Le démarrage d’une nouvelle période nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
     }
 
     const now = new Date();
@@ -711,9 +728,9 @@ export async function startNextPeriod(gameId: number) {
   });
 }
 
-export async function endGame(gameId: number) {
+export async function endGame(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
-    const game = await getGameForUpdate(transaction, gameId);
+    const game = await getGameForUpdate(transaction, gameId, userId);
     ensureLiveState(game);
 
     if (game.status === GameStatus.DRAFT) {

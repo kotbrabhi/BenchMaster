@@ -5,6 +5,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AppModeService } from './core/app-mode.service';
 import { AuthService } from './core/auth.service';
 import { getErrorMessage } from './core/api';
+import { TranslationKey } from './core/translations';
 import { GameService } from './services/game.service';
 import { TeamService } from './services/team.service';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
@@ -26,6 +27,7 @@ export class AppComponent implements OnInit {
   authIntent = signal<'login' | 'register'>('login');
   isAuthPanelOpen = signal(false);
   authErrorMessage = signal('');
+  authSubmitting = signal(false);
   authName = '';
   authEmail = '';
   authPassword = '';
@@ -78,6 +80,7 @@ export class AppComponent implements OnInit {
 
   async submitAuth() {
     try {
+      this.authSubmitting.set(true);
       if (this.authIntent() === 'register') {
         await this.authService.register({
           name: this.authName,
@@ -97,6 +100,8 @@ export class AppComponent implements OnInit {
       await this.router.navigate(['/']);
     } catch (error) {
       this.authErrorMessage.set(getErrorMessage(error));
+    } finally {
+      this.authSubmitting.set(false);
     }
   }
 
@@ -111,6 +116,14 @@ export class AppComponent implements OnInit {
   canSubmitAuth() {
     const hasIdentity = this.authIntent() === 'login' || this.authName.trim().length > 0;
     return hasIdentity && this.authEmail.trim().length > 0 && this.authPassword.trim().length >= 8;
+  }
+
+  authDisabledReason(): TranslationKey | '' {
+    if (this.isRestoringSession()) {
+      return 'common.reasons.authRestoring';
+    }
+
+    return this.canSubmitAuth() ? '' : 'common.reasons.authIncomplete';
   }
 
   authIntentLabel() {

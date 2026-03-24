@@ -38,8 +38,8 @@
     <section class="surface-card">
       <div class="section-heading">
         <div>
-          <h2>{{ 'newGame.available.title' | t }}</h2>
-          <p>{{ availablePlayerIds().length }} disponibles · {{ starterPlayerIds().length }}/5 titulaires</p>
+          <h2>{{ 'newGame.available.title' | t : labelParams() }}</h2>
+          <p>{{ 'newGame.available.summary' | t : availableSummaryParams() }}</p>
         </div>
       </div>
 
@@ -52,8 +52,24 @@
             [class.setup-card--starter]="isStarter(player)"
             [class.setup-card--error]="hasStarterSelectionError(player)">
             <div class="setup-card__content">
-              <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
-              <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
+              <div class="setup-card__copy">
+                <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+                <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
+              </div>
+
+              <div class="setup-card__states">
+                <span class="state-chip" [class.state-chip--selected]="isAvailable(player)">
+                  {{ (isAvailable(player) ? 'newGame.available.state.available' : 'newGame.available.state.unavailable') | t }}
+                </span>
+
+                @if (isStarter(player)) {
+                  <span class="state-chip state-chip--selected">{{ 'newGame.startingFive.state.starter' | t }}</span>
+                }
+
+                @if (hasStarterSelectionError(player)) {
+                  <span class="state-chip state-chip--danger">{{ 'newGame.startingFive.state.limitReached' | t }}</span>
+                }
+              </div>
             </div>
 
             <div class="setup-card__actions">
@@ -61,19 +77,28 @@
                 class="button button--ghost button--icon"
                 type="button"
                 [attr.aria-label]="
-                  isAvailable(player) ? ('newGame.available.action.remove' | t) : ('newGame.available.action.available' | t)
+                  isAvailable(player)
+                    ? ('newGame.available.action.removePlayer' | t : labelParams())
+                    : ('newGame.available.action.addPlayer' | t : labelParams())
                 "
                 [attr.title]="
-                  isAvailable(player) ? ('newGame.available.action.remove' | t) : ('newGame.available.action.available' | t)
+                  isAvailable(player)
+                    ? ('newGame.available.action.removePlayer' | t : labelParams())
+                    : ('newGame.available.action.addPlayer' | t : labelParams())
                 "
                 (click)="toggleAvailability(player.id)">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  @if (isAvailable(player)) {
-                    <path d="M6 12h12" />
-                  } @else {
-                    <path d="M12 5v14M5 12h14" />
-                  }
-                </svg>
+                <span class="button__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    @if (isAvailable(player)) {
+                      <path d="M6 12h12" />
+                    } @else {
+                      <path d="M12 5v14M5 12h14" />
+                    }
+                  </svg>
+                </span>
+                <span class="button__label">
+                  {{ (isAvailable(player) ? 'newGame.available.action.removePlayer' : 'newGame.available.action.addPlayer') | t : labelParams() }}
+                </span>
               </button>
 
               <button
@@ -83,24 +108,33 @@
                 [disabled]="!isAvailable(player)"
                 [attr.aria-label]="
                   isStarter(player)
-                    ? ('newGame.startingFive.action.starter' | t)
+                    ? ('newGame.startingFive.action.removeStarter' | t)
                     : ('newGame.startingFive.action.markStarter' | t)
                 "
                 [attr.title]="
                   isStarter(player)
-                    ? ('newGame.startingFive.action.starter' | t)
+                    ? ('newGame.startingFive.action.removeStarter' | t)
                     : ('newGame.startingFive.action.markStarter' | t)
                 "
                 (click)="toggleStarter(player.id)">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  @if (isStarter(player)) {
-                    <path d="m5 12 4 4L19 6" />
-                  } @else {
-                    <path d="m12 3 2.8 5.67 6.26.91-4.53 4.42 1.07 6.25L12 17.27 6.4 20.25l1.07-6.25L2.94 9.58l6.26-.91L12 3Z" />
-                  }
-                </svg>
+                <span class="button__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    @if (isStarter(player)) {
+                      <path d="m5 12 4 4L19 6" />
+                    } @else {
+                      <path d="m12 3 2.8 5.67 6.26.91-4.53 4.42 1.07 6.25L12 17.27 6.4 20.25l1.07-6.25L2.94 9.58l6.26-.91L12 3Z" />
+                    }
+                  </svg>
+                </span>
+                <span class="button__label">
+                  {{ (isStarter(player) ? 'newGame.startingFive.action.removeStarter' : 'newGame.startingFive.action.markStarter') | t }}
+                </span>
               </button>
             </div>
+
+            @if (!isAvailable(player)) {
+              <p class="control-reason">{{ 'newGame.startingFive.reason.needAvailability' | t }}</p>
+            }
           </article>
         }
       </div>
@@ -109,12 +143,21 @@
     <section class="surface-card">
       <div class="stack">
         <p class="helper-text">
-          {{ 'newGame.helper' | t }}
+          {{ 'newGame.helper' | t : labelParams() }}
         </p>
 
-        <button class="button" type="button" [disabled]="!canCreateGame()" (click)="createGame()">
+        <button
+          class="button"
+          type="button"
+          [disabled]="!canCreateGame()"
+          [attr.aria-busy]="isCreatingGame()"
+          (click)="createGame()">
           {{ 'newGame.create' | t }}
         </button>
+
+        @if (createGameDisabledReason(); as disabledReason) {
+          <p class="control-reason">{{ disabledReason }}</p>
+        }
       </div>
     </section>
   }
