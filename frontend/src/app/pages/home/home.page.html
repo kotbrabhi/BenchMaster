@@ -11,58 +11,75 @@
     </div>
 
     <div class="teams-strip">
-      <article class="team-card team-card--editor">
-        <div class="team-card__content">
-          <input
-            id="teamName"
-            name="teamName"
-            class="team-card__input"
-            [(ngModel)]="teamName"
-            [attr.aria-label]="'home.teamForm.nameLabel' | t"
-            [placeholder]="editingTeamId ? ('home.teamForm.editTitle' | t) : ('home.teamForm.namePlaceholder' | t)" />
-        </div>
+      @if (shouldShowTeamEditor()) {
+        <article class="team-card team-card--editor">
+          <div class="team-card__content">
+            <div class="team-card__editor-fields">
+              <input
+                id="teamName"
+                name="teamName"
+                class="team-card__input"
+                [(ngModel)]="teamName"
+                [attr.aria-label]="'home.teamForm.nameLabel' | t"
+                [placeholder]="editingTeamId ? ('home.teamForm.editTitle' | t) : ('home.teamForm.namePlaceholder' | t)" />
 
-        <div class="team-card__actions">
-          @if (editingTeamId) {
-            <button
-              class="button button--icon"
-              type="button"
-              [disabled]="!teamName.trim()"
-              [attr.aria-label]="'common.actions.save' | t"
-              [attr.title]="'common.actions.save' | t"
-              (click)="submitTeam()">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m5 12 4 4L19 6" />
-              </svg>
-            </button>
-          } @else {
-            <button
-              class="button button--icon"
-              type="button"
-              [disabled]="!teamName.trim()"
-              [attr.aria-label]="'common.actions.create' | t"
-              [attr.title]="'common.actions.create' | t"
-              (click)="submitTeam()">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
-          }
+              @if (!editingTeamId) {
+                <textarea
+                  id="teamPlayerNames"
+                  name="teamPlayerNames"
+                  class="team-card__textarea"
+                  rows="4"
+                  [(ngModel)]="teamPlayerNames"
+                  [attr.aria-label]="'home.teamForm.playerListLabel' | t"
+                  [placeholder]="'home.teamForm.playerListPlaceholder' | t"></textarea>
 
-          @if (editingTeamId) {
-            <button
-              class="button button--secondary button--icon"
-              type="button"
-              [attr.aria-label]="'common.actions.cancel' | t"
-              [attr.title]="'common.actions.cancel' | t"
-              (click)="resetTeamForm()">
-              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            </button>
-          }
-        </div>
-      </article>
+                <p class="team-card__hint">{{ 'home.teamForm.playerListHint' | t }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="team-card__actions">
+            @if (editingTeamId) {
+              <button
+                class="button button--icon"
+                type="button"
+                [disabled]="!teamName.trim()"
+                [attr.aria-label]="'common.actions.save' | t"
+                [attr.title]="'common.actions.save' | t"
+                (click)="submitTeam()">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+              </button>
+            } @else {
+              <button
+                class="button button--icon"
+                type="button"
+                [disabled]="!teamName.trim()"
+                [attr.aria-label]="'common.actions.create' | t"
+                [attr.title]="'common.actions.create' | t"
+                (click)="submitTeam()">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+            }
+
+            @if (editingTeamId) {
+              <button
+                class="button button--secondary button--icon"
+                type="button"
+                [attr.aria-label]="'common.actions.cancel' | t"
+                [attr.title]="'common.actions.cancel' | t"
+                (click)="resetTeamForm()">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            }
+          </div>
+        </article>
+      }
 
       @for (team of teams(); track team.id) {
         <article class="team-card">
@@ -124,6 +141,10 @@
         </article>
       }
     </div>
+
+    @if (showGuestTeamLimitHint()) {
+      <p class="mode-note">{{ 'home.teams.guestLimit' | t }}</p>
+    }
 
     @if (!teams().length) {
       <div class="empty-state">{{ 'home.teams.empty' | t }}</div>

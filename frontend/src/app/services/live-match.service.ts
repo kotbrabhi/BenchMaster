@@ -2,11 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../core/api';
+import { AppModeService } from '../core/app-mode.service';
 import { GameDetail, PlayerStatType } from '../core/models';
+import { GuestStorageService } from './guest-storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class LiveMatchService {
   private readonly http = inject(HttpClient);
+  private readonly appModeService = inject(AppModeService);
+  private readonly guestStorageService = inject(GuestStorageService);
 
   readonly game = signal<GameDetail | null>(null);
   readonly selectedBenchPlayerIds = signal<number[]>([]);
@@ -28,7 +32,9 @@ export class LiveMatchService {
   });
 
   async loadGame(gameId: number) {
-    const game = await firstValueFrom(this.http.get<GameDetail>(`${API_BASE_URL}/games/${gameId}`));
+    const game = this.appModeService.isGuestMode()
+      ? await this.guestStorageService.getGame(gameId)
+      : await firstValueFrom(this.http.get<GameDetail>(`${API_BASE_URL}/games/${gameId}`));
     this.game.set(game);
     this.syncPendingSelection();
     return game;
@@ -52,27 +58,51 @@ export class LiveMatchService {
   }
 
   async startGame(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/start`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.startGame(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/start`)
+    );
   }
 
   async pauseGame(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/pause`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.pauseGame(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/pause`)
+    );
   }
 
   async resumeGame(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/resume`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.resumeGame(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/resume`)
+    );
   }
 
   async completePeriod(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/periods/complete`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.completePeriod(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/periods/complete`)
+    );
   }
 
   async startNextPeriod(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/periods/start`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.startNextPeriod(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/periods/start`)
+    );
   }
 
   async endGame(gameId: number) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/end`);
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.endGame(gameId)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/end`)
+    );
   }
 
   async substitute(gameId: number) {
@@ -80,34 +110,50 @@ export class LiveMatchService {
       return null;
     }
 
-    const game = await this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/substitutions`, {
-      playerInIds: this.selectedBenchPlayerIds(),
-      playerOutIds: this.selectedActivePlayerIds()
-    });
+    const game = await this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.substitutePlayers(gameId, this.selectedBenchPlayerIds(), this.selectedActivePlayerIds())
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/substitutions`, {
+            playerInIds: this.selectedBenchPlayerIds(),
+            playerOutIds: this.selectedActivePlayerIds()
+          })
+    );
 
     this.clearSelections();
     return game;
   }
 
   async recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/points`, {
-      points,
-      correction
-    });
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.recordPlayerPoints(gameId, playerId, points, correction)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/players/${playerId}/points`, {
+            points,
+            correction
+          })
+    );
   }
 
   async recordPlayerStat(gameId: number, playerId: number, stat: PlayerStatType, correction = false) {
-    return this.updateGameFromPost(`${API_BASE_URL}/games/${gameId}/players/${playerId}/stats`, {
-      stat,
-      correction
-    });
+    return this.updateGame(() =>
+      this.appModeService.isGuestMode()
+        ? this.guestStorageService.recordPlayerStat(gameId, playerId, stat, correction)
+        : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/players/${playerId}/stats`, {
+            stat,
+            correction
+          })
+    );
   }
 
-  private async updateGameFromPost(url: string, body: unknown = {}) {
-    const game = await firstValueFrom(this.http.post<GameDetail>(url, body));
+  private async updateGame(action: () => Promise<GameDetail>) {
+    const game = await action();
     this.game.set(game);
     this.syncPendingSelection();
     return game;
+  }
+
+  private postGameUpdate(url: string, body: unknown = {}) {
+    return firstValueFrom(this.http.post<GameDetail>(url, body));
   }
 
   private syncPendingSelection() {

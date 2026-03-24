@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
+import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
 import { GameListItem, Team } from '../../core/models';
 import { GameService } from '../../services/game.service';
@@ -19,15 +20,18 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 export class HomePageComponent implements OnInit {
   private readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
+  private readonly appModeService = inject(AppModeService);
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
 
+  readonly appMode = this.appModeService.mode;
   readonly teams = this.teamService.teams;
   readonly games = this.gameService.games;
   readonly errorMessage = signal('');
   readonly t = this.i18n.t;
 
   teamName = '';
+  teamPlayerNames = '';
   editingTeamId: number | null = null;
 
   async ngOnInit() {
@@ -40,7 +44,10 @@ export class HomePageComponent implements OnInit {
         await this.teamService.updateTeam(this.editingTeamId, { name: this.teamName });
         this.resetTeamForm();
       } else {
-        const createdTeam = await this.teamService.createTeam({ name: this.teamName });
+        const createdTeam = await this.teamService.createTeam({
+          name: this.teamName,
+          players: this.parseSeedPlayers(this.teamPlayerNames)
+        });
         this.resetTeamForm();
         this.errorMessage.set('');
         await this.router.navigate(['/teams', createdTeam.id]);
@@ -56,6 +63,7 @@ export class HomePageComponent implements OnInit {
   editTeam(team: Team) {
     this.editingTeamId = team.id;
     this.teamName = team.name;
+    this.teamPlayerNames = '';
   }
 
   async deleteTeam(teamId: number) {
@@ -77,7 +85,16 @@ export class HomePageComponent implements OnInit {
 
   resetTeamForm() {
     this.teamName = '';
+    this.teamPlayerNames = '';
     this.editingTeamId = null;
+  }
+
+  showGuestTeamLimitHint() {
+    return this.appMode() === 'guest' && this.teams().length > 0 && !this.editingTeamId;
+  }
+
+  shouldShowTeamEditor() {
+    return this.appMode() !== 'guest' || !this.teams().length || this.editingTeamId !== null;
   }
 
   gameLink(game: GameListItem) {
@@ -111,5 +128,110 @@ export class HomePageComponent implements OnInit {
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
     }
+  }
+
+  private parseSeedPlayers(value: string) {
+    const usedJerseyNumbers = new Set<string>();
+    let nextGeneratedJerseyNumber = 1;
+
+    return value
+      .split(/[\n,;]+/g)
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0)
+      .flatMap((entry) => {
+        const parsedEntry = this.parseSeedPlayerEntry(entry);
+        const explicitJerseyNumber = parsedEntry.jerseyNumber?.trim() || null;
+
+        if (explicitJerseyNumber) {
+          if (usedJerseyNumbers.has(explicitJerseyNumber)) {
+            return [];
+          }
+
+          usedJerseyNumbers.add(explicitJerseyNumber);
+
+          return {
+            name: parsedEntry.name,
+            jerseyNumber: explicitJerseyNumber
+          };
+        }
+
+        while (usedJerseyNumbers.has(String(nextGeneratedJerseyNumber))) {
+          nextGeneratedJerseyNumber += 1;
+        }
+
+        const jerseyNumber = String(nextGeneratedJerseyNumber);
+        usedJerseyNumbers.add(jerseyNumber);
+        nextGeneratedJerseyNumber += 1;
+
+        return {
+          name: parsedEntry.name,
+          jerseyNumber
+        };
+      });
+  }
+
+  private parseSeedPlayerEntry(entry: string) {
+    const explicitNumberPatterns: Array<{ regex: RegExp; nameIndex: number; jerseyIndex: number }> = [
+      {
+        regex: /^\s*(\d+)\s*(?:->|[-:|/=])\s*(.+?)\s*$/i,
+        nameIndex: 2,
+        jerseyIndex: 1
+      },
+      {
+        regex: /^\s*(\d+)\s+(.+?)\s*$/i,
+        nameIndex: 2,
+        jerseyIndex: 1
+      },
+      {
+        regex: /^\s*(.+?)\s*(?:->|[-:|/=])\s*(?:jersey\s*)?#?\s*(\d+)\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      },
+      {
+        regex: /^\s*(.+?)\s*(?:->|[-:|/=])\s*(?:n[°ºo]\.?|no\.?|num(?:e|é)ro|jersey)\s*#?\s*(\d+)\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      },
+      {
+        regex: /^\s*(.+?)\s*[\[({]\s*(?:jersey\s*)?#?\s*(\d+)\s*[\])}]\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      },
+      {
+        regex: /^\s*(.+?)\s+(?:n[°ºo]\.?|no\.?|num(?:e|é)ro|jersey)\s*#?\s*(\d+)\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      },
+      {
+        regex: /^\s*(.+?)\s+#\s*(\d+)\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      },
+      {
+        regex: /^\s*(.+?)\s+(\d+)\s*$/i,
+        nameIndex: 1,
+        jerseyIndex: 2
+      }
+    ];
+
+    for (const pattern of explicitNumberPatterns) {
+      const match = entry.match(pattern.regex);
+
+      if (match) {
+        return {
+          name: this.cleanParsedPlayerName(match[pattern.nameIndex]),
+          jerseyNumber: match[pattern.jerseyIndex]
+        };
+      }
+    }
+
+    return {
+      name: entry,
+      jerseyNumber: null
+    };
+  }
+
+  private cleanParsedPlayerName(value: string) {
+    return value.trim().replace(/\s*(?:->|[-:|/=])\s*$/g, '').trim();
   }
 }

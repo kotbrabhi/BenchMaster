@@ -32,18 +32,30 @@
           <span class="tabbar__label">{{ item.labelKey | t }}</span>
         </a>
       }
-    </nav>
 
-    <button
-      type="button"
-      class="shell__sidebar-toggle"
-      (click)="toggleSidebar()"
-      [attr.aria-label]="isSidebarCollapsed ? 'Ouvrir la barre latérale' : 'Fermer la barre latérale'"
-      [attr.title]="isSidebarCollapsed ? 'Ouvrir la barre latérale' : 'Fermer la barre latérale'">
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path d="M15 18l-6-6l6-6" />
-      </svg>
-    </button>
+      @if (isAuthenticated()) {
+        <button class="tabbar__item tabbar__item--button tabbar__item--auth" type="button" (click)="logout()">
+          <span class="tabbar__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M15 16.5 21 12l-6-4.5" />
+              <path d="M21 12H9" />
+              <path d="M11 4H6.75A2.75 2.75 0 0 0 4 6.75v10.5A2.75 2.75 0 0 0 6.75 20H11" />
+            </svg>
+          </span>
+          <span class="tabbar__label">{{ 'home.auth.logout' | t }}</span>
+        </button>
+      } @else {
+        <button class="tabbar__item tabbar__item--button tabbar__item--auth" type="button" (click)="openAuthPanel()">
+          <span class="tabbar__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M12 12a4 4 0 1 0 0-8a4 4 0 1 0 0 8" />
+              <path d="M4 20a8 8 0 0 1 16 0" />
+            </svg>
+          </span>
+          <span class="tabbar__label">{{ 'home.auth.loginTab' | t }}</span>
+        </button>
+      }
+    </nav>
   </header>
 
   <main class="shell__content">
@@ -52,3 +64,72 @@
     </div>
   </main>
 </div>
+
+@if (isAuthPanelOpen()) {
+  <div class="auth-sheet">
+    <button
+      class="auth-sheet__backdrop"
+      type="button"
+      aria-label="Fermer la connexion"
+      (click)="closeAuthPanel()"></button>
+
+    <section class="auth-sheet__panel surface-card">
+      <div class="auth-sheet__brand">
+        <img class="auth-sheet__brand-logo" src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'home.auth.title' | t }}</h2>
+          <p>{{ 'home.auth.subtitle' | t }}</p>
+        </div>
+      </div>
+
+      @if (authErrorMessage()) {
+        <div class="error-banner">{{ authErrorMessage() }}</div>
+      }
+
+      <div class="cluster">
+        <button class="pill" type="button" [class.pill--active]="authIntent() === 'login'" (click)="setAuthIntent('login')">
+          {{ 'home.auth.loginTab' | t }}
+        </button>
+        <button class="pill" type="button" [class.pill--active]="authIntent() === 'register'" (click)="setAuthIntent('register')">
+          {{ 'home.auth.registerTab' | t }}
+        </button>
+      </div>
+
+      <div class="auth-form">
+        @if (authIntent() === 'register') {
+          <div class="form-field">
+            <label for="navAuthName">{{ 'home.auth.nameLabel' | t }}</label>
+            <input id="navAuthName" name="navAuthName" [(ngModel)]="authName" [placeholder]="'home.auth.namePlaceholder' | t" />
+          </div>
+        }
+
+        <div class="form-field">
+          <label for="navAuthEmail">{{ 'home.auth.emailLabel' | t }}</label>
+          <input id="navAuthEmail" name="navAuthEmail" [(ngModel)]="authEmail" [placeholder]="'home.auth.emailPlaceholder' | t" />
+        </div>
+
+        <div class="form-field">
+          <label for="navAuthPassword">{{ 'home.auth.passwordLabel' | t }}</label>
+          <input
+            id="navAuthPassword"
+            name="navAuthPassword"
+            type="password"
+            [(ngModel)]="authPassword"
+            [placeholder]="'home.auth.passwordPlaceholder' | t" />
+        </div>
+      </div>
+
+      <div class="auth-sheet__actions">
+        <button class="button button--secondary" type="button" (click)="closeAuthPanel()">
+          {{ 'common.actions.cancel' | t }}
+        </button>
+        <button class="button" type="button" [disabled]="!canSubmitAuth() || isRestoringSession()" (click)="submitAuth()">
+          {{ authIntentLabel() | t }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

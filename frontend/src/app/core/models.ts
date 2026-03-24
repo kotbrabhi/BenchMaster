@@ -1,6 +1,7 @@
 export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
 export type PlayerStatType = 'assists' | 'blocks' | 'rebounds';
+export type AppMode = 'guest' | 'authenticated';
 
 export interface Player {
   id: number;
@@ -83,4 +84,15 @@ export interface GameSummary {
   totalGameSeconds: number;
   maxPlayerSeconds: number;
   players: GamePlayerState[];
+}
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  name: string | null;
+}
+
+export interface AuthSession {
+  token: string;
+  user: AuthUser;
 }

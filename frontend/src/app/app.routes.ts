@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { modeAuthGuard } from './core/mode-auth.guard';
 import { GameSummaryPageComponent } from './pages/game-summary/game-summary.page';
 import { HomePageComponent } from './pages/home/home.page';
 import { LiveMatchPageComponent } from './pages/live-match/live-match.page';
@@ -14,21 +15,25 @@ export const routes: Routes = [
   {
     path: 'teams/:teamId',
     component: TeamRosterPageComponent,
+    canActivate: [modeAuthGuard],
     title: 'Effectif'
   },
   {
     path: 'games/new',
     component: NewGameSetupPageComponent,
+    canActivate: [modeAuthGuard],
     title: 'Nouveau match'
   },
   {
     path: 'games/:gameId/live',
     component: LiveMatchPageComponent,
+    canActivate: [modeAuthGuard],
     title: 'Match en direct'
   },
   {
     path: 'games/:gameId/summary',
     component: GameSummaryPageComponent,
+    canActivate: [modeAuthGuard],
     title: 'Résumé du match'
   },
   {

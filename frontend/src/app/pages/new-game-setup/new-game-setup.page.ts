@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
+import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
 import { Player } from '../../core/models';
 import { GameService } from '../../services/game.service';
@@ -21,16 +22,19 @@ export class NewGameSetupPageComponent implements OnInit {
   private readonly i18n = inject(I18nService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly appModeService = inject(AppModeService);
   private readonly teamService = inject(TeamService);
   private readonly playerService = inject(PlayerService);
   private readonly gameService = inject(GameService);
 
+  readonly games = this.gameService.games;
   readonly teams = this.teamService.teams;
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
   readonly selectedTeamId = signal<number | null>(null);
   readonly availablePlayerIds = signal<number[]>([]);
   readonly starterPlayerIds = signal<number[]>([]);
+  readonly invalidStarterPlayerId = signal<number | null>(null);
   readonly t = this.i18n.t;
   readonly sortedRoster = computed(() =>
     [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
@@ -40,7 +44,7 @@ export class NewGameSetupPageComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      const teams = await this.teamService.loadTeams();
+      const [teams] = await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
       const preselectedTeamId = Number(this.route.snapshot.queryParamMap.get('teamId'));
       const firstTeamId = teams[0]?.id ?? null;
 
@@ -63,6 +67,7 @@ export class NewGameSetupPageComponent implements OnInit {
       const playerIds = players.map((player) => player.id);
       this.availablePlayerIds.set(playerIds);
       this.starterPlayerIds.set(playerIds.slice(0, 5));
+      this.invalidStarterPlayerId.set(null);
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
@@ -75,6 +80,7 @@ export class NewGameSetupPageComponent implements OnInit {
     );
 
     this.starterPlayerIds.update((current) => current.filter((id) => this.availablePlayerIds().includes(id)));
+    this.clearInvalidStarterAttempt(playerId);
   }
 
   toggleStarter(playerId: number) {
@@ -84,15 +90,18 @@ export class NewGameSetupPageComponent implements OnInit {
 
     if (this.starterPlayerIds().includes(playerId)) {
       this.starterPlayerIds.update((current) => current.filter((id) => id !== playerId));
+      this.clearInvalidStarterAttempt();
       return;
     }
 
     if (this.starterPlayerIds().length >= 5) {
+      this.invalidStarterPlayerId.set(playerId);
       this.errorMessage.set(this.t('newGame.error.chooseFiveStarters'));
       return;
     }
 
     this.starterPlayerIds.update((current) => [...current, playerId]);
+    this.clearInvalidStarterAttempt();
     this.errorMessage.set('');
   }
 
@@ -104,6 +113,14 @@ export class NewGameSetupPageComponent implements OnInit {
     }
 
     try {
+      if (this.appModeService.isGuestMode() && this.games().length) {
+        const confirmed = window.confirm(this.t('newGame.confirmReplaceGuestGame'));
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
       const game = await this.gameService.createGame({
         teamId,
         label: this.gameLabel,
@@ -126,6 +143,10 @@ export class NewGameSetupPageComponent implements OnInit {
     return this.starterPlayerIds().includes(player.id);
   }
 
+  hasStarterSelectionError(player: Player) {
+    return this.invalidStarterPlayerId() === player.id;
+  }
+
   private playerSortRank(playerId: number) {
     if (this.starterPlayerIds().includes(playerId)) {
       return 0;
@@ -144,5 +165,11 @@ export class NewGameSetupPageComponent implements OnInit {
 
   trackByPlayer(_index: number, player: Player) {
     return player.id;
+  }
+
+  private clearInvalidStarterAttempt(playerId?: number) {
+    if (playerId === undefined || this.invalidStarterPlayerId() === playerId) {
+      this.invalidStarterPlayerId.set(null);
+    }
   }
 }

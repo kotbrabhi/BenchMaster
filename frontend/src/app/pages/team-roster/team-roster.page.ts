@@ -49,6 +49,7 @@ export class TeamRosterPageComponent implements OnInit {
   newPlayerName = '';
   newJerseyNumber = '';
   newPosition = '';
+  lastSuggestedJerseyNumber = '';
   editingPlayerId: number | null = null;
   editingPlayerName = '';
   editingJerseyNumber = '';
@@ -121,6 +122,7 @@ export class TeamRosterPageComponent implements OnInit {
         position: this.editingPosition || null
       });
       this.resetEditingPlayer();
+      this.syncSuggestedJerseyNumber();
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
@@ -139,6 +141,7 @@ export class TeamRosterPageComponent implements OnInit {
       if (this.editingPlayerId === playerId) {
         this.resetEditingPlayer();
       }
+      this.syncSuggestedJerseyNumber();
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
@@ -147,8 +150,9 @@ export class TeamRosterPageComponent implements OnInit {
 
   resetNewPlayerForm() {
     this.newPlayerName = '';
-    this.newJerseyNumber = '';
     this.newPosition = '';
+    this.newJerseyNumber = '';
+    this.syncSuggestedJerseyNumber(true);
   }
 
   resetEditingPlayer() {
@@ -201,9 +205,29 @@ export class TeamRosterPageComponent implements OnInit {
 
       const team = teams.find((entry) => entry.id === this.teamId) as Team | undefined;
       this.teamName = team?.name ?? '';
+      this.syncSuggestedJerseyNumber(true);
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
     }
+  }
+
+  private syncSuggestedJerseyNumber(force = false) {
+    const nextJerseyNumber = this.getNextSuggestedJerseyNumber();
+
+    if (force || !this.newJerseyNumber.trim() || this.newJerseyNumber === this.lastSuggestedJerseyNumber) {
+      this.newJerseyNumber = nextJerseyNumber;
+    }
+
+    this.lastSuggestedJerseyNumber = nextJerseyNumber;
+  }
+
+  private getNextSuggestedJerseyNumber() {
+    const highestJerseyNumber = this.roster().reduce((highest, player) => {
+      const currentNumber = Number.parseInt(player.jerseyNumber, 10);
+      return Number.isNaN(currentNumber) ? highest : Math.max(highest, currentNumber);
+    }, 0);
+
+    return String(highestJerseyNumber + 1);
   }
 }

@@ -88,10 +88,6 @@
   min-height: 100vh;
 }
 
-.shell__content-inner {
-  width: 100%;
-}
-
 .shell__sidebar-toggle {
   display: none;
 }
@@ -101,7 +97,7 @@
   inset: auto 0 0 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
   border: 1px solid var(--color-border);
@@ -116,15 +112,19 @@
 
 .tabbar__item {
   display: inline-flex;
+  border: 0;
+  background: transparent;
   gap: 10px;
   justify-content: center;
   align-items: center;
   min-height: 52px;
   border-radius: 14px;
+  cursor: pointer;
   color: var(--color-text-muted);
   text-decoration: none;
   font-weight: 700;
   letter-spacing: 0.01em;
+  font: inherit;
 }
 
 .tabbar__icon {
@@ -150,6 +150,13 @@
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
   color: var(--color-surface-strong);
 }
+
+.tabbar__item--button:hover,
+.tabbar__item--button:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--color-text);
+}
+
 @media (max-width: 767px) {
   .shell__brand-logo {
     width: min(160px, calc(100vw - 112px));
@@ -239,6 +246,13 @@
     justify-content: center;
     min-height: 46px;
     padding: 0;
+  }
+
+  .tabbar__item--auth {
+    margin-top: auto;
+    border-top: 1px solid var(--color-border);
+    border-radius: 0;
+    padding-top: 14px;
   }
 
   .tabbar__label {
@@ -368,6 +382,10 @@
   .tabbar__item {
     justify-content: flex-start;
     padding: 0 16px;
+  }
+
+  .tabbar__item--auth {
+    padding-top: 14px;
   }
 
   .tabbar__label {

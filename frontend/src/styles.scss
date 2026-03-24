@@ -53,7 +53,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -246,6 +247,54 @@ button {
   gap: 12px;
 }
 
+.auth-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: end center;
+}
+
+.auth-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: var(--color-surface);
+}
+
+.auth-sheet__panel {
+  position: relative;
+  width: min(100%, 520px);
+  margin: 0 16px calc(104px + env(safe-area-inset-bottom));
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.auth-sheet__brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.auth-sheet__brand-logo {
+  display: block;
+  width: min(180px, 58vw);
+  height: auto;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.auth-sheet__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
 @media (min-width: 768px) {
   .page {
     max-width: 920px;
@@ -255,5 +304,39 @@ button {
 
   .mini-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .auth-sheet {
+    place-items: center;
+  }
+
+  .auth-sheet__panel {
+    margin: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-sheet {
+    place-items: stretch;
+  }
+
+  .auth-sheet__panel {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 28px 20px calc(28px + env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .auth-sheet__brand {
+    margin-bottom: 24px;
+  }
+
+  .auth-sheet__brand-logo {
+    width: min(210px, 62vw);
   }
 }

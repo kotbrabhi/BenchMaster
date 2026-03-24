@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { requireAuth } from '../auth/auth.middleware';
 import { asyncHandler } from '../utils/async-handler';
+import * as authController from '../controllers/auth.controller';
 import * as gameController from '../controllers/game.controller';
 import * as liveMatchController from '../controllers/live-match.controller';
 import * as playerController from '../controllers/player.controller';
@@ -10,6 +12,12 @@ const router = Router();
 router.get('/health', (_request, response) => {
   response.json({ status: 'ok' });
 });
+
+router.post('/auth/register', asyncHandler(authController.register));
+router.post('/auth/login', asyncHandler(authController.login));
+router.get('/auth/me', asyncHandler(requireAuth), asyncHandler(authController.me));
+
+router.use(asyncHandler(requireAuth));
 
 router.get('/teams', asyncHandler(teamController.listTeams));
 router.post('/teams', asyncHandler(teamController.createTeam));

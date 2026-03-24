@@ -49,7 +49,8 @@
             class="setup-card"
             role="listitem"
             [class.setup-card--selected]="isAvailable(player)"
-            [class.setup-card--starter]="isStarter(player)">
+            [class.setup-card--starter]="isStarter(player)"
+            [class.setup-card--error]="hasStarterSelectionError(player)">
             <div class="setup-card__content">
               <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
               <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
@@ -77,6 +78,7 @@
 
               <button
                 class="button button--secondary button--icon"
+                [class.button--danger]="hasStarterSelectionError(player)"
                 type="button"
                 [disabled]="!isAvailable(player)"
                 [attr.aria-label]="

@@ -67,6 +67,16 @@ model Game {
   @@index([teamId])
 }
 
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?
+  email        String   @unique
+  passwordHash String
+  passwordSalt String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model GamePlayer {
   id          Int             @id @default(autoincrement())
   gameId       Int
