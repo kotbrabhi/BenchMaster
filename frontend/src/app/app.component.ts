@@ -5,7 +5,8 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AppModeService } from './core/app-mode.service';
 import { AuthService } from './core/auth.service';
 import { getErrorMessage } from './core/api';
-import { TranslationKey } from './core/translations';
+import { I18nService } from './core/i18n.service';
+import { Locale, TranslationKey } from './core/translations';
 import { GameService } from './services/game.service';
 import { TeamService } from './services/team.service';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly appModeService = inject(AppModeService);
   private readonly authService = inject(AuthService);
+  private readonly i18nService = inject(I18nService);
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
 
@@ -35,6 +37,7 @@ export class AppComponent implements OnInit {
   readonly currentUser = this.authService.currentUser;
   readonly isRestoringSession = this.authService.isRestoring;
   readonly isAuthenticated = computed(() => !!this.currentUser());
+  readonly locale = this.i18nService.locale;
 
   readonly navigationItems = [
     { labelKey: 'app.nav.home' as const, link: '/', icon: 'home' as const },
@@ -128,6 +131,14 @@ export class AppComponent implements OnInit {
 
   authIntentLabel() {
     return this.authIntent() === 'login' ? 'home.auth.loginTab' : 'home.auth.registerTab';
+  }
+
+  toggleLocale() {
+    this.i18nService.setLocale(this.locale() === 'fr' ? 'en' : 'fr');
+  }
+
+  nextLocaleLabel(): Locale {
+    return this.locale() === 'fr' ? 'en' : 'fr';
   }
 
   private async refreshNavigationData() {

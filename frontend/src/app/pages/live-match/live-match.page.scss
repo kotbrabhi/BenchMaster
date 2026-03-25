@@ -241,6 +241,27 @@
   display: none;
 }
 
+.surface-card--guided {
+  border-color: var(--color-accent-strong-soft);
+  box-shadow: 0 0 0 1px rgba(188, 99, 42, 0.14);
+}
+
+.live-roster-hint {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+  line-height: 1.35;
+}
+
+.live-roster-hint--guided {
+  font-weight: 700;
+  color: var(--color-accent-strong);
+}
+
+.live-thumb-dock {
+  display: none;
+}
+
 .live-roster-switch {
   display: flex;
   gap: 8px;
@@ -253,8 +274,39 @@
 .live-roster-switch .pill {
   flex: 1;
   min-height: 44px;
-  border-color: transparent;
-  background: transparent;
+  border-color: rgba(73, 42, 19, 0.14);
+}
+
+.live-roster-tab {
+  flex: 1;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.live-roster-tab--court {
+  border-color: rgba(188, 99, 42, 0.26);
+  background: rgba(188, 99, 42, 0.12);
+  color: #7a3f1a;
+}
+
+.live-roster-tab--bench {
+  border-color: rgba(73, 42, 19, 0.18);
+  background: rgba(73, 42, 19, 0.08);
+  color: #5f4736;
+}
+
+.live-roster-tab--court.pill--active {
+  border-color: var(--color-accent-strong);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: var(--color-surface-strong);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.live-roster-tab--bench.pill--active {
+  border-color: rgba(73, 42, 19, 0.34);
+  background: linear-gradient(135deg, #f7e9d7, #e6cfb3);
+  color: #392516;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
 }
 
 .substitution-banner__action-label {
@@ -267,13 +319,17 @@
 }
 
 @media (max-width: 767px) {
+  .page--live {
+    padding-bottom: calc(248px + env(safe-area-inset-bottom));
+  }
+
+  .live-control-panel--players,
+  .substitution-banner {
+    display: none;
+  }
+
   .live-roster-switch-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    position: sticky;
-    top: 8px;
-    z-index: 6;
+    display: none;
   }
 
   .live-clock-card strong {
@@ -337,6 +393,96 @@
   .live-match__roster-grid--court #live-roster-court,
   .live-match__roster-grid--bench #live-roster-bench {
     display: block;
+  }
+
+  .live-thumb-dock {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid rgba(73, 42, 19, 0.12);
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 246, 0.97), rgba(255, 247, 239, 0.98));
+    box-shadow:
+      0 18px 40px rgba(73, 42, 19, 0.16),
+      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    backdrop-filter: blur(16px);
+  }
+
+  .live-thumb-dock--active {
+    border-color: rgba(188, 99, 42, 0.22);
+    box-shadow:
+      0 22px 42px rgba(73, 42, 19, 0.18),
+      0 0 0 1px rgba(188, 99, 42, 0.12) inset;
+  }
+
+  .live-thumb-dock__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .live-thumb-dock__summary strong {
+    font-size: 0.96rem;
+    line-height: 1.1;
+  }
+
+  .live-thumb-dock__summary p,
+  .live-thumb-dock__meta {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--player-meta-size);
+    line-height: 1.35;
+  }
+
+  .live-thumb-dock__meta {
+    font-weight: 700;
+  }
+
+  .live-thumb-dock__switch,
+  .live-thumb-dock__utility,
+  .live-thumb-dock__actions {
+    display: grid;
+    gap: 8px;
+  }
+
+  .live-thumb-dock__switch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: rgba(255, 251, 246, 0.86);
+  }
+
+  .live-thumb-dock__switch .pill {
+    min-height: 44px;
+  }
+
+  .live-thumb-dock__switch .live-roster-tab {
+    min-height: 44px;
+  }
+
+  .live-thumb-dock__utility,
+  .live-thumb-dock__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-thumb-dock__actions .button:only-child {
+    grid-column: 1 / -1;
+  }
+
+  .live-thumb-dock .button {
+    min-height: 48px;
+    width: 100%;
+    padding: 0 14px;
+    border-radius: 16px;
+    font-size: 0.9rem;
   }
 }
 

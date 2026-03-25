@@ -9,6 +9,7 @@ import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 interface PositionOption {
@@ -17,10 +18,17 @@ interface PositionOption {
   label?: string;
 }
 
+interface PendingPlayerDeletion {
+  playerId: number;
+  title: string;
+  message: string;
+  details: string;
+}
+
 @Component({
   selector: 'app-team-roster-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, ConfirmationDialogComponent],
   templateUrl: './team-roster.page.html',
   styleUrl: './team-roster.page.scss'
 })
@@ -35,6 +43,8 @@ export class TeamRosterPageComponent implements OnInit {
   readonly isSavingTeamName = signal(false);
   readonly isAddingPlayer = signal(false);
   readonly isSavingEditedPlayer = signal(false);
+  readonly deletingPlayerId = signal<number | null>(null);
+  readonly pendingPlayerDeletion = signal<PendingPlayerDeletion | null>(null);
   readonly t = this.i18n.t;
   readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
     { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
@@ -150,22 +160,44 @@ export class TeamRosterPageComponent implements OnInit {
     }
   }
 
-  async deletePlayer(playerId: number) {
-    const confirmed = window.confirm(this.t('teamRoster.confirmDeletePlayer', this.labelParams()));
+  requestDeletePlayer(player: { id: number; name: string; jerseyNumber: string }) {
+    this.pendingPlayerDeletion.set({
+      playerId: player.id,
+      title: this.t('teamRoster.confirmDeletePlayer.title', {
+        playerName: player.name,
+        jerseyNumber: player.jerseyNumber
+      }),
+      message: this.t('teamRoster.confirmDeletePlayer.message', this.labelParams()),
+      details: this.t('teamRoster.confirmDeletePlayer.details', this.labelParams())
+    });
+  }
 
-    if (!confirmed) {
+  closeDeletePlayerDialog() {
+    if (!this.deletingPlayerId()) {
+      this.pendingPlayerDeletion.set(null);
+    }
+  }
+
+  async confirmDeletePlayer() {
+    const deletion = this.pendingPlayerDeletion();
+
+    if (!deletion) {
       return;
     }
 
     try {
-      await this.playerService.deletePlayer(this.teamId, playerId);
-      if (this.editingPlayerId === playerId) {
+      this.deletingPlayerId.set(deletion.playerId);
+      await this.playerService.deletePlayer(this.teamId, deletion.playerId);
+      if (this.editingPlayerId === deletion.playerId) {
         this.resetEditingPlayer();
       }
       this.syncSuggestedJerseyNumber();
       this.errorMessage.set('');
+      this.pendingPlayerDeletion.set(null);
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.deletingPlayerId.set(null);
     }
   }
 

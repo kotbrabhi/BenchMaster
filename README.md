@@ -69,13 +69,21 @@ These TODOs reserve space for future points, rebounds, assists, shooting, effici
 
 This project requires Node.js `20.19.0` or newer because the frontend uses Angular CLI 21.
 
-The repository now includes `.nvmrc` and `.node-version`, so any compatible Node version manager can pick the right runtime automatically.
+The repository now includes `.nvmrc`, `.node-version`, and `.tool-versions`, so the most common Node version managers can pick the right runtime automatically.
 
 If you use a shell-based `nvm` setup, run this once from the project root before installing dependencies:
 
 ```bash
 nvm use
 ```
+
+You can also verify the active runtime explicitly at any time:
+
+```bash
+npm run check:node
+```
+
+If Node is too old, the command now fails immediately with a targeted message instead of letting Angular fail later with a less actionable error.
 
 ### 1. Install dependencies
 

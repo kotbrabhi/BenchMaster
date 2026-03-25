@@ -3,12 +3,135 @@
     <header class="toolbar">
       <span class="toolbar__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
       <h1 class="toolbar__title">{{ gameSummary.label }}</h1>
+      <p class="toolbar__subtitle">{{ 'summary.hero.subtitle' | t }}</p>
     </header>
 
     @if (errorMessage()) {
-      <div class="error-banner">{{ errorMessage() }}</div>
+      <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
     }
-    <section class="surface-card">
+
+    <section class="summary-overview">
+      <article class="info-panel info-panel--accent">
+        <span class="info-panel__eyebrow">{{ 'summary.stats.playersTracked' | t : labelParams() }}</span>
+        <strong class="info-panel__title">{{ sortedPlayers().length }}</strong>
+        <p class="info-panel__text">{{ 'summary.playingTime.title' | t }}</p>
+      </article>
+
+      <article class="info-panel">
+        <span class="info-panel__eyebrow">{{ 'summary.stats.totalClock' | t }}</span>
+        <strong class="info-panel__title">{{ gameSummary.totalGameSeconds | duration : 'clock' }}</strong>
+        <p class="info-panel__text">{{ 'summary.hero.subtitle' | t }}</p>
+      </article>
+
+      @if (totals(); as totals) {
+        <article class="info-panel">
+          <span class="info-panel__eyebrow">{{ 'summary.table.total' | t }}</span>
+          <strong class="info-panel__title">{{ totals.points }} {{ 'summary.table.points' | t }}</strong>
+          <p class="info-panel__text">
+            {{ totals.assists }} {{ 'summary.table.assists' | t }} · {{ totals.rebounds }} {{ 'summary.table.rebounds' | t }}
+          </p>
+        </article>
+      }
+    </section>
+
+    <section class="surface-card summary-breakdown">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'summary.playingTime.title' | t }}</h2>
+          <p>{{ 'summary.playingTime.subtitle' | t }}</p>
+        </div>
+      </div>
+
+      <div class="summary-sort-pills" role="toolbar" [attr.aria-label]="'summary.playingTime.title' | t">
+        @for (key of summarySortKeys; track key) {
+          <button
+            class="pill"
+            type="button"
+            [class.pill--active]="isSortedBy(key)"
+            [attr.aria-label]="sortButtonLabel(key)"
+            [attr.title]="sortButtonLabel(key)"
+            (click)="toggleSort(key)">
+            {{ summaryCardLabel(key) }}
+          </button>
+        }
+      </div>
+
+      <div class="summary-cards" role="list">
+        @for (player of sortedPlayers(); track player.playerId) {
+          <article class="summary-card" role="listitem">
+            <div class="summary-card__header">
+              <div class="summary-card__identity">
+                <strong>{{ player.name }}</strong>
+                <div class="summary-card__chips">
+                  <span class="state-chip">#{{ player.jerseyNumber }}</span>
+                  <span class="state-chip" [class.state-chip--selected]="player.isStarter">
+                    {{ playerSummaryLabel(player) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="summary-card__time">
+                <span>{{ 'summary.table.minutes' | t }}</span>
+                <strong>{{ playingMinutes(player.totalSeconds) }}</strong>
+              </div>
+            </div>
+
+            <dl class="summary-card__stats">
+              <div>
+                <dt>{{ 'summary.table.points' | t }}</dt>
+                <dd>{{ player.points }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.assists' | t }}</dt>
+                <dd>{{ player.assists }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.rebounds' | t }}</dt>
+                <dd>{{ player.rebounds }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.blocks' | t }}</dt>
+                <dd>{{ player.blocks }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+
+        @if (totals(); as totals) {
+          <article class="summary-card summary-card--total" role="listitem">
+            <div class="summary-card__header">
+              <div class="summary-card__identity">
+                <strong>{{ 'summary.table.total' | t }}</strong>
+              </div>
+
+              <div class="summary-card__time">
+                <span>{{ 'summary.stats.totalClock' | t }}</span>
+                <strong>{{ gameSummary.totalGameSeconds | duration : 'clock' }}</strong>
+              </div>
+            </div>
+
+            <dl class="summary-card__stats">
+              <div>
+                <dt>{{ 'summary.table.points' | t }}</dt>
+                <dd>{{ totals.points }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.assists' | t }}</dt>
+                <dd>{{ totals.assists }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.rebounds' | t }}</dt>
+                <dd>{{ totals.rebounds }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.blocks' | t }}</dt>
+                <dd>{{ totals.blocks }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+
       <div class="summary-table-wrap">
         <table class="summary-table">
           <thead>
@@ -117,6 +240,9 @@
       </div>
     </section>
   } @else {
-    <div class="empty-state">{{ 'summary.loading' | t }}</div>
+    <div class="status-panel status-panel--loading">
+      <span class="status-panel__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
+      <p class="status-panel__text">{{ 'summary.loading' | t }}</p>
+    </div>
   }
 </section>

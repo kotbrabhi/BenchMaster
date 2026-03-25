@@ -6,7 +6,7 @@
   </header>
 
   @if (errorMessage()) {
-    <div class="error-banner">{{ errorMessage() }}</div>
+    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
   }
 
   <section class="surface-card">
@@ -316,7 +316,7 @@
                   type="button"
                   [attr.aria-label]="'teamRoster.playerForm.deleteAction' | t : labelParams()"
                   [attr.title]="'teamRoster.playerForm.deleteAction' | t : labelParams()"
-                  (click)="deletePlayer(player.id)">
+                  (click)="requestDeletePlayer(player)">
                   <span class="button__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
                       <path d="M4 7h16" />
@@ -332,8 +332,26 @@
           }
         }
       } @else {
-        <div class="empty-state">{{ 'teamRoster.list.empty' | t : labelParams() }}</div>
+        <div class="status-panel status-panel--empty">
+          <span class="status-panel__eyebrow">{{ 'teamRoster.list.title' | t }}</span>
+          <p class="status-panel__text">{{ 'teamRoster.list.empty' | t : labelParams() }}</p>
+        </div>
       }
     </div>
   </section>
+
+  @if (pendingPlayerDeletion(); as deletion) {
+    <app-confirmation-dialog
+      [open]="true"
+      [tone]="'danger'"
+      [eyebrow]="'teamRoster.hero.eyebrow' | t"
+      [title]="deletion.title"
+      [message]="deletion.message"
+      [details]="deletion.details"
+      [confirmLabel]="'teamRoster.playerForm.deleteAction' | t : labelParams()"
+      [cancelLabel]="'common.actions.cancel' | t"
+      [confirmBusy]="deletingPlayerId() === deletion.playerId"
+      (cancelled)="closeDeletePlayerDialog()"
+      (confirmed)="confirmDeletePlayer()" />
+  }
 </section>

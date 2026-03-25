@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
@@ -14,23 +14,35 @@ import {
   PlayerCardQuickActionValue
 } from '../../shared/components/player-card/player-card.component';
 import { TimeTrackingService } from '../../services/time-tracking.service';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { PlayerCardComponent } from '../../shared/components/player-card/player-card.component';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 type LiveRosterView = 'court' | 'bench';
 
+interface PendingLiveConfirmation {
+  action: 'complete-period' | 'end-game';
+  title: string;
+  message: string;
+  details: string;
+  confirmLabel: string;
+  tone: 'default' | 'danger';
+}
+
 @Component({
   selector: 'app-live-match-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, PlayerCardComponent, DurationPipe, TranslatePipe],
+  imports: [CommonModule, RouterLink, PlayerCardComponent, DurationPipe, TranslatePipe, ConfirmationDialogComponent],
   templateUrl: './live-match.page.html',
   styleUrl: './live-match.page.scss'
 })
-export class LiveMatchPageComponent implements OnInit {
+export class LiveMatchPageComponent implements OnInit, OnDestroy {
   private readonly i18n = inject(I18nService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private rosterTouchStart: { x: number; y: number } | null = null;
+  private mobileMediaQuery: MediaQueryList | null = null;
   readonly liveMatchService = inject(LiveMatchService);
   readonly timeTrackingService = inject(TimeTrackingService);
 
@@ -43,11 +55,19 @@ export class LiveMatchPageComponent implements OnInit {
   readonly statUpdatePlayerIds = signal<number[]>([]);
   readonly correctionMode = signal(false);
   readonly mobileRosterView = signal<LiveRosterView>('court');
+  readonly isMobileViewport = signal(false);
+  readonly expandedStatsPlayerId = signal<number | null>(null);
+  readonly pendingConfirmation = signal<PendingLiveConfirmation | null>(null);
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly t = this.i18n.t;
 
   async ngOnInit() {
+    this.initMobileViewport();
     await this.loadGame();
+  }
+
+  ngOnDestroy() {
+    this.mobileMediaQuery?.removeEventListener('change', this.handleMobileViewportChange);
   }
 
   async startGame() {
@@ -62,14 +82,21 @@ export class LiveMatchPageComponent implements OnInit {
     await this.runAction('resume', () => this.liveMatchService.resumeGame(this.gameId));
   }
 
-  async completePeriod() {
-    const confirmed = window.confirm(this.t('live.confirmCompletePeriod'));
+  requestCompletePeriod() {
+    const game = this.game();
 
-    if (!confirmed) {
+    if (!game) {
       return;
     }
 
-    await this.runAction('complete-period', () => this.liveMatchService.completePeriod(this.gameId));
+    this.pendingConfirmation.set({
+      action: 'complete-period',
+      title: this.t('live.confirmCompletePeriod.title', { number: game.currentPeriodNumber }),
+      message: this.t('live.confirmCompletePeriod.message'),
+      details: this.t('live.confirmCompletePeriod.details'),
+      confirmLabel: this.t('live.actions.completePeriod'),
+      tone: 'default'
+    });
   }
 
   async startNextPeriod() {
@@ -77,13 +104,17 @@ export class LiveMatchPageComponent implements OnInit {
   }
 
   async toggleBenchPlayer(playerId: number) {
+    const wasSelected = this.isBenchSelected(playerId);
     this.liveMatchService.toggleBenchPlayer(playerId);
     this.errorMessage.set('');
+    this.syncMobileRosterFlow('bench', wasSelected);
   }
 
   async toggleActivePlayer(playerId: number) {
+    const wasSelected = this.isActiveSelected(playerId);
     this.liveMatchService.toggleActivePlayer(playerId);
     this.errorMessage.set('');
+    this.syncMobileRosterFlow('court', wasSelected);
   }
 
   clearSelections() {
@@ -96,6 +127,43 @@ export class LiveMatchPageComponent implements OnInit {
 
   setMobileRosterView(view: LiveRosterView) {
     this.mobileRosterView.set(view);
+
+    if (view !== 'court') {
+      this.expandedStatsPlayerId.set(null);
+    }
+  }
+
+  handleRosterTouchStart(event: TouchEvent) {
+    const [touch] = event.touches;
+
+    if (!touch) {
+      return;
+    }
+
+    this.rosterTouchStart = { x: touch.clientX, y: touch.clientY };
+  }
+
+  handleRosterTouchEnd(event: TouchEvent) {
+    if (!this.rosterTouchStart) {
+      return;
+    }
+
+    const [touch] = event.changedTouches;
+
+    if (!touch) {
+      this.rosterTouchStart = null;
+      return;
+    }
+
+    const deltaX = touch.clientX - this.rosterTouchStart.x;
+    const deltaY = touch.clientY - this.rosterTouchStart.y;
+    this.rosterTouchStart = null;
+
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaY) > 72) {
+      return;
+    }
+
+    this.setMobileRosterView(deltaX < 0 ? 'bench' : 'court');
   }
 
   async substituteBatch() {
@@ -111,22 +179,15 @@ export class LiveMatchPageComponent implements OnInit {
     }
   }
 
-  async endGame() {
-    const confirmed = window.confirm(this.t('live.confirmEndGame'));
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      this.busyAction.set('end-game');
-      await this.liveMatchService.endGame(this.gameId);
-      await this.router.navigate(['/games', this.gameId, 'summary']);
-    } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
-    } finally {
-      this.busyAction.set(null);
-    }
+  requestEndGame() {
+    this.pendingConfirmation.set({
+      action: 'end-game',
+      title: this.t('live.confirmEndGame.title'),
+      message: this.t('live.confirmEndGame.message'),
+      details: this.t('live.confirmEndGame.details'),
+      confirmLabel: this.t('live.actions.end'),
+      tone: 'danger'
+    });
   }
 
   clockSeconds(game: GameDetail) {
@@ -254,6 +315,63 @@ export class LiveMatchPageComponent implements OnInit {
     return this.pendingBenchPlayers().length + this.pendingActivePlayers().length > 0;
   }
 
+  guidedRosterView(): LiveRosterView | null {
+    const incomingSelections = this.pendingBenchPlayers().length;
+    const outgoingSelections = this.pendingActivePlayers().length;
+
+    if (incomingSelections > outgoingSelections) {
+      return 'court';
+    }
+
+    if (outgoingSelections > incomingSelections) {
+      return 'bench';
+    }
+
+    return null;
+  }
+
+  rosterGuidanceLabel(view: LiveRosterView) {
+    if (this.guidedRosterView() !== view) {
+      return '';
+    }
+
+    return view === 'court'
+      ? this.t('live.flow.pickOutgoing', this.labelParams())
+      : this.t('live.flow.pickIncoming', this.labelParams());
+  }
+
+  rosterGuidanceChipLabel(view: LiveRosterView) {
+    if (this.guidedRosterView() !== view) {
+      return '';
+    }
+
+    return view === 'court' ? this.t('live.flow.nextOutgoingShort') : this.t('live.flow.nextIncomingShort');
+  }
+
+  thumbDockTitle(game: GameDetail) {
+    if (this.correctionMode()) {
+      return this.t('live.correction.armedTitle');
+    }
+
+    if (this.hasPendingSelections()) {
+      return this.pendingHeadline();
+    }
+
+    return '';
+  }
+
+  thumbDockMessage() {
+    if (this.correctionMode()) {
+      return this.t('live.correction.armedSubtitle');
+    }
+
+    if (this.hasPendingSelections()) {
+      return this.pendingInstructionMessage();
+    }
+
+    return '';
+  }
+
   statusLabel(game: GameDetail) {
     return {
       DRAFT: this.t('live.status.draft'),
@@ -361,6 +479,10 @@ export class LiveMatchPageComponent implements OnInit {
         this.correctionMode.set(false);
       }
 
+      if (this.isMobileViewport()) {
+        this.expandedStatsPlayerId.set(null);
+      }
+
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
@@ -375,6 +497,18 @@ export class LiveMatchPageComponent implements OnInit {
 
   livePlayerNote(tone: LiveRosterView) {
     return tone === 'court' ? this.t('live.notes.currentlyOnCourt') : this.t('live.notes.availableOnBench');
+  }
+
+  togglePlayerStatsCard(playerId: number) {
+    if (!this.isMobileViewport()) {
+      return;
+    }
+
+    this.expandedStatsPlayerId.update((current) => (current === playerId ? null : playerId));
+  }
+
+  isPlayerStatsCardExpanded(playerId: number) {
+    return !this.isMobileViewport() || this.expandedStatsPlayerId() === playerId;
   }
 
   mobileRosterTabLabel(view: LiveRosterView) {
@@ -403,6 +537,27 @@ export class LiveMatchPageComponent implements OnInit {
       count: game.activePlayers.length,
       ...this.labelParams()
     };
+  }
+
+  closePendingConfirmation() {
+    if (this.pendingConfirmation() && !this.busyAction()) {
+      this.pendingConfirmation.set(null);
+    }
+  }
+
+  async confirmPendingAction() {
+    const confirmation = this.pendingConfirmation();
+
+    if (!confirmation) {
+      return;
+    }
+
+    if (confirmation.action === 'complete-period') {
+      await this.confirmCompletePeriod();
+      return;
+    }
+
+    await this.confirmEndGame();
   }
 
   private canReverseAction(player: GamePlayerState, action: PlayerCardQuickActionValue) {
@@ -444,5 +599,66 @@ export class LiveMatchPageComponent implements OnInit {
     }
 
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  private readonly handleMobileViewportChange = (event: MediaQueryListEvent) => {
+    this.isMobileViewport.set(event.matches);
+
+    if (!event.matches) {
+      this.expandedStatsPlayerId.set(null);
+    }
+  };
+
+  private syncMobileRosterFlow(sourceView: LiveRosterView, wasSelected: boolean) {
+    if (wasSelected) {
+      return;
+    }
+
+    const guidedView = this.guidedRosterView();
+
+    if (guidedView) {
+      this.mobileRosterView.set(guidedView);
+      return;
+    }
+
+    if (sourceView === 'bench' && this.hasPendingSelections()) {
+      this.mobileRosterView.set('court');
+    }
+  }
+
+  private async confirmCompletePeriod() {
+    try {
+      this.busyAction.set('complete-period');
+      await this.liveMatchService.completePeriod(this.gameId);
+      this.pendingConfirmation.set(null);
+      this.errorMessage.set('');
+    } catch (error) {
+      this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.busyAction.set(null);
+    }
+  }
+
+  private async confirmEndGame() {
+    try {
+      this.busyAction.set('end-game');
+      await this.liveMatchService.endGame(this.gameId);
+      this.pendingConfirmation.set(null);
+      await this.router.navigate(['/games', this.gameId, 'summary']);
+    } catch (error) {
+      this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.busyAction.set(null);
+    }
+  }
+
+  private initMobileViewport() {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return;
+    }
+
+    this.mobileMediaQuery = window.matchMedia('(max-width: 767px)');
+    this.isMobileViewport.set(this.mobileMediaQuery.matches);
+    this.mobileMediaQuery.addEventListener('change', this.handleMobileViewportChange);
   }
 }

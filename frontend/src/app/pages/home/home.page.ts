@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT, ViewportScroller } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,18 +10,28 @@ import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
 import { TeamService } from '../../services/team.service';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+
+interface PendingTeamDeletion {
+  teamId: number;
+  title: string;
+  message: string;
+  details: string;
+}
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, ConfirmationDialogComponent],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss'
 })
 export class HomePageComponent implements OnInit {
+  private readonly document = inject(DOCUMENT);
   private readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
+  private readonly viewportScroller = inject(ViewportScroller);
   private readonly appModeService = inject(AppModeService);
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
@@ -31,6 +41,8 @@ export class HomePageComponent implements OnInit {
   readonly games = this.gameService.games;
   readonly errorMessage = signal('');
   readonly isSubmittingTeam = signal(false);
+  readonly deletingTeamId = signal<number | null>(null);
+  readonly pendingTeamDeletion = signal<PendingTeamDeletion | null>(null);
   readonly t = this.i18n.t;
   readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
     { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
@@ -80,20 +92,41 @@ export class HomePageComponent implements OnInit {
     this.teamPlayerNames = '';
   }
 
-  async deleteTeam(teamId: number) {
-    const confirmed = window.confirm(this.t('home.confirmDeleteTeam'));
+  requestDeleteTeam(team: Team) {
+    this.pendingTeamDeletion.set({
+      teamId: team.id,
+      title: this.t('home.confirmDeleteTeam.title', { teamName: team.name }),
+      message: this.t('home.confirmDeleteTeam.message'),
+      details: this.t('home.confirmDeleteTeam.details')
+    });
+  }
 
-    if (!confirmed) {
+  closeDeleteTeamDialog() {
+    if (this.deletingTeamId()) {
+      return;
+    }
+
+    this.pendingTeamDeletion.set(null);
+  }
+
+  async confirmDeleteTeam() {
+    const deletion = this.pendingTeamDeletion();
+
+    if (!deletion) {
       return;
     }
 
     try {
-      await this.teamService.deleteTeam(teamId);
+      this.deletingTeamId.set(deletion.teamId);
+      await this.teamService.deleteTeam(deletion.teamId);
       await this.gameService.loadGames();
       this.errorMessage.set('');
       this.resetTeamForm();
+      this.pendingTeamDeletion.set(null);
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
+    } finally {
+      this.deletingTeamId.set(null);
     }
   }
 
@@ -110,6 +143,29 @@ export class HomePageComponent implements OnInit {
 
   shouldShowTeamEditor() {
     return this.appMode() !== 'guest' || !this.teams().length || this.editingTeamId !== null;
+  }
+
+  shouldShowOnboarding() {
+    return this.teams().length === 0 || this.games().length === 0;
+  }
+
+  async handlePrimaryCta() {
+    const firstTeam = this.teams()[0];
+
+    if (firstTeam) {
+      await this.router.navigate(['/games/new'], { queryParams: { teamId: firstTeam.id } });
+      return;
+    }
+
+    this.viewportScroller.scrollToAnchor('home-teams');
+    setTimeout(() => {
+      const teamsSection = this.document.getElementById('home-teams');
+      teamsSection?.focus({ preventScroll: true });
+    }, 120);
+  }
+
+  primaryCtaLabel() {
+    return this.teams().length ? this.t('home.hero.primaryCtaReady') : this.t('home.hero.primaryCtaEmpty');
   }
 
   gameLink(game: GameListItem) {

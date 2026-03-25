@@ -5,12 +5,14 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "ng": "ng",
-    "prestart": "node scripts/write-env.mjs",
+    "check:node": "node ../scripts/check-node.mjs",
+    "ng": "npm run check:node && ng",
+    "prestart": "npm run check:node && node scripts/write-env.mjs",
     "start": "ng serve --host 0.0.0.0",
-    "prebuild": "node scripts/write-env.mjs",
+    "prebuild": "npm run check:node && node scripts/write-env.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "pretest": "npm run check:node",
     "test": "ng test"
   },
   "private": true,

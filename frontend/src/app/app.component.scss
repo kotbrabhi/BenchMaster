@@ -4,6 +4,7 @@
   padding-bottom: calc(84px + env(safe-area-inset-bottom));
   isolation: isolate;
   overflow: hidden;
+  background: linear-gradient(180deg, #f4e0c2 0%, #efd6b1 46%, #ebcfaa 100%);
 }
 
 .shell::before,
@@ -54,6 +55,8 @@
       var(--color-wood-mid) 78%,
       #fae6c7 100%
     );
+  opacity: 0.28;
+  transition: opacity 220ms ease;
 }
 
 .shell::after {
@@ -62,6 +65,15 @@
     radial-gradient(circle at top center, rgba(255, 255, 255, 0.38), transparent 32%),
     radial-gradient(circle at center, rgba(255, 255, 255, 0.14), transparent 46%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 251, 245, 0.3));
+  opacity: 0.94;
+}
+
+.shell--focus::before {
+  opacity: 0.68;
+}
+
+.shell--focus::after {
+  opacity: 0.78;
 }
 
 .shell__brand {
@@ -157,9 +169,37 @@
   color: var(--color-text);
 }
 
+.tabbar__item--locale {
+  display: none;
+}
+
+.tabbar__locale-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--color-text);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+
 @media (max-width: 767px) {
   .shell__brand-logo {
     width: min(160px, calc(100vw - 112px));
+  }
+
+  .shell--mobile-nav-hidden {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .shell--mobile-nav-hidden .tabbar,
+  .tabbar--hidden-mobile {
+    display: none;
   }
 }
 
@@ -248,8 +288,15 @@
     padding: 0;
   }
 
-  .tabbar__item--auth {
+  .tabbar__item--locale {
+    display: inline-flex;
     margin-top: auto;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 56px;
+  }
+
+  .tabbar__item--auth {
     border-top: 1px solid var(--color-border);
     border-radius: 0;
     padding-top: 14px;
@@ -257,6 +304,25 @@
 
   .tabbar__label {
     display: none;
+  }
+
+  .tabbar__item--locale .tabbar__icon {
+    justify-content: center;
+  }
+
+  .tabbar__item--locale .tabbar__locale-code {
+    min-width: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+  }
+
+  .tabbar__item--locale:hover .tabbar__locale-code,
+  .tabbar__item--locale:focus-visible .tabbar__locale-code {
+    color: var(--color-text);
   }
 
   .shell__sidebar-toggle {

@@ -6,7 +6,8 @@ type TranslationParams = Record<string, string | number>;
 
 @Pipe({
   name: 't',
-  standalone: true
+  standalone: true,
+  pure: false
 })
 export class TranslatePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);

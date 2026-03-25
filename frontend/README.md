@@ -1,6 +1,12 @@
 # Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.1.
+This project uses [Angular CLI](https://github.com/angular/angular-cli) 21 and requires Node.js 20.19.0 or newer.
+
+From the repository root, you can check the runtime with:
+
+```bash
+npm run check:node
+```
 
 ## Development server
 

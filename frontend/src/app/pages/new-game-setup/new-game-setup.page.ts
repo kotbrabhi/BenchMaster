@@ -10,12 +10,13 @@ import { buildTeamLabelParams } from '../../core/team-labels';
 import { GameService } from '../../services/game.service';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-new-game-setup-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, ConfirmationDialogComponent],
   templateUrl: './new-game-setup.page.html',
   styleUrl: './new-game-setup.page.scss'
 })
@@ -33,6 +34,7 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
   readonly isCreatingGame = signal(false);
+  readonly showGuestReplacementDialog = signal(false);
   readonly selectedTeamId = signal<number | null>(null);
   readonly selectedTeam = computed(() => this.teams().find((team) => team.id === this.selectedTeamId()) ?? null);
   readonly availablePlayerIds = signal<number[]>([]);
@@ -110,6 +112,37 @@ export class NewGameSetupPageComponent implements OnInit {
   }
 
   async createGame() {
+    await this.finalizeGameCreation(false);
+  }
+
+  closeGuestReplacementDialog() {
+    if (!this.isCreatingGame()) {
+      this.showGuestReplacementDialog.set(false);
+    }
+  }
+
+  guestReplacementDialogTitle() {
+    return this.t('newGame.confirmReplaceGuestGame.title');
+  }
+
+  guestReplacementDialogMessage() {
+    return this.t('newGame.confirmReplaceGuestGame.message');
+  }
+
+  guestReplacementDialogDetails() {
+    return this.t('newGame.confirmReplaceGuestGame.details');
+  }
+
+  guestReplacementDialogConfirmLabel() {
+    return this.t('newGame.confirmReplaceGuestGame.confirmAction');
+  }
+
+  async confirmGuestReplacement() {
+    this.showGuestReplacementDialog.set(false);
+    await this.finalizeGameCreation(true);
+  }
+
+  private async finalizeGameCreation(forceGuestReplacement: boolean) {
     const teamId = this.selectedTeamId();
 
     if (!teamId) {
@@ -118,12 +151,9 @@ export class NewGameSetupPageComponent implements OnInit {
 
     try {
       this.isCreatingGame.set(true);
-      if (this.appModeService.isGuestMode() && this.games().length) {
-        const confirmed = window.confirm(this.t('newGame.confirmReplaceGuestGame'));
-
-        if (!confirmed) {
-          return;
-        }
+      if (this.appModeService.isGuestMode() && this.games().length && !forceGuestReplacement) {
+        this.showGuestReplacementDialog.set(true);
+        return;
       }
 
       const game = await this.gameService.createGame({

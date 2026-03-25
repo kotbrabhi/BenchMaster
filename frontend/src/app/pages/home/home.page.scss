@@ -1,3 +1,44 @@
+.home-hero {
+  display: grid;
+  gap: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(188, 99, 42, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 250, 245, 0.98), rgba(255, 245, 235, 0.96));
+}
+
+.home-hero__copy {
+  display: grid;
+  gap: 10px;
+}
+
+.home-hero__title,
+.home-hero__subtitle {
+  margin: 0;
+}
+
+.home-hero__title {
+  font-size: clamp(2rem, 5vw, 3.3rem);
+  line-height: 0.98;
+  max-width: 11ch;
+}
+
+.home-hero__subtitle {
+  max-width: 56ch;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.home-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.home-hero__primary {
+  min-width: 220px;
+}
+
 .mode-note {
   margin: 16px 0 0;
   color: var(--color-text-muted);
@@ -47,6 +88,22 @@
 
 .team-card--editor {
   background: var(--color-accent-soft);
+}
+
+.team-card__editor-header {
+  display: grid;
+  gap: 6px;
+}
+
+.team-card__editor-header strong,
+.team-card__editor-header p {
+  margin: 0;
+}
+
+.team-card__editor-header p {
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+  line-height: 1.45;
 }
 
 .team-card__content {
@@ -242,6 +299,14 @@
 }
 
 @media (max-width: 900px) {
+  .home-hero__actions {
+    flex-direction: column;
+  }
+
+  .home-hero__actions .button {
+    width: 100%;
+  }
+
   .auth-session {
     align-items: stretch;
     flex-direction: column;

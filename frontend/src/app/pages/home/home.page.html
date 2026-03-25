@@ -1,18 +1,46 @@
 <section class="page">
   @if (errorMessage()) {
-    <div class="error-banner">{{ errorMessage() }}</div>
+    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
   }
 
-  <section class="surface-card">
+  @if (shouldShowOnboarding()) {
+    <header class="surface-card home-hero">
+      <div class="home-hero__copy">
+        <span class="toolbar__eyebrow">{{ 'home.hero.eyebrow' | t }}</span>
+        <h1 class="home-hero__title">{{ 'home.hero.title' | t }}</h1>
+        <p class="home-hero__subtitle">{{ 'home.hero.subtitle' | t }}</p>
+      </div>
+
+      <div class="home-hero__actions">
+        <button class="button home-hero__primary" type="button" (click)="handlePrimaryCta()">
+          {{ primaryCtaLabel() }}
+        </button>
+
+        @if (teams().length) {
+          <a class="button button--secondary" [routerLink]="['/teams', teams()[0].id]">
+            {{ 'home.teams.rosterAction' | t }}
+          </a>
+        }
+      </div>
+    </header>
+  }
+
+  <section class="surface-card" id="home-teams" tabindex="-1">
     <div class="section-heading">
       <div>
         <h2>{{ 'home.teams.title' | t }}</h2>
+        <p>{{ 'home.teams.subtitle' | t }}</p>
       </div>
     </div>
 
     <div class="teams-strip">
       @if (shouldShowTeamEditor()) {
         <article class="team-card team-card--editor">
+          <div class="team-card__editor-header">
+            <strong>{{ editingTeamId ? ('home.teamForm.editTitle' | t) : ('home.teamForm.createTitle' | t) }}</strong>
+            <p>{{ 'home.teamForm.subtitle' | t }}</p>
+          </div>
+
           <div class="team-card__content">
             <div class="team-card__editor-fields">
               <input
@@ -164,7 +192,7 @@
               type="button"
               [attr.aria-label]="'home.teams.deleteAction' | t"
               [attr.title]="'home.teams.deleteAction' | t"
-              (click)="deleteTeam(team.id)">
+              (click)="requestDeleteTeam(team)">
               <span class="button__icon" aria-hidden="true">
                 <svg class="icon icon--stroke" viewBox="0 0 24 24">
                   <path d="M4 7h16" />
@@ -181,11 +209,17 @@
     </div>
 
     @if (showGuestTeamLimitHint()) {
-      <p class="mode-note">{{ 'home.teams.guestLimit' | t }}</p>
+      <div class="info-panel info-panel--accent">
+        <span class="info-panel__eyebrow">{{ 'home.mode.guest' | t }}</span>
+        <p class="info-panel__text">{{ 'home.teams.guestLimit' | t }}</p>
+      </div>
     }
 
     @if (!teams().length) {
-      <div class="empty-state">{{ 'home.teams.empty' | t }}</div>
+      <div class="status-panel status-panel--empty">
+        <span class="status-panel__eyebrow">{{ 'home.teams.title' | t }}</span>
+        <p class="status-panel__text">{{ 'home.teams.empty' | t }}</p>
+      </div>
     }
   </section>
 
@@ -193,6 +227,7 @@
     <div class="section-heading">
       <div>
         <h2>{{ 'home.games.title' | t }}</h2>
+        <p>{{ 'home.games.subtitle' | t }}</p>
       </div>
     </div>
 
@@ -237,7 +272,25 @@
         }
       </div>
     } @else {
-      <div class="empty-state">{{ 'home.games.empty' | t }}</div>
+      <div class="status-panel status-panel--empty">
+        <span class="status-panel__eyebrow">{{ 'home.games.title' | t }}</span>
+        <p class="status-panel__text">{{ 'home.games.empty' | t }}</p>
+      </div>
     }
   </section>
+
+  @if (pendingTeamDeletion(); as deletion) {
+    <app-confirmation-dialog
+      [open]="true"
+      [tone]="'danger'"
+      [eyebrow]="'home.teams.deleteAction' | t"
+      [title]="deletion.title"
+      [message]="deletion.message"
+      [details]="deletion.details"
+      [confirmLabel]="'home.teams.deleteAction' | t"
+      [cancelLabel]="'common.actions.cancel' | t"
+      [confirmBusy]="deletingTeamId() === deletion.teamId"
+      (cancelled)="closeDeleteTeamDialog()"
+      (confirmed)="confirmDeleteTeam()" />
+  }
 </section>

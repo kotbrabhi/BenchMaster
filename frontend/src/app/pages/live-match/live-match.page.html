@@ -5,14 +5,13 @@
     </header>
 
     @if (errorMessage()) {
-      <div class="error-banner">{{ errorMessage() }}</div>
+      <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
     }
 
     <section class="surface-card live-control-panel live-control-panel--clock">
       <div class="section-heading live-control-panel__heading">
         <div>
           <h2>{{ 'live.clock.title' | t }}</h2>
-          <p>{{ 'live.clock.subtitle' | t }}</p>
         </div>
       </div>
 
@@ -70,7 +69,7 @@
                 [attr.aria-busy]="isActionBusy('end-game')"
                 [attr.aria-label]="'live.actions.end' | t"
                 [attr.title]="'live.actions.end' | t"
-                (click)="endGame()">
+                (click)="requestEndGame()">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 4v16" />
                   <path d="M8 5h8l-2.5 3L16 11H8" />
@@ -133,7 +132,7 @@
                 [attr.aria-busy]="isActionBusy('complete-period')"
                 [attr.aria-label]="'live.actions.completePeriod' | t"
                 [attr.title]="'live.actions.completePeriod' | t"
-                (click)="completePeriod()">
+                (click)="requestCompletePeriod()">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <rect x="7" y="7" width="10" height="10" rx="1.5" />
                 </svg>
@@ -285,7 +284,7 @@
       <div class="live-roster-switch-wrap">
         <div class="live-roster-switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
           <button
-            class="pill"
+            class="pill live-roster-tab live-roster-tab--court"
             type="button"
             role="tab"
             [class.pill--active]="mobileRosterView() === 'court'"
@@ -295,7 +294,7 @@
           </button>
 
           <button
-            class="pill"
+            class="pill live-roster-tab live-roster-tab--bench"
             type="button"
             role="tab"
             [class.pill--active]="mobileRosterView() === 'bench'"
@@ -309,14 +308,27 @@
       <div
         class="live-match__roster-grid"
         [class.live-match__roster-grid--court]="mobileRosterView() === 'court'"
-        [class.live-match__roster-grid--bench]="mobileRosterView() === 'bench'">
-        <section class="surface-card surface-card--court" id="live-roster-court">
+        [class.live-match__roster-grid--bench]="mobileRosterView() === 'bench'"
+        (touchstart)="handleRosterTouchStart($event)"
+        (touchend)="handleRosterTouchEnd($event)">
+        <section
+          class="surface-card surface-card--court"
+          [class.surface-card--guided]="guidedRosterView() === 'court'"
+          id="live-roster-court">
           <div class="section-heading">
             <div>
               <h2>{{ 'live.onCourt.title' | t }}</h2>
               <p>{{ 'live.onCourt.subtitle' | t : onCourtSubtitleParams(currentGame) }}</p>
             </div>
+
+            @if (rosterGuidanceChipLabel('court')) {
+              <span class="state-chip state-chip--selected">{{ rosterGuidanceChipLabel('court') }}</span>
+            }
           </div>
+
+          @if (rosterGuidanceLabel('court')) {
+            <p class="live-roster-hint live-roster-hint--guided">{{ rosterGuidanceLabel('court') }}</p>
+          }
 
           <div class="stack live-player-list">
             @for (player of currentGame.activePlayers; track player.playerId) {
@@ -333,21 +345,35 @@
                 [stats]="playerStats(player)"
                 [quickActions]="pointActions(player)"
                 [quickActionsTone]="correctionMode() ? 'danger' : 'default'"
+                [quickActionsCollapsible]="isMobileViewport()"
+                [quickActionsExpanded]="isPlayerStatsCardExpanded(player.playerId)"
                 [actionLabel]="activePlayerActionLabel(player.playerId)"
                 (quickActionPressed)="handleQuickAction(player.playerId, $event)"
+                (cardPressed)="togglePlayerStatsCard(player.playerId)"
                 (actionPressed)="toggleActivePlayer(player.playerId)">
               </app-player-card>
             }
           </div>
         </section>
 
-        <section class="surface-card surface-card--bench" id="live-roster-bench">
+        <section
+          class="surface-card surface-card--bench"
+          [class.surface-card--guided]="guidedRosterView() === 'bench'"
+          id="live-roster-bench">
           <div class="section-heading">
             <div>
               <h2>{{ 'live.bench.title' | t }}</h2>
               <p>{{ 'live.bench.subtitle' | t }}</p>
             </div>
+
+            @if (rosterGuidanceChipLabel('bench')) {
+              <span class="state-chip state-chip--selected">{{ rosterGuidanceChipLabel('bench') }}</span>
+            }
           </div>
+
+          @if (rosterGuidanceLabel('bench')) {
+            <p class="live-roster-hint live-roster-hint--guided">{{ rosterGuidanceLabel('bench') }}</p>
+          }
 
           <div class="stack live-player-list">
             @for (player of currentGame.benchPlayers; track player.playerId) {
@@ -369,10 +395,161 @@
           </div>
         </section>
       </div>
+
+      <section class="live-thumb-dock" [class.live-thumb-dock--active]="hasPendingSelections() || correctionMode()">
+        <div class="live-thumb-dock__summary" aria-live="polite">
+          @if (thumbDockTitle(currentGame); as dockTitle) {
+            <strong>{{ dockTitle }}</strong>
+          }
+
+          @if (thumbDockMessage(); as dockMessage) {
+            <p>{{ dockMessage }}</p>
+          }
+
+          <span class="live-thumb-dock__meta">
+            {{ 'live.period.label' | t : { number: currentGame.currentPeriodNumber } }}
+            ·
+            {{ periodClockSeconds(currentGame) | duration : 'clock' }}
+          </span>
+        </div>
+
+        <div class="live-thumb-dock__switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
+          <button
+            class="pill live-roster-tab live-roster-tab--court"
+            type="button"
+            role="tab"
+            [class.pill--active]="mobileRosterView() === 'court'"
+            [attr.aria-selected]="mobileRosterView() === 'court'"
+            (click)="setMobileRosterView('court')">
+            {{ mobileRosterTabLabel('court') }}
+          </button>
+
+          <button
+            class="pill live-roster-tab live-roster-tab--bench"
+            type="button"
+            role="tab"
+            [class.pill--active]="mobileRosterView() === 'bench'"
+            [attr.aria-selected]="mobileRosterView() === 'bench'"
+            (click)="setMobileRosterView('bench')">
+            {{ mobileRosterTabLabel('bench') }}
+          </button>
+        </div>
+
+        <div class="live-thumb-dock__utility">
+          <button
+            class="button"
+            type="button"
+            [class.button--secondary]="!correctionMode()"
+            [class.button--danger]="correctionMode()"
+            [attr.aria-label]="correctionActionKey() | t"
+            [attr.title]="correctionActionKey() | t"
+            [attr.aria-pressed]="correctionMode()"
+            (click)="toggleCorrectionMode()">
+            {{ correctionActionKey() | t }}
+          </button>
+
+          @if (canCompletePeriod(currentGame)) {
+            <button
+              class="button button--secondary"
+              type="button"
+              [attr.aria-busy]="isActionBusy('complete-period')"
+              (click)="requestCompletePeriod()">
+              {{ 'live.actions.completePeriod' | t }}
+            </button>
+          } @else if (canStartNextPeriod(currentGame)) {
+            <button
+              class="button button--secondary"
+              type="button"
+              [attr.aria-busy]="isActionBusy('start-next-period')"
+              (click)="startNextPeriod()">
+              {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+            </button>
+          }
+        </div>
+
+        <div class="live-thumb-dock__actions">
+          @if (hasPendingSelections()) {
+            <button
+              class="button"
+              type="button"
+              [disabled]="!canApplySubstitutionBatch()"
+              [attr.aria-busy]="isActionBusy('apply-substitution')"
+              (click)="substituteBatch()">
+              {{ 'live.actions.applyChanges' | t }}
+            </button>
+
+            <button
+              class="button button--secondary"
+              type="button"
+              [disabled]="!hasPendingSelections()"
+              (click)="clearSelections()">
+              {{ 'live.actions.clearSelection' | t }}
+            </button>
+          } @else if (canPause(currentGame)) {
+            <button
+              class="button"
+              type="button"
+              [attr.aria-busy]="isActionBusy('pause')"
+              (click)="pauseGame()">
+              {{ 'live.actions.pauseClock' | t }}
+            </button>
+
+            <button
+              class="button button--danger"
+              type="button"
+              [attr.aria-busy]="isActionBusy('end-game')"
+              (click)="requestEndGame()">
+              {{ 'live.actions.end' | t }}
+            </button>
+          } @else if (canResume(currentGame)) {
+            <button
+              class="button"
+              type="button"
+              [attr.aria-busy]="isActionBusy('resume')"
+              (click)="resumeGame()">
+              {{ 'live.actions.resumeClock' | t }}
+            </button>
+
+            <button
+              class="button button--danger"
+              type="button"
+              [attr.aria-busy]="isActionBusy('end-game')"
+              (click)="requestEndGame()">
+              {{ 'live.actions.end' | t }}
+            </button>
+          } @else {
+            <button
+              class="button button--danger"
+              type="button"
+              [attr.aria-busy]="isActionBusy('end-game')"
+              (click)="requestEndGame()">
+              {{ 'live.actions.end' | t }}
+            </button>
+          }
+        </div>
+      </section>
     }
   } @else {
     <section class="page">
-      <div class="empty-state">{{ 'live.loading' | t }}</div>
+      <div class="status-panel status-panel--loading">
+        <span class="status-panel__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
+        <p class="status-panel__text">{{ 'live.loading' | t }}</p>
+      </div>
     </section>
+  }
+
+  @if (pendingConfirmation(); as confirmation) {
+    <app-confirmation-dialog
+      [open]="true"
+      [tone]="confirmation.tone"
+      [eyebrow]="'live.hero.eyebrow' | t"
+      [title]="confirmation.title"
+      [message]="confirmation.message"
+      [details]="confirmation.details"
+      [confirmLabel]="confirmation.confirmLabel"
+      [cancelLabel]="'common.actions.cancel' | t"
+      [confirmBusy]="isActionBusy(confirmation.action)"
+      (cancelled)="closePendingConfirmation()"
+      (confirmed)="confirmPendingAction()" />
   }
 </section>

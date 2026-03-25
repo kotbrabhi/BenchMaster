@@ -1,3 +1,123 @@
+.summary-overview {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-breakdown {
+  display: grid;
+  gap: 18px;
+}
+
+.summary-sort-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summary-sort-pills .pill {
+  min-height: 40px;
+  padding-inline: 12px;
+}
+
+.summary-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.94), rgba(255, 247, 239, 0.94));
+}
+
+.summary-card--total {
+  border-color: rgba(143, 67, 24, 0.22);
+  background: linear-gradient(180deg, rgba(255, 245, 234, 0.97), rgba(255, 250, 245, 0.97));
+}
+
+.summary-card__header,
+.summary-card__identity,
+.summary-card__time {
+  display: flex;
+  gap: 10px;
+}
+
+.summary-card__header {
+  align-items: start;
+  justify-content: space-between;
+}
+
+.summary-card__identity {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.summary-card__identity strong,
+.summary-card__time strong {
+  margin: 0;
+}
+
+.summary-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summary-card__time {
+  flex-direction: column;
+  align-items: end;
+  text-align: right;
+}
+
+.summary-card__time span {
+  color: var(--color-text-muted);
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-card__time strong {
+  font-size: 1.9rem;
+  line-height: 0.95;
+}
+
+.summary-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.summary-card__stats div {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.summary-card__stats dt,
+.summary-card__stats dd {
+  margin: 0;
+}
+
+.summary-card__stats dt {
+  color: var(--color-text-muted);
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-card__stats dd {
+  margin-top: 6px;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
 .summary-table-wrap {
   margin: 0;
   overflow-x: auto;
@@ -99,6 +219,10 @@
 }
 
 @media (max-width: 640px) {
+  .summary-table-wrap {
+    display: none;
+  }
+
   .summary-table th,
   .summary-table td {
     padding: 8px 4px;
@@ -122,5 +246,19 @@
 
   .summary-table__stat {
     width: 2rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .summary-overview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .summary-cards {
+    display: none;
+  }
+
+  .summary-sort-pills {
+    display: none;
   }
 }

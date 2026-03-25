@@ -14,12 +14,14 @@
     "backend"
   ],
   "scripts": {
-    "install:all": "npm install --workspaces",
-    "dev:frontend": "npm run start --workspace frontend",
-    "dev:backend": "npm run dev --workspace backend",
-    "build": "npm run build --workspace backend && npm run build --workspace frontend",
-    "db:migrate": "npm run prisma:migrate --workspace backend",
-    "db:setup": "npm run prisma:generate --workspace backend && npm run db:setup --workspace backend",
-    "db:seed": "npm run db:seed --workspace backend"
+    "check:node": "node scripts/check-node.mjs",
+    "preinstall": "node scripts/check-node.mjs",
+    "install:all": "npm run check:node && npm install --workspaces",
+    "dev:frontend": "npm run check:node && npm run start --workspace frontend",
+    "dev:backend": "npm run check:node && npm run dev --workspace backend",
+    "build": "npm run check:node && npm run build --workspace backend && npm run build --workspace frontend",
+    "db:migrate": "npm run check:node && npm run prisma:migrate --workspace backend",
+    "db:setup": "npm run check:node && npm run prisma:generate --workspace backend && npm run db:setup --workspace backend",
+    "db:seed": "npm run check:node && npm run db:seed --workspace backend"
   }
 }

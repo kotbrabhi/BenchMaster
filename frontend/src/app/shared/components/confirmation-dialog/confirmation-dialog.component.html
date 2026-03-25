@@ -1,0 +1,39 @@
+@if (open) {
+  <div class="confirmation-dialog" role="presentation">
+    <button
+      class="confirmation-dialog__backdrop"
+      type="button"
+      [disabled]="confirmBusy"
+      [attr.aria-label]="cancelLabel"
+      (click)="cancelled.emit()"></button>
+
+    <section class="confirmation-dialog__panel surface-card" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId">
+      <div class="confirmation-dialog__copy">
+        @if (eyebrow) {
+          <span class="confirmation-dialog__eyebrow">{{ eyebrow }}</span>
+        }
+
+        <h2 class="confirmation-dialog__title" [id]="titleId">{{ title }}</h2>
+        <p class="confirmation-dialog__message">{{ message }}</p>
+
+        @if (details) {
+          <p class="confirmation-dialog__details">{{ details }}</p>
+        }
+      </div>
+
+      <div class="confirmation-dialog__actions">
+        <button class="button button--secondary" type="button" [disabled]="confirmBusy" (click)="cancelled.emit()">
+          {{ cancelLabel }}
+        </button>
+        <button
+          class="button"
+          [class.button--danger]="tone === 'danger'"
+          type="button"
+          [attr.aria-busy]="confirmBusy"
+          (click)="confirmed.emit()">
+          {{ confirmLabel }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

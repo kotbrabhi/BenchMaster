@@ -7,6 +7,7 @@ import { GamePlayerState, GameSummary } from '../../core/models';
 import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
+import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 type SummarySortKey = 'name' | 'totalSeconds' | 'points' | 'assists' | 'blocks' | 'rebounds';
@@ -24,7 +25,7 @@ const SUMMARY_SORT_LABEL_KEYS: Record<SummarySortKey, TranslationKey> = {
 @Component({
   selector: 'app-game-summary-page',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, DurationPipe, TranslatePipe],
   templateUrl: './game-summary.page.html',
   styleUrl: './game-summary.page.scss'
 })
@@ -76,6 +77,7 @@ export class GameSummaryPageComponent implements OnInit {
   });
   readonly errorMessage = signal('');
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
+  readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'name'];
   readonly t = this.i18n.t;
 
   async ngOnInit() {
@@ -143,6 +145,14 @@ export class GameSummaryPageComponent implements OnInit {
 
   labelParams() {
     return buildTeamLabelParams(this.summary()?.team.gender ?? 'MIXED');
+  }
+
+  summaryCardLabel(key: SummarySortKey) {
+    return this.t(this.sortLabelKey(key), this.labelParams());
+  }
+
+  playerSummaryLabel(player: GamePlayerState) {
+    return player.isStarter ? this.t('summary.notes.starter') : this.t('summary.notes.benchContributor');
   }
 
   private sortLabelKey(key: SummarySortKey) {

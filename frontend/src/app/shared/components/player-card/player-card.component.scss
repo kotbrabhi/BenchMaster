@@ -19,6 +19,15 @@
   box-shadow: inset 0 0 0 1px rgba(188, 99, 42, 0.18);
 }
 
+.player-card--quick-actions-collapsible {
+  cursor: pointer;
+}
+
+.player-card--quick-actions-collapsible.player-card--quick-actions-expanded {
+  border-color: var(--color-accent-strong-soft);
+  box-shadow: inset 0 0 0 1px rgba(188, 99, 42, 0.18);
+}
+
 .player-card__header {
   display: flex;
   align-items: flex-start;

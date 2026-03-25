@@ -1,12 +1,19 @@
 <section class="page page--new-game">
+  <header class="toolbar">
+    <span class="toolbar__eyebrow">{{ 'newGame.hero.eyebrow' | t }}</span>
+    <h1 class="toolbar__title">{{ 'newGame.hero.title' | t }}</h1>
+    <p class="toolbar__subtitle">{{ 'newGame.hero.subtitle' | t }}</p>
+  </header>
+
   @if (errorMessage()) {
-    <div class="error-banner">{{ errorMessage() }}</div>
+    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
   }
 
   <section class="surface-card">
     <div class="section-heading">
       <div>
         <h2>{{ 'newGame.chooseTeam.title' | t }}</h2>
+        <p>{{ 'newGame.chooseTeam.subtitle' | t }}</p>
       </div>
     </div>
 
@@ -23,7 +30,10 @@
         }
       </div>
     } @else {
-      <div class="empty-state">{{ 'newGame.chooseTeam.empty' | t }}</div>
+      <div class="status-panel status-panel--empty">
+        <span class="status-panel__eyebrow">{{ 'newGame.chooseTeam.title' | t }}</span>
+        <p class="status-panel__text">{{ 'newGame.chooseTeam.empty' | t }}</p>
+      </div>
     }
   </section>
 
@@ -142,9 +152,10 @@
 
     <section class="surface-card">
       <div class="stack">
-        <p class="helper-text">
-          {{ 'newGame.helper' | t : labelParams() }}
-        </p>
+        <div class="info-panel info-panel--accent">
+          <span class="info-panel__eyebrow">{{ 'newGame.details.title' | t }}</span>
+          <p class="info-panel__text">{{ 'newGame.helper' | t : labelParams() }}</p>
+        </div>
 
         <button
           class="button"
@@ -160,5 +171,20 @@
         }
       </div>
     </section>
+  }
+
+  @if (showGuestReplacementDialog()) {
+    <app-confirmation-dialog
+      [open]="true"
+      [tone]="'danger'"
+      [eyebrow]="'newGame.hero.eyebrow' | t"
+      [title]="guestReplacementDialogTitle()"
+      [message]="guestReplacementDialogMessage()"
+      [details]="guestReplacementDialogDetails()"
+      [confirmLabel]="guestReplacementDialogConfirmLabel()"
+      [cancelLabel]="'common.actions.cancel' | t"
+      [confirmBusy]="isCreatingGame()"
+      (cancelled)="closeGuestReplacementDialog()"
+      (confirmed)="confirmGuestReplacement()" />
   }
 </section>

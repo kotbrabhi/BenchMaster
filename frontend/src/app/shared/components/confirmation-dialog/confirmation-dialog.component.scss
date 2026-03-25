@@ -1,0 +1,109 @@
+.confirmation-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.confirmation-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(45, 26, 15, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.confirmation-dialog__panel {
+  position: relative;
+  width: min(100%, 460px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 247, 239, 0.98));
+  box-shadow: 0 28px 64px rgba(45, 26, 15, 0.26);
+  animation: confirmation-dialog-enter 180ms ease;
+}
+
+.confirmation-dialog__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirmation-dialog__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.confirmation-dialog__title,
+.confirmation-dialog__message,
+.confirmation-dialog__details {
+  margin: 0;
+}
+
+.confirmation-dialog__title {
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.confirmation-dialog__message,
+.confirmation-dialog__details {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.confirmation-dialog__details {
+  padding: 12px 14px;
+  border: 1px solid rgba(73, 42, 19, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 252, 248, 0.7);
+}
+
+.confirmation-dialog__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.confirmation-dialog__actions .button {
+  min-width: 132px;
+}
+
+@keyframes confirmation-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 767px) {
+  .confirmation-dialog {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .confirmation-dialog__panel {
+    width: 100%;
+    padding: 20px;
+    border-radius: 24px 24px 20px 20px;
+  }
+
+  .confirmation-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirmation-dialog__actions .button {
+    width: 100%;
+  }
+}

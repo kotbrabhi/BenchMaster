@@ -36,6 +36,8 @@ export class PlayerCardComponent {
   @Input() stats: PlayerCardStat[] = [];
   @Input() quickActions: PlayerCardQuickAction[] = [];
   @Input() quickActionsTone: 'default' | 'danger' = 'default';
+  @Input() quickActionsCollapsible = false;
+  @Input() quickActionsExpanded = true;
   @Input() actionDisabled = false;
   @Input() selected = false;
   @Input() tone: 'active' | 'bench' | 'summary' = 'bench';
@@ -44,6 +46,7 @@ export class PlayerCardComponent {
 
   @Output() actionPressed = new EventEmitter<void>();
   @Output() quickActionPressed = new EventEmitter<PlayerCardQuickActionValue>();
+  @Output() cardPressed = new EventEmitter<void>();
 
   get primaryQuickActions() {
     return this.quickActions.filter((quickAction) => quickAction.row !== 'secondary');
@@ -51,5 +54,29 @@ export class PlayerCardComponent {
 
   get secondaryQuickActions() {
     return this.quickActions.filter((quickAction) => quickAction.row === 'secondary');
+  }
+
+  handleCardPress(event: MouseEvent) {
+    if (!this.quickActionsCollapsible || this.quickActions.length === 0) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+
+    if (target?.closest('button, a, input, select, textarea, label')) {
+      return;
+    }
+
+    this.cardPressed.emit();
+  }
+
+  handleQuickActionClick(event: MouseEvent, value: PlayerCardQuickActionValue) {
+    event.stopPropagation();
+    this.quickActionPressed.emit(value);
+  }
+
+  handleActionClick(event: MouseEvent) {
+    event.stopPropagation();
+    this.actionPressed.emit();
   }
 }

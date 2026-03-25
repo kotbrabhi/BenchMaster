@@ -2,7 +2,10 @@
   class="player-card"
   [class.player-card--active]="tone === 'active'"
   [class.player-card--compact]="compact"
-  [class.player-card--selected]="selected">
+  [class.player-card--selected]="selected"
+  [class.player-card--quick-actions-collapsible]="quickActionsCollapsible && quickActions.length > 0"
+  [class.player-card--quick-actions-expanded]="quickActionsExpanded"
+  (click)="handleCardPress($event)">
   <div class="player-card__header">
     <div class="player-card__summary">
       <div class="player-card__number">#{{ jerseyNumber }}</div>
@@ -48,7 +51,7 @@
     </dl>
   }
 
-  @if (quickActions.length) {
+  @if (quickActions.length && (!quickActionsCollapsible || quickActionsExpanded)) {
     <div class="player-card__quick-actions-stack">
       @if (primaryQuickActions.length) {
         <div class="player-card__quick-actions-row">
@@ -60,7 +63,7 @@
               [disabled]="quickAction.disabled"
               [attr.aria-label]="quickAction.title || quickAction.label"
               [attr.title]="quickAction.title || quickAction.label"
-              (click)="quickActionPressed.emit(quickAction.value)">
+              (click)="handleQuickActionClick($event, quickAction.value)">
               {{ quickAction.label }}
             </button>
           }
@@ -77,7 +80,7 @@
               [disabled]="quickAction.disabled"
               [attr.aria-label]="quickAction.title || quickAction.label"
               [attr.title]="quickAction.title || quickAction.label"
-              (click)="quickActionPressed.emit(quickAction.value)">
+              (click)="handleQuickActionClick($event, quickAction.value)">
               {{ quickAction.label }}
             </button>
           }
@@ -94,7 +97,7 @@
       [disabled]="actionDisabled"
       [attr.aria-label]="actionLabel"
       [attr.title]="actionLabel"
-      (click)="actionPressed.emit()">
+      (click)="handleActionClick($event)">
       <span class="player-card__action-label">{{ actionLabel }}</span>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         @if (selected) {
