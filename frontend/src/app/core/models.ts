@@ -3,6 +3,7 @@ export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
 export type PlayerStatType = 'assists' | 'blocks' | 'rebounds';
 export type AppMode = 'guest' | 'authenticated';
 export type TeamGender = 'MIXED' | 'FEMININE' | 'MASCULINE';
+export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
 
 export interface Player {
   id: number;
@@ -39,6 +40,46 @@ export interface GamePlayerState {
   lastPeriodEnteredAt: string | null;
 }
 
+export interface RotationTimelineEvent {
+  id: number;
+  kind: RotationEventType;
+  periodNumber: number;
+  clockMarkSeconds: number;
+  createdAt: string;
+  playersIn: GamePlayerState[];
+  playersOut: GamePlayerState[];
+  onCourt: GamePlayerState[];
+}
+
+export interface SummaryUsageInsight {
+  playerId: number;
+  name: string;
+  jerseyNumber: string;
+  isStarter: boolean;
+  totalSeconds: number;
+  expectedSeconds: number;
+  deltaSeconds: number;
+  utilizationRatio: number;
+}
+
+export interface StarterBenchSplit {
+  starterCount: number;
+  benchCount: number;
+  starterSeconds: number;
+  benchSeconds: number;
+  starterAverageSeconds: number;
+  benchAverageSeconds: number;
+  starterShare: number;
+  benchShare: number;
+}
+
+export interface GameSummaryInsights {
+  topMinutes: SummaryUsageInsight[];
+  overusedPlayers: SummaryUsageInsight[];
+  underusedPlayers: SummaryUsageInsight[];
+  starterBenchSplit: StarterBenchSplit;
+}
+
 export interface GameListItem {
   id: number;
   label: string;
@@ -70,6 +111,7 @@ export interface GameDetail {
     name: string;
     gender: TeamGender;
   };
+  rotationTimeline: RotationTimelineEvent[];
   selectedPlayers: GamePlayerState[];
   activePlayers: GamePlayerState[];
   benchPlayers: GamePlayerState[];
@@ -87,7 +129,10 @@ export interface GameSummary {
     gender: TeamGender;
   };
   totalGameSeconds: number;
+  totalPlayerSeconds: number;
   maxPlayerSeconds: number;
+  insights: GameSummaryInsights;
+  rotationTimeline: RotationTimelineEvent[];
   players: GamePlayerState[];
 }
 

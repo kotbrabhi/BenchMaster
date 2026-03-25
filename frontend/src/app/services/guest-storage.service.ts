@@ -4,9 +4,11 @@ import {
   GameListItem,
   GamePlayerState,
   GameSummary,
+  GameSummaryInsights,
   GameStatus,
   Player,
   PlayerStatType,
+  RotationTimelineEvent,
   Team,
   TeamGender
 } from '../core/models';
@@ -45,6 +47,12 @@ interface CreateGamePayload {
   label?: string;
   availablePlayerIds: number[];
   starterPlayerIds: number[];
+}
+
+interface RotationEventPayload {
+  onCourtPlayerIds: number[];
+  playerInIds?: number[];
+  playerOutIds?: number[];
 }
 
 const STORAGE_KEY = 'benchmaster.guest-state';
@@ -109,6 +117,128 @@ function effectivePeriodStatus(game: GameDetail) {
   }
 
   return game.currentPeriodStatus;
+}
+
+function currentPeriodClockSeconds(game: GameDetail, now: Date) {
+  return (
+    game.periodElapsedSeconds +
+    (game.isClockRunning && effectivePeriodStatus(game) === 'LIVE' && game.lastPeriodStartedAt
+      ? diffSeconds(game.lastPeriodStartedAt, now)
+      : 0)
+  );
+}
+
+function onCourtPlayerIds(players: GamePlayerState[]) {
+  return players.filter((player) => player.isOnCourt).map((player) => player.playerId);
+}
+
+function nextRotationEventId(game: GameDetail) {
+  return (game.rotationTimeline.at(-1)?.id ?? 0) + 1;
+}
+
+function pushRotationEvent(
+  game: GameDetail,
+  kind: RotationTimelineEvent['kind'],
+  periodNumber: number,
+  clockMarkSeconds: number,
+  payload: RotationEventPayload,
+  createdAt: string
+) {
+  const playerMap = new Map(game.selectedPlayers.map((player) => [player.playerId, player]));
+  const toPlayers = (playerIds: number[]) =>
+    sortGamePlayersByJersey(
+      playerIds
+        .map((playerId) => playerMap.get(playerId))
+        .filter((player): player is GamePlayerState => Boolean(player))
+    );
+
+  game.rotationTimeline.push({
+    id: nextRotationEventId(game),
+    kind,
+    periodNumber,
+    clockMarkSeconds,
+    createdAt,
+    playersIn: toPlayers(payload.playerInIds ?? []),
+    playersOut: toPlayers(payload.playerOutIds ?? []),
+    onCourt: toPlayers(payload.onCourtPlayerIds)
+  });
+}
+
+function buildSummaryInsights(players: GamePlayerState[]): { totalPlayerSeconds: number; insights: GameSummaryInsights } {
+  const totalPlayerSeconds = players.reduce((sum, player) => sum + player.totalSeconds, 0);
+  const expectedSeconds = players.length ? totalPlayerSeconds / players.length : 0;
+  const usageEntries = players.map((player) => ({
+    playerId: player.playerId,
+    name: player.name,
+    jerseyNumber: player.jerseyNumber,
+    isStarter: player.isStarter,
+    totalSeconds: player.totalSeconds,
+    expectedSeconds,
+    deltaSeconds: player.totalSeconds - expectedSeconds,
+    utilizationRatio: expectedSeconds > 0 ? player.totalSeconds / expectedSeconds : 1
+  }));
+
+  const topMinutes = usageEntries
+    .slice()
+    .sort((left, right) => right.totalSeconds - left.totalSeconds || compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber))
+    .slice(0, 3);
+
+  const overusedPlayers = usageEntries
+    .filter((player) => player.deltaSeconds >= 60 && player.utilizationRatio >= 1.15)
+    .sort((left, right) => right.deltaSeconds - left.deltaSeconds || compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber))
+    .slice(0, 3);
+
+  const underusedPlayers = usageEntries
+    .filter((player) => player.deltaSeconds <= -60 && player.utilizationRatio <= 0.85)
+    .sort((left, right) => left.deltaSeconds - right.deltaSeconds || compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber))
+    .slice(0, 3);
+
+  const starterSeconds = players.filter((player) => player.isStarter).reduce((sum, player) => sum + player.totalSeconds, 0);
+  const benchSeconds = totalPlayerSeconds - starterSeconds;
+  const starterCount = players.filter((player) => player.isStarter).length;
+  const benchCount = players.length - starterCount;
+
+  return {
+    totalPlayerSeconds,
+    insights: {
+      topMinutes,
+      overusedPlayers,
+      underusedPlayers,
+      starterBenchSplit: {
+        starterCount,
+        benchCount,
+        starterSeconds,
+        benchSeconds,
+        starterAverageSeconds: starterCount ? Math.round(starterSeconds / starterCount) : 0,
+        benchAverageSeconds: benchCount ? Math.round(benchSeconds / benchCount) : 0,
+        starterShare: totalPlayerSeconds ? starterSeconds / totalPlayerSeconds : 0,
+        benchShare: totalPlayerSeconds ? benchSeconds / totalPlayerSeconds : 0
+      }
+    }
+  };
+}
+
+function buildSummaryFromGame(game: GameDetail): GameSummary {
+  const players = sortGamePlayersByTime(game.selectedPlayers);
+  const { totalPlayerSeconds, insights } = buildSummaryInsights(players);
+  const totalGameSeconds =
+    game.clockElapsedSeconds +
+    (game.status === 'LIVE' && game.lastClockStartedAt ? diffSeconds(game.lastClockStartedAt, new Date()) : 0);
+
+  return {
+    id: game.id,
+    label: game.label,
+    status: game.status,
+    startedAt: game.startedAt,
+    endedAt: game.endedAt,
+    team: clone(game.team),
+    totalGameSeconds,
+    totalPlayerSeconds,
+    maxPlayerSeconds: players[0]?.totalSeconds ?? 0,
+    insights,
+    rotationTimeline: clone(game.rotationTimeline),
+    players
+  };
 }
 
 function rebuildGameCollections(game: GameDetail) {
@@ -432,6 +562,7 @@ export class GuestStorageService {
         name: team.name,
         gender: team.gender
       },
+      rotationTimeline: [],
       selectedPlayers,
       activePlayers: [],
       benchPlayers: []
@@ -450,19 +581,7 @@ export class GuestStorageService {
 
   async getSummary(gameId: number) {
     const game = this.requireGame(this.readState(), gameId);
-    const players = sortGamePlayersByTime(game.selectedPlayers);
-
-    return {
-      id: game.id,
-      label: game.label,
-      status: game.status,
-      startedAt: game.startedAt,
-      endedAt: game.endedAt,
-      team: clone(game.team),
-      totalGameSeconds: game.clockElapsedSeconds,
-      maxPlayerSeconds: players[0]?.totalSeconds ?? 0,
-      players
-    } satisfies GameSummary;
+    return buildSummaryFromGame(game);
   }
 
   async startGame(gameId: number) {
@@ -490,6 +609,9 @@ export class GuestStorageService {
         lastEnteredAt: player.isStarter ? now : null,
         lastPeriodEnteredAt: player.isStarter ? now : null
       }));
+      pushRotationEvent(game, 'PERIOD_START', 1, 0, {
+        onCourtPlayerIds: game.selectedPlayers.filter((player) => player.isStarter).map((player) => player.playerId)
+      }, now);
       rebuildGameCollections(game);
     });
   }
@@ -565,6 +687,14 @@ export class GuestStorageService {
       game.isClockRunning = false;
       game.lastClockStartedAt = null;
       game.lastPeriodStartedAt = null;
+      pushRotationEvent(
+        game,
+        'PERIOD_END',
+        game.currentPeriodNumber,
+        game.periodElapsedSeconds,
+        { onCourtPlayerIds: onCourtPlayerIds(game.selectedPlayers) },
+        nowIso()
+      );
     });
   }
 
@@ -601,6 +731,14 @@ export class GuestStorageService {
         lastEnteredAt: player.isOnCourt ? now : null,
         lastPeriodEnteredAt: player.isOnCourt ? now : null
       }));
+      pushRotationEvent(
+        game,
+        'PERIOD_START',
+        game.currentPeriodNumber,
+        0,
+        { onCourtPlayerIds: onCourtPlayers.map((player) => player.playerId) },
+        now
+      );
       rebuildGameCollections(game);
     });
   }
@@ -620,6 +758,14 @@ export class GuestStorageService {
       game.isClockRunning = false;
       game.lastClockStartedAt = null;
       game.lastPeriodStartedAt = null;
+      pushRotationEvent(
+        game,
+        'GAME_END',
+        game.currentPeriodNumber,
+        game.periodElapsedSeconds,
+        { onCourtPlayerIds: onCourtPlayerIds(game.selectedPlayers) },
+        game.endedAt
+      );
     });
   }
 
@@ -662,6 +808,19 @@ export class GuestStorageService {
       const now = nowIso();
       const playerInIdSet = new Set(playerInIds);
       const playerOutIdSet = new Set(playerOutIds);
+      const nextOnCourtPlayerIds = game.selectedPlayers
+        .map((player) => {
+          if (playerOutIdSet.has(player.playerId)) {
+            return null;
+          }
+
+          if (playerInIdSet.has(player.playerId)) {
+            return player.playerId;
+          }
+
+          return player.isOnCourt ? player.playerId : null;
+        })
+        .filter((playerId): playerId is number => playerId !== null);
 
       game.selectedPlayers = game.selectedPlayers.map((player) => {
         if (playerOutIdSet.has(player.playerId)) {
@@ -689,6 +848,18 @@ export class GuestStorageService {
 
         return player;
       });
+      pushRotationEvent(
+        game,
+        'SUBSTITUTION',
+        game.currentPeriodNumber,
+        currentPeriodClockSeconds(game, new Date(now)),
+        {
+          onCourtPlayerIds: nextOnCourtPlayerIds,
+          playerInIds,
+          playerOutIds
+        },
+        now
+      );
 
       rebuildGameCollections(game);
     });
@@ -877,7 +1048,8 @@ export class GuestStorageService {
             team: {
               ...parsedState.game.team,
               gender: parsedState.game.team.gender ?? 'MIXED'
-            }
+            },
+            rotationTimeline: parsedState.game.rotationTimeline ?? []
           }
         : null;
 

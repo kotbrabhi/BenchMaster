@@ -13,6 +13,7 @@ export interface CreateGameInput {
 
 const gameInclude = {
   team: true,
+  rotationEvents: true,
   players: {
     include: {
       player: true,

@@ -89,7 +89,7 @@
     <button
       class="auth-sheet__backdrop"
       type="button"
-      aria-label="Fermer la connexion"
+      [attr.aria-label]="'app.nav.closeAuthPanel' | t"
       (click)="closeAuthPanel()"></button>
 
     <section class="auth-sheet__panel surface-card">

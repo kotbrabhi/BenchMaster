@@ -7,11 +7,26 @@ import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
 import { Player } from '../../core/models';
 import { buildTeamLabelParams } from '../../core/team-labels';
+import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+
+interface RosterGroup {
+  key: 'starters' | 'available' | 'unselected';
+  titleKey: TranslationKey;
+  emptyKey: TranslationKey;
+  players: Player[];
+}
+
+interface SetupStep {
+  key: 'team' | 'available' | 'starters';
+  number: 1 | 2 | 3;
+  titleKey: TranslationKey;
+  isComplete: boolean;
+}
 
 @Component({
   selector: 'app-new-game-setup-page',
@@ -40,11 +55,75 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly availablePlayerIds = signal<number[]>([]);
   readonly starterPlayerIds = signal<number[]>([]);
   readonly invalidStarterPlayerId = signal<number | null>(null);
+  readonly playerInlineError = signal<{ playerId: number; message: string } | null>(null);
   readonly t = this.i18n.t;
   readonly labelParams = computed(() => buildTeamLabelParams(this.selectedTeam()?.gender ?? 'MIXED'));
   readonly sortedRoster = computed(() =>
     [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
   );
+  readonly starterPlayers = computed(() => this.sortedRoster().filter((player) => this.isStarter(player)));
+  readonly availableBenchPlayers = computed(() =>
+    this.sortedRoster().filter((player) => this.isAvailable(player) && !this.isStarter(player))
+  );
+  readonly unselectedPlayers = computed(() => this.sortedRoster().filter((player) => !this.isAvailable(player)));
+  readonly rosterGroups = computed<RosterGroup[]>(() => [
+    {
+      key: 'starters',
+      titleKey: 'newGame.group.starters.title',
+      emptyKey: 'newGame.group.starters.empty',
+      players: this.starterPlayers()
+    },
+    {
+      key: 'available',
+      titleKey: 'newGame.group.available.title',
+      emptyKey: 'newGame.group.available.empty',
+      players: this.availableBenchPlayers()
+    },
+    {
+      key: 'unselected',
+      titleKey: 'newGame.group.unselected.title',
+      emptyKey: 'newGame.group.unselected.empty',
+      players: this.unselectedPlayers()
+    }
+  ]);
+  readonly completedStepCount = computed(() => {
+    let completed = 0;
+
+    if (this.selectedTeamId()) {
+      completed += 1;
+    }
+
+    if (this.availablePlayerIds().length >= 5) {
+      completed += 1;
+    }
+
+    if (this.starterPlayerIds().length === 5) {
+      completed += 1;
+    }
+
+    return completed;
+  });
+  readonly setupProgressPercent = computed(() => (this.completedStepCount() / 3) * 100);
+  readonly setupSteps = computed<SetupStep[]>(() => [
+    {
+      key: 'team',
+      number: 1,
+      titleKey: 'newGame.chooseTeam.title',
+      isComplete: !!this.selectedTeamId()
+    },
+    {
+      key: 'available',
+      number: 2,
+      titleKey: 'newGame.progress.step.available.title',
+      isComplete: this.availablePlayerIds().length >= 5
+    },
+    {
+      key: 'starters',
+      number: 3,
+      titleKey: 'newGame.progress.step.starters.title',
+      isComplete: this.starterPlayerIds().length === 5
+    }
+  ]);
 
   gameLabel = '';
 
@@ -74,6 +153,7 @@ export class NewGameSetupPageComponent implements OnInit {
       this.availablePlayerIds.set(playerIds);
       this.starterPlayerIds.set(playerIds.slice(0, 5));
       this.invalidStarterPlayerId.set(null);
+      this.playerInlineError.set(null);
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
@@ -81,33 +161,41 @@ export class NewGameSetupPageComponent implements OnInit {
   }
 
   toggleAvailability(playerId: number) {
-    this.availablePlayerIds.update((current) =>
-      current.includes(playerId) ? current.filter((id) => id !== playerId) : [...current, playerId]
-    );
+    const currentAvailableIds = this.availablePlayerIds();
+    const nextAvailableIds = currentAvailableIds.includes(playerId)
+      ? currentAvailableIds.filter((id) => id !== playerId)
+      : [...currentAvailableIds, playerId];
 
-    this.starterPlayerIds.update((current) => current.filter((id) => this.availablePlayerIds().includes(id)));
+    this.availablePlayerIds.set(nextAvailableIds);
+    this.starterPlayerIds.update((current) => current.filter((id) => nextAvailableIds.includes(id)));
     this.clearInvalidStarterAttempt(playerId);
+    this.clearPlayerInlineError(playerId);
+    this.errorMessage.set('');
   }
 
   toggleStarter(playerId: number) {
     if (!this.availablePlayerIds().includes(playerId)) {
+      this.setPlayerInlineError(playerId, this.t('newGame.startingFive.reason.needAvailability'));
       return;
     }
 
     if (this.starterPlayerIds().includes(playerId)) {
       this.starterPlayerIds.update((current) => current.filter((id) => id !== playerId));
       this.clearInvalidStarterAttempt();
+      this.clearPlayerInlineError(playerId);
+      this.errorMessage.set('');
       return;
     }
 
     if (this.starterPlayerIds().length >= 5) {
       this.invalidStarterPlayerId.set(playerId);
-      this.errorMessage.set(this.t('newGame.error.chooseFiveStarters'));
+      this.setPlayerInlineError(playerId, this.t('newGame.error.chooseFiveStarters'));
       return;
     }
 
     this.starterPlayerIds.update((current) => [...current, playerId]);
     this.clearInvalidStarterAttempt();
+    this.clearPlayerInlineError(playerId);
     this.errorMessage.set('');
   }
 
@@ -163,6 +251,10 @@ export class NewGameSetupPageComponent implements OnInit {
         starterPlayerIds: this.starterPlayerIds()
       });
 
+      if (!game) {
+        throw new Error(this.t('error.generic'));
+      }
+
       await this.gameService.loadGames();
       this.router.navigate(['/games', game.id, 'live']);
     } catch (error) {
@@ -182,6 +274,18 @@ export class NewGameSetupPageComponent implements OnInit {
 
   hasStarterSelectionError(player: Player) {
     return this.invalidStarterPlayerId() === player.id;
+  }
+
+  hasInlinePlayerError(player: Player) {
+    return this.playerInlineError()?.playerId === player.id;
+  }
+
+  inlinePlayerErrorMessage(player: Player) {
+    return this.hasInlinePlayerError(player) ? this.playerInlineError()?.message ?? '' : '';
+  }
+
+  playerCardHasError(player: Player) {
+    return this.hasStarterSelectionError(player) || this.hasInlinePlayerError(player);
   }
 
   private playerSortRank(playerId: number) {
@@ -228,9 +332,51 @@ export class NewGameSetupPageComponent implements OnInit {
     };
   }
 
+  availableStepMessage() {
+    if (!this.selectedTeamId()) {
+      return this.t('newGame.available.reason.selectTeam');
+    }
+
+    if (this.availablePlayerIds().length < 5) {
+      return this.t('newGame.available.reason.needAvailablePlayers', this.labelParams());
+    }
+
+    return this.t('newGame.progress.step.available.ready');
+  }
+
+  starterStepMessage() {
+    if (!this.selectedTeamId()) {
+      return this.t('newGame.available.reason.selectTeam');
+    }
+
+    if (this.starterPlayerIds().length !== 5) {
+      return this.t('newGame.startingFive.reason.needFive');
+    }
+
+    return this.t('newGame.progress.step.starters.ready');
+  }
+
+  footerStatusMessage() {
+    return this.canCreateGame() ? this.t('newGame.footer.ready') : this.createGameDisabledReason();
+  }
+
+  trackByRosterGroup(_index: number, group: RosterGroup) {
+    return group.key;
+  }
+
   private clearInvalidStarterAttempt(playerId?: number) {
     if (playerId === undefined || this.invalidStarterPlayerId() === playerId) {
       this.invalidStarterPlayerId.set(null);
+    }
+  }
+
+  private setPlayerInlineError(playerId: number, message: string) {
+    this.playerInlineError.set({ playerId, message });
+  }
+
+  private clearPlayerInlineError(playerId?: number) {
+    if (playerId === undefined || this.playerInlineError()?.playerId === playerId) {
+      this.playerInlineError.set(null);
     }
   }
 }

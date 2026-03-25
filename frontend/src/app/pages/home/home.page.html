@@ -11,7 +11,7 @@
         <p class="home-hero__subtitle">{{ 'home.hero.subtitle' | t }}</p>
       </div>
 
-      <div class="home-hero__actions">
+      <div class="action-flow action-flow--mobile-stack action-flow--fill home-hero__actions">
         <button class="button home-hero__primary" type="button" (click)="handlePrimaryCta()">
           {{ primaryCtaLabel() }}
         </button>
@@ -77,7 +77,7 @@
             </div>
           </div>
 
-          <div class="team-card__actions">
+          <div class="action-flow action-flow--mobile-stack team-card__actions">
             @if (editingTeamId) {
               <button
                 class="button button--icon"
@@ -144,7 +144,7 @@
             </div>
           </div>
 
-          <div class="team-card__actions">
+          <div class="action-flow action-flow--mobile-stack team-card__actions">
             <a
               class="button button--secondary button--icon"
               [routerLink]="['/teams', team.id]"

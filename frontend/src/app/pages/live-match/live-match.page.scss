@@ -98,23 +98,6 @@
   font-size: var(--player-meta-size);
 }
 
-.button--icon {
-  min-width: var(--tap-target-min);
-  min-height: var(--tap-target-min);
-  padding: 0 14px;
-  border-radius: 14px;
-}
-
-.button--icon svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .live-clock-card__label {
   margin: 0;
   color: var(--color-text-muted);
@@ -195,8 +178,6 @@
 }
 
 .substitution-banner__actions {
-  display: flex;
-  align-items: stretch;
   gap: var(--action-gap-min);
 }
 
@@ -356,11 +337,6 @@
   }
 
   .substitution-banner__actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .substitution-banner__actions .button {
     width: 100%;
   }
 

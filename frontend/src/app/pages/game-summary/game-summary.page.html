@@ -1,10 +1,20 @@
 <section class="page">
   @if (summary(); as gameSummary) {
-    <header class="toolbar">
-      <span class="toolbar__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
-      <h1 class="toolbar__title">{{ gameSummary.label }}</h1>
-      <p class="toolbar__subtitle">{{ 'summary.hero.subtitle' | t }}</p>
+    <header class="toolbar toolbar--summary">
+      <div>
+        <span class="toolbar__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
+        <h1 class="toolbar__title">{{ gameSummary.label }}</h1>
+        <p class="toolbar__subtitle">{{ 'summary.hero.subtitle' | t }}</p>
+      </div>
+
+      <button class="button button--secondary" type="button" (click)="shareSummary()">
+        {{ 'summary.actions.share' | t }}
+      </button>
     </header>
+
+    @if (shareMessage()) {
+      <div class="info-banner" aria-live="polite">{{ shareMessage() }}</div>
+    }
 
     @if (errorMessage()) {
       <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
@@ -23,14 +33,173 @@
         <p class="info-panel__text">{{ 'summary.hero.subtitle' | t }}</p>
       </article>
 
-      @if (totals(); as totals) {
-        <article class="info-panel">
-          <span class="info-panel__eyebrow">{{ 'summary.table.total' | t }}</span>
-          <strong class="info-panel__title">{{ totals.points }} {{ 'summary.table.points' | t }}</strong>
-          <p class="info-panel__text">
-            {{ totals.assists }} {{ 'summary.table.assists' | t }} · {{ totals.rebounds }} {{ 'summary.table.rebounds' | t }}
-          </p>
+      <article class="info-panel">
+        <span class="info-panel__eyebrow">{{ 'summary.stats.leader' | t }}</span>
+        <strong class="info-panel__title">
+          @if (leader(); as leader) {
+            #{{ leader.jerseyNumber }} {{ leader.name }}
+          } @else {
+            {{ 'summary.stats.leaderFallback' | t }}
+          }
+        </strong>
+        <p class="info-panel__text">
+          @if (leader(); as leader) {
+            {{ leader.totalSeconds | duration : 'compact' }}
+          }
+        </p>
+      </article>
+
+      <article class="info-panel">
+        <span class="info-panel__eyebrow">{{ 'summary.timeline.title' | t }}</span>
+        <strong class="info-panel__title">{{ substitutionCount() }}</strong>
+        <p class="info-panel__text">{{ 'summary.stats.rotationCount' | t }}</p>
+      </article>
+    </section>
+
+    <section class="surface-card insights-grid">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'summary.insights.title' | t }}</h2>
+          <p>{{ 'summary.insights.subtitle' | t }}</p>
+        </div>
+      </div>
+
+      <article class="insight-panel">
+        <div class="insight-panel__header">
+          <h3>{{ 'summary.insights.topMinutes' | t }}</h3>
+        </div>
+
+        <div class="insight-list">
+          @for (player of topMinutes(); track player.playerId) {
+            <div class="insight-row">
+              <div>
+                <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+                <p>{{ player.isStarter ? ('summary.notes.starter' | t) : ('summary.notes.benchContributor' | t) }}</p>
+              </div>
+              <span>{{ player.totalSeconds | duration : 'compact' }}</span>
+            </div>
+          }
+        </div>
+      </article>
+
+      @if (starterBenchSplit(); as split) {
+        <article class="insight-panel">
+          <div class="insight-panel__header">
+            <h3>{{ 'summary.stats.starterBenchSplit' | t }}</h3>
+          </div>
+
+          <div class="split-bar">
+            <span class="split-bar__segment split-bar__segment--starter" [style.width]="rotationShareStyle(split.starterShare)"></span>
+            <span class="split-bar__segment split-bar__segment--bench" [style.width]="rotationShareStyle(split.benchShare)"></span>
+          </div>
+
+          <div class="insight-list">
+            <div class="insight-row">
+              <div>
+                <strong>{{ 'summary.insights.starterShare' | t }}</strong>
+                <p>{{ split.starterCount }} {{ 'summary.notes.starter' | t }}</p>
+              </div>
+              <span>{{ shareRatio(split.starterShare) }}</span>
+            </div>
+
+            <div class="insight-row">
+              <div>
+                <strong>{{ 'summary.insights.benchShare' | t }}</strong>
+                <p>{{ split.benchCount }} {{ 'summary.notes.benchContributor' | t }}</p>
+              </div>
+              <span>{{ shareRatio(split.benchShare) }}</span>
+            </div>
+
+            <div class="insight-row">
+              <div>
+                <strong>{{ 'summary.insights.averageMinutes' | t }}</strong>
+                <p>{{ 'summary.insights.starterShare' | t }}</p>
+              </div>
+              <span>{{ split.starterAverageSeconds | duration : 'compact' }}</span>
+            </div>
+
+            <div class="insight-row">
+              <div>
+                <strong>{{ 'summary.insights.averageMinutes' | t }}</strong>
+                <p>{{ 'summary.insights.benchShare' | t }}</p>
+              </div>
+              <span>{{ split.benchAverageSeconds | duration : 'compact' }}</span>
+            </div>
+          </div>
         </article>
+      }
+
+      <article class="insight-panel">
+        <div class="insight-panel__header">
+          <h3>{{ 'summary.insights.overused' | t }}</h3>
+        </div>
+
+        @if (overusedPlayers().length) {
+          <div class="insight-list">
+            @for (player of overusedPlayers(); track player.playerId) {
+              <div class="insight-row">
+                <div>
+                  <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+                  <p>{{ insightExpectedLabel(player) }}</p>
+                </div>
+                <span>{{ usageDelta(player) }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="insight-empty">{{ 'summary.insights.emptyBalanced' | t }}</p>
+        }
+      </article>
+
+      <article class="insight-panel">
+        <div class="insight-panel__header">
+          <h3>{{ 'summary.insights.underused' | t }}</h3>
+        </div>
+
+        @if (underusedPlayers().length) {
+          <div class="insight-list">
+            @for (player of underusedPlayers(); track player.playerId) {
+              <div class="insight-row">
+                <div>
+                  <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
+                  <p>{{ insightExpectedLabel(player) }}</p>
+                </div>
+                <span>{{ usageDelta(player) }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="insight-empty">{{ 'summary.insights.emptyBalanced' | t }}</p>
+        }
+      </article>
+    </section>
+
+    <section class="surface-card timeline-card">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'summary.timeline.title' | t }}</h2>
+          <p>{{ 'summary.timeline.subtitle' | t }}</p>
+        </div>
+      </div>
+
+      @if (rotationTimeline().length) {
+        <div class="timeline-list" role="list">
+          @for (event of rotationTimeline(); track event.id) {
+            <article class="timeline-item" role="listitem">
+              <div class="timeline-item__time">
+                <span>{{ 'live.period.label' | t : { number: event.periodNumber } }}</span>
+                <strong>{{ event.clockMarkSeconds | duration : 'clock' }}</strong>
+              </div>
+
+              <div class="timeline-item__body">
+                <strong>{{ timelineTitle(event) }}</strong>
+                <p>{{ timelineSecondary(event) }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="insight-empty">{{ 'summary.timeline.empty' | t }}</p>
       }
     </section>
 
@@ -143,8 +312,7 @@
                   (click)="toggleSort('name')"
                   [class.summary-table__sort-button--active]="isSortedBy('name')"
                   [attr.aria-label]="sortButtonLabel('name')"
-                  [attr.title]="sortButtonLabel('name')"
-                >
+                  [attr.title]="sortButtonLabel('name')">
                   <span>{{ 'summary.table.player' | t : labelParams() }}</span>
                 </button>
               </th>
@@ -155,8 +323,7 @@
                   (click)="toggleSort('totalSeconds')"
                   [class.summary-table__sort-button--active]="isSortedBy('totalSeconds')"
                   [attr.aria-label]="sortButtonLabel('totalSeconds')"
-                  [attr.title]="sortButtonLabel('totalSeconds')"
-                >
+                  [attr.title]="sortButtonLabel('totalSeconds')">
                   <span>{{ 'summary.table.minutes' | t }}</span>
                 </button>
               </th>
@@ -167,8 +334,7 @@
                   (click)="toggleSort('points')"
                   [class.summary-table__sort-button--active]="isSortedBy('points')"
                   [attr.aria-label]="sortButtonLabel('points')"
-                  [attr.title]="sortButtonLabel('points')"
-                >
+                  [attr.title]="sortButtonLabel('points')">
                   <span>{{ 'summary.table.points' | t }}</span>
                 </button>
               </th>
@@ -179,8 +345,7 @@
                   (click)="toggleSort('assists')"
                   [class.summary-table__sort-button--active]="isSortedBy('assists')"
                   [attr.aria-label]="sortButtonLabel('assists')"
-                  [attr.title]="sortButtonLabel('assists')"
-                >
+                  [attr.title]="sortButtonLabel('assists')">
                   <span>{{ 'summary.table.assists' | t }}</span>
                 </button>
               </th>
@@ -191,8 +356,7 @@
                   (click)="toggleSort('blocks')"
                   [class.summary-table__sort-button--active]="isSortedBy('blocks')"
                   [attr.aria-label]="sortButtonLabel('blocks')"
-                  [attr.title]="sortButtonLabel('blocks')"
-                >
+                  [attr.title]="sortButtonLabel('blocks')">
                   <span>{{ 'summary.table.blocks' | t }}</span>
                 </button>
               </th>
@@ -203,8 +367,7 @@
                   (click)="toggleSort('rebounds')"
                   [class.summary-table__sort-button--active]="isSortedBy('rebounds')"
                   [attr.aria-label]="sortButtonLabel('rebounds')"
-                  [attr.title]="sortButtonLabel('rebounds')"
-                >
+                  [attr.title]="sortButtonLabel('rebounds')">
                   <span>{{ 'summary.table.rebounds' | t }}</span>
                 </button>
               </th>

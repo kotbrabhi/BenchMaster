@@ -5,9 +5,7 @@
 }
 
 .team-card-inline__content,
-.team-card-inline__identity,
-.team-card-inline__footer,
-.team-card-inline__actions {
+.team-card-inline__identity {
   display: flex;
   flex-direction: column;
   gap: var(--mobile-card-gap);
@@ -129,13 +127,6 @@
   color: var(--color-ink);
 }
 
-.roster-editor-card__actions,
-.roster-player-card__actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--action-gap-min);
-}
-
 .roster-player-card {
   background: linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-glass));
 }
@@ -183,13 +174,6 @@
 @media (min-width: 768px) {
   .team-card-inline {
     gap: 18px;
-  }
-
-  .team-card-inline__footer,
-  .team-card-inline__actions,
-  .roster-editor-card__actions,
-  .roster-player-card__actions {
-    flex-direction: row;
   }
 
   .team-card-inline__action,

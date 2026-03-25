@@ -1,11 +1,139 @@
+.toolbar--summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.info-banner {
+  padding: 12px 14px;
+  border: 1px solid rgba(32, 132, 107, 0.24);
+  border-radius: 16px;
+  background: rgba(232, 252, 246, 0.9);
+  color: #145846;
+  font-weight: 700;
+}
+
 .summary-overview {
   display: grid;
   gap: 12px;
 }
 
+.insights-grid,
 .summary-breakdown {
   display: grid;
   gap: 18px;
+}
+
+.insight-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(143, 67, 24, 0.12);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 253, 250, 0.96), rgba(255, 248, 242, 0.96));
+}
+
+.insight-panel__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.insight-list {
+  display: grid;
+  gap: 10px;
+}
+
+.insight-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.insight-row strong,
+.insight-row p,
+.timeline-item__body strong,
+.timeline-item__body p {
+  margin: 0;
+}
+
+.insight-row p,
+.timeline-item__body p {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.insight-row span {
+  white-space: nowrap;
+  font-weight: 800;
+}
+
+.insight-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.split-bar {
+  display: flex;
+  min-height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(143, 67, 24, 0.12);
+}
+
+.split-bar__segment {
+  min-width: 12px;
+}
+
+.split-bar__segment--starter {
+  background: linear-gradient(90deg, #b86422, #df9555);
+}
+
+.split-bar__segment--bench {
+  background: linear-gradient(90deg, #2f7e76, #69b5aa);
+}
+
+.timeline-card {
+  display: grid;
+  gap: 18px;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: minmax(96px, 112px) minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(255, 255, 255, 0.96));
+}
+
+.timeline-item__time {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.timeline-item__time span {
+  color: var(--color-text-muted);
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.timeline-item__time strong {
+  font-size: 1.1rem;
 }
 
 .summary-sort-pills {
@@ -219,6 +347,10 @@
 }
 
 @media (max-width: 640px) {
+  .timeline-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .summary-table-wrap {
     display: none;
   }
@@ -251,7 +383,11 @@
 
 @media (min-width: 641px) {
   .summary-overview {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .insights-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .summary-cards {

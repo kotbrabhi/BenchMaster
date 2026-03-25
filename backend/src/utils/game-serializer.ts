@@ -4,6 +4,7 @@ import { compareJerseyNumbers } from './jersey-number';
 type GameWithRoster = Prisma.GameGetPayload<{
   include: {
     team: true;
+    rotationEvents: true;
     players: {
       include: {
         player: true;
@@ -12,6 +13,14 @@ type GameWithRoster = Prisma.GameGetPayload<{
     };
   };
 }>;
+
+type SerializedPlayer = ReturnType<typeof mapPlayerEntry>;
+
+type RotationPayload = {
+  onCourtPlayerIds: number[];
+  playerInIds: number[];
+  playerOutIds: number[];
+};
 
 function sortByJersey<T extends { jerseyNumber: string }>(players: T[]) {
   return [...players].sort((left, right) => compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber));
@@ -47,6 +56,158 @@ function mapPlayerEntry(entry: GameWithRoster['players'][number]) {
   };
 }
 
+function liveGameSeconds(game: Pick<GameWithRoster, 'clockElapsedSeconds' | 'status' | 'lastClockStartedAt'>) {
+  return (
+    game.clockElapsedSeconds +
+    (game.status === GameStatus.LIVE && game.lastClockStartedAt
+      ? Math.max(0, Math.floor((Date.now() - game.lastClockStartedAt.getTime()) / 1000))
+      : 0)
+  );
+}
+
+function toNumberArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => Number(entry))
+    .filter((entry) => Number.isInteger(entry));
+}
+
+function parseRotationPayload(payload: Prisma.JsonValue | null): RotationPayload {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return {
+      onCourtPlayerIds: [],
+      playerInIds: [],
+      playerOutIds: []
+    };
+  }
+
+  const payloadRecord = payload as Record<string, unknown>;
+
+  return {
+    onCourtPlayerIds: toNumberArray(payloadRecord.onCourtPlayerIds),
+    playerInIds: toNumberArray(payloadRecord.playerInIds),
+    playerOutIds: toNumberArray(payloadRecord.playerOutIds)
+  };
+}
+
+function serializeRotationTimeline(game: GameWithRoster, players: SerializedPlayer[]) {
+  const playerMap = new Map(players.map((player) => [player.playerId, player]));
+
+  return [...game.rotationEvents]
+    .sort((left, right) => {
+      if (left.periodNumber !== right.periodNumber) {
+        return left.periodNumber - right.periodNumber;
+      }
+
+      if (left.clockMarkSeconds !== right.clockMarkSeconds) {
+        return left.clockMarkSeconds - right.clockMarkSeconds;
+      }
+
+      return left.id - right.id;
+    })
+    .map((event) => {
+      const payload = parseRotationPayload(event.payload);
+
+      const toPlayers = (playerIds: number[]) =>
+        sortByJersey(
+          playerIds
+            .map((playerId) => playerMap.get(playerId))
+            .filter((player): player is SerializedPlayer => Boolean(player))
+        );
+
+      return {
+        id: event.id,
+        kind: event.kind,
+        periodNumber: event.periodNumber,
+        clockMarkSeconds: event.clockMarkSeconds,
+        createdAt: event.createdAt.toISOString(),
+        playersIn: toPlayers(payload.playerInIds),
+        playersOut: toPlayers(payload.playerOutIds),
+        onCourt: toPlayers(payload.onCourtPlayerIds)
+      };
+    });
+}
+
+function buildUsageInsights(players: SerializedPlayer[]) {
+  const totalPlayerSeconds = players.reduce((sum, player) => sum + player.totalSeconds, 0);
+  const expectedSeconds = players.length ? totalPlayerSeconds / players.length : 0;
+
+  const usageEntries = players.map((player) => ({
+    playerId: player.playerId,
+    name: player.name,
+    jerseyNumber: player.jerseyNumber,
+    isStarter: player.isStarter,
+    totalSeconds: player.totalSeconds,
+    expectedSeconds,
+    deltaSeconds: player.totalSeconds - expectedSeconds,
+    utilizationRatio: expectedSeconds > 0 ? player.totalSeconds / expectedSeconds : 1
+  }));
+
+  const sortByDeltaDescending = (left: (typeof usageEntries)[number], right: (typeof usageEntries)[number]) => {
+    if (right.deltaSeconds !== left.deltaSeconds) {
+      return right.deltaSeconds - left.deltaSeconds;
+    }
+
+    return compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber);
+  };
+
+  const sortByDeltaAscending = (left: (typeof usageEntries)[number], right: (typeof usageEntries)[number]) => {
+    if (left.deltaSeconds !== right.deltaSeconds) {
+      return left.deltaSeconds - right.deltaSeconds;
+    }
+
+    return compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber);
+  };
+
+  const overusedPlayers = usageEntries
+    .filter((player) => player.deltaSeconds >= 60 && player.utilizationRatio >= 1.15)
+    .sort(sortByDeltaDescending)
+    .slice(0, 3);
+
+  const underusedPlayers = usageEntries
+    .filter((player) => player.deltaSeconds <= -60 && player.utilizationRatio <= 0.85)
+    .sort(sortByDeltaAscending)
+    .slice(0, 3);
+
+  const starterSeconds = players
+    .filter((player) => player.isStarter)
+    .reduce((sum, player) => sum + player.totalSeconds, 0);
+  const benchSeconds = totalPlayerSeconds - starterSeconds;
+  const starterCount = players.filter((player) => player.isStarter).length;
+  const benchCount = players.length - starterCount;
+
+  return {
+    totalPlayerSeconds,
+    insights: {
+      topMinutes: usageEntries
+        .slice()
+        .sort((left, right) => {
+          if (right.totalSeconds !== left.totalSeconds) {
+            return right.totalSeconds - left.totalSeconds;
+          }
+
+          return compareJerseyNumbers(left.jerseyNumber, right.jerseyNumber);
+        })
+        .slice(0, 3),
+      overusedPlayers,
+      underusedPlayers,
+      starterBenchSplit: {
+        starterCount,
+        benchCount,
+        starterSeconds,
+        benchSeconds,
+        starterAverageSeconds: starterCount ? Math.round(starterSeconds / starterCount) : 0,
+        benchAverageSeconds: benchCount ? Math.round(benchSeconds / benchCount) : 0,
+        starterShare: totalPlayerSeconds ? starterSeconds / totalPlayerSeconds : 0,
+        benchShare: totalPlayerSeconds ? benchSeconds / totalPlayerSeconds : 0
+      }
+    }
+  };
+}
+
 export function serializeSelectedPlayers(players: GameWithRoster['players']) {
   return sortByJersey(players.map(mapPlayerEntry));
 }
@@ -75,6 +236,7 @@ export function serializeGame(game: GameWithRoster) {
       name: game.team.name,
       gender: game.team.gender ?? 'MIXED'
     },
+    rotationTimeline: serializeRotationTimeline(game, selectedPlayers),
     selectedPlayers,
     activePlayers,
     benchPlayers
@@ -100,6 +262,8 @@ export function serializeGameListItem(game: GameWithRoster) {
 export function serializeSummary(game: GameWithRoster) {
   const players = sortByTime(game.players.map(mapPlayerEntry));
   const maxSeconds = players[0]?.totalSeconds ?? 0;
+  const totalGameSeconds = liveGameSeconds(game);
+  const { totalPlayerSeconds, insights } = buildUsageInsights(players);
 
   return {
     id: game.id,
@@ -112,12 +276,11 @@ export function serializeSummary(game: GameWithRoster) {
       name: game.team.name,
       gender: game.team.gender ?? 'MIXED'
     },
-    totalGameSeconds:
-      game.clockElapsedSeconds +
-      (game.status === GameStatus.LIVE && game.lastClockStartedAt
-        ? Math.max(0, Math.floor((Date.now() - game.lastClockStartedAt.getTime()) / 1000))
-        : 0),
+    totalGameSeconds,
+    totalPlayerSeconds,
     maxPlayerSeconds: maxSeconds,
+    insights,
+    rotationTimeline: serializeRotationTimeline(game, players),
     players
   };
 }

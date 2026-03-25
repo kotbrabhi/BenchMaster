@@ -1,4 +1,4 @@
-import { GameStatus, PeriodStatus, Prisma } from '@prisma/client';
+import { GameStatus, PeriodStatus, Prisma, RotationEventType } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { serializeGame } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';
@@ -6,6 +6,7 @@ import { getTeamLabelSet } from '../utils/team-labels';
 
 const gameInclude = {
   team: true,
+  rotationEvents: true,
   players: {
     include: {
       player: true,
@@ -21,6 +22,11 @@ const trackableStats = {
 } as const;
 
 type TrackableStat = keyof typeof trackableStats;
+type RotationEventPayload = {
+  onCourtPlayerIds: number[];
+  playerInIds?: number[];
+  playerOutIds?: number[];
+};
 
 function diffSeconds(from: Date, to: Date) {
   return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 1000));
@@ -49,6 +55,40 @@ async function getGameForUpdate(transaction: Prisma.TransactionClient, gameId: n
 type GameForUpdate = Awaited<ReturnType<typeof getGameForUpdate>>;
 type GamePlayerForUpdate = GameForUpdate['players'][number];
 
+function currentPeriodClockSeconds(game: GameForUpdate, now: Date) {
+  return (
+    game.periodElapsedSeconds +
+    (game.isClockRunning && getEffectivePeriodStatus(game) === PeriodStatus.LIVE && game.lastPeriodStartedAt
+      ? diffSeconds(game.lastPeriodStartedAt, now)
+      : 0)
+  );
+}
+
+function getOnCourtPlayerIds(players: GamePlayerForUpdate[]) {
+  return players
+    .filter((player) => player.playingTime?.isOnCourt)
+    .map((player) => player.playerId);
+}
+
+async function createRotationEvent(
+  transaction: Prisma.TransactionClient,
+  gameId: number,
+  kind: RotationEventType,
+  periodNumber: number,
+  clockMarkSeconds: number,
+  payload: RotationEventPayload
+) {
+  await transaction.gameRotationEvent.create({
+    data: {
+      gameId,
+      kind,
+      periodNumber,
+      clockMarkSeconds,
+      payload
+    }
+  });
+}
+
 function clonePlayerForUpdate(player: GamePlayerForUpdate): GamePlayerForUpdate {
   return {
     ...player,
@@ -61,6 +101,7 @@ function cloneGameForUpdate(game: GameForUpdate): GameForUpdate {
   return {
     ...game,
     team: { ...game.team },
+    rotationEvents: game.rotationEvents.map((event) => ({ ...event })),
     players: game.players.map(clonePlayerForUpdate)
   };
 }
@@ -221,6 +262,10 @@ export async function startGame(gameId: number, userId: number) {
       )
     );
 
+    await createRotationEvent(transaction, game.id, RotationEventType.PERIOD_START, 1, 0, {
+      onCourtPlayerIds: game.players.filter((player) => player.isStarter).map((player) => player.playerId)
+    });
+
     const updatedGame = cloneGameForUpdate(game);
     updatedGame.status = GameStatus.LIVE;
     updatedGame.currentPeriodNumber = 1;
@@ -245,6 +290,17 @@ export async function startGame(gameId: number, userId: number) {
           lastPeriodEnteredAt: player.isStarter ? now : null
         }
       };
+    });
+    updatedGame.rotationEvents.push({
+      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      gameId: game.id,
+      kind: RotationEventType.PERIOD_START,
+      periodNumber: 1,
+      clockMarkSeconds: 0,
+      payload: {
+        onCourtPlayerIds: game.players.filter((player) => player.isStarter).map((player) => player.playerId)
+      },
+      createdAt: now
     });
 
     return serializeGame(updatedGame);
@@ -342,7 +398,6 @@ export async function resumeGame(gameId: number, userId: number) {
         }
       };
     });
-
     return serializeGame(updatedGame);
   });
 }
@@ -444,6 +499,33 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
       )
     );
 
+    const nextOnCourtPlayerIds = game.players
+      .map((player) => {
+        if (playerOutIds.includes(player.playerId)) {
+          return null;
+        }
+
+        if (playerInIds.includes(player.playerId)) {
+          return player.playerId;
+        }
+
+        return player.playingTime?.isOnCourt ? player.playerId : null;
+      })
+      .filter((playerId): playerId is number => playerId !== null);
+
+    await createRotationEvent(
+      transaction,
+      game.id,
+      RotationEventType.SUBSTITUTION,
+      game.currentPeriodNumber,
+      currentPeriodClockSeconds(game, now),
+      {
+        onCourtPlayerIds: nextOnCourtPlayerIds,
+        playerInIds,
+        playerOutIds
+      }
+    );
+
     // TODO(axis-2): Create stat segments tied to substitutions so future points, rebounds, and advanced efficiency splits can be calculated.
 
     const playerInIdSet = new Set(playerInIds);
@@ -490,6 +572,19 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
       }
 
       return player;
+    });
+    updatedGame.rotationEvents.push({
+      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      gameId: game.id,
+      kind: RotationEventType.SUBSTITUTION,
+      periodNumber: game.currentPeriodNumber,
+      clockMarkSeconds: currentPeriodClockSeconds(game, now),
+      payload: {
+        onCourtPlayerIds: nextOnCourtPlayerIds,
+        playerInIds,
+        playerOutIds
+      },
+      createdAt: now
     });
 
     return serializeGame(updatedGame);
@@ -645,6 +740,28 @@ export async function completePeriod(gameId: number, userId: number) {
     updatedGame.isClockRunning = false;
     updatedGame.lastClockStartedAt = null;
     updatedGame.lastPeriodStartedAt = null;
+    updatedGame.rotationEvents.push({
+      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      gameId: game.id,
+      kind: RotationEventType.PERIOD_END,
+      periodNumber: game.currentPeriodNumber,
+      clockMarkSeconds: updatedGame.periodElapsedSeconds,
+      payload: {
+        onCourtPlayerIds: getOnCourtPlayerIds(updatedGame.players)
+      },
+      createdAt: now
+    });
+
+    await createRotationEvent(
+      transaction,
+      game.id,
+      RotationEventType.PERIOD_END,
+      game.currentPeriodNumber,
+      updatedGame.periodElapsedSeconds,
+      {
+        onCourtPlayerIds: getOnCourtPlayerIds(updatedGame.players)
+      }
+    );
 
     return serializeGame(updatedGame);
   });
@@ -761,6 +878,28 @@ export async function endGame(gameId: number, userId: number) {
     updatedGame.isClockRunning = false;
     updatedGame.lastClockStartedAt = null;
     updatedGame.lastPeriodStartedAt = null;
+    updatedGame.rotationEvents.push({
+      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      gameId: game.id,
+      kind: RotationEventType.GAME_END,
+      periodNumber: updatedGame.currentPeriodNumber,
+      clockMarkSeconds: updatedGame.periodElapsedSeconds,
+      payload: {
+        onCourtPlayerIds: getOnCourtPlayerIds(updatedGame.players)
+      },
+      createdAt: now
+    });
+
+    await createRotationEvent(
+      transaction,
+      game.id,
+      RotationEventType.GAME_END,
+      updatedGame.currentPeriodNumber,
+      updatedGame.periodElapsedSeconds,
+      {
+        onCourtPlayerIds: getOnCourtPlayerIds(updatedGame.players)
+      }
+    );
 
     return serializeGame(updatedGame);
   });

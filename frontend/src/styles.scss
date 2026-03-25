@@ -231,6 +231,23 @@ button {
   color: var(--color-danger);
 }
 
+.button--icon {
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  padding: 0 14px;
+  border-radius: 14px;
+}
+
+.button--icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .button:disabled {
   background: var(--color-disabled-bg);
   border-color: var(--color-disabled-border);
@@ -428,6 +445,31 @@ button {
   gap: 12px;
 }
 
+.action-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--action-gap-min);
+}
+
+.action-flow--mobile-stack {
+  flex-direction: column;
+}
+
+.action-flow--mobile-stack > .button,
+.action-flow--mobile-stack > a.button,
+.action-flow--mobile-stack > button.button {
+  width: 100%;
+  min-width: 0;
+}
+
+.action-flow--fill > .button,
+.action-flow--fill > a.button,
+.action-flow--fill > button.button {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
 .auth-sheet {
   position: fixed;
   inset: 0;
@@ -511,6 +553,16 @@ button {
   .surface-card {
     padding: 18px;
     border-radius: 22px;
+  }
+
+  .action-flow--mobile-stack {
+    flex-direction: row;
+  }
+
+  .action-flow--mobile-stack > .button,
+  .action-flow--mobile-stack > a.button,
+  .action-flow--mobile-stack > button.button {
+    width: auto;
   }
 
   .auth-sheet {

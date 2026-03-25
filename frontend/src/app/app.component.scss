@@ -364,20 +364,24 @@
     padding-left: var(--sidebar-content-offset-collapsed);
   }
 
-  .shell--sidebar-collapsed .tabbar__item {
+  .shell--sidebar-collapsed .tabbar__item,
+  .shell--focus .tabbar__item {
     justify-content: center;
     padding: 0;
   }
 
-  .shell--sidebar-collapsed .tabbar__label {
+  .shell--sidebar-collapsed .tabbar__label,
+  .shell--focus .tabbar__label {
     display: none;
   }
 
-  .shell--sidebar-collapsed .shell__brand-logo {
+  .shell--sidebar-collapsed .shell__brand-logo,
+  .shell--focus.shell--sidebar-collapsed .shell__brand-logo {
     width: 0;
   }
 
-  .shell--sidebar-collapsed .shell__brand {
+  .shell--sidebar-collapsed .shell__brand,
+  .shell--focus.shell--sidebar-collapsed .shell__brand {
     opacity: 0;
     transform: translateX(-8px);
     max-height: 0;
@@ -394,15 +398,6 @@
     --sidebar-content-offset: 96px;
   }
 
-  .shell--focus .tabbar__item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .shell--focus .tabbar__label {
-    display: none;
-  }
-
   .shell--focus .shell__brand-logo {
     width: min(48px, 100%);
   }
@@ -411,17 +406,6 @@
     --sidebar-width: var(--sidebar-collapsed-width);
     --sidebar-logo-width: 0px;
     --sidebar-content-offset: var(--sidebar-content-offset-collapsed);
-  }
-
-  .shell--focus.shell--sidebar-collapsed .shell__brand-logo {
-    width: 0;
-  }
-
-  .shell--focus.shell--sidebar-collapsed .shell__brand {
-    opacity: 0;
-    transform: translateX(-8px);
-    max-height: 0;
-    pointer-events: none;
   }
 
   .shell__content-inner--wide {
@@ -456,66 +440,6 @@
 
   .tabbar__label {
     display: inline;
-  }
-
-  .shell--sidebar-collapsed .tabbar__item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .shell--sidebar-collapsed .tabbar__label {
-    display: none;
-  }
-
-  .shell--sidebar-collapsed .shell__content {
-    padding-left: var(--sidebar-content-offset-collapsed);
-  }
-
-  .shell--sidebar-collapsed .shell__brand-logo {
-    width: 0;
-  }
-
-  .shell--sidebar-collapsed .shell__brand {
-    opacity: 0;
-    transform: translateX(-8px);
-    max-height: 0;
-    pointer-events: none;
-  }
-
-  .shell--focus {
-    --sidebar-width: 76px;
-    --sidebar-logo-width: 48px;
-    --sidebar-content-offset: 96px;
-  }
-
-  .shell--focus .tabbar__item {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .shell--focus .tabbar__label {
-    display: none;
-  }
-
-  .shell--focus .shell__brand-logo {
-    width: min(48px, 100%);
-  }
-
-  .shell--focus.shell--sidebar-collapsed {
-    --sidebar-width: var(--sidebar-collapsed-width);
-    --sidebar-logo-width: 0px;
-    --sidebar-content-offset: var(--sidebar-content-offset-collapsed);
-  }
-
-  .shell--focus.shell--sidebar-collapsed .shell__brand-logo {
-    width: 0;
-  }
-
-  .shell--focus.shell--sidebar-collapsed .shell__brand {
-    opacity: 0;
-    transform: translateX(-8px);
-    max-height: 0;
-    pointer-events: none;
   }
 
   .shell__content-inner--wide {

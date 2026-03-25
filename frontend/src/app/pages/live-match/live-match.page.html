@@ -30,7 +30,7 @@
             <strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong>
           </div>
 
-          <div class="cluster live-clock-card__actions">
+          <div class="action-flow live-clock-card__actions">
             @if (canPause(currentGame)) {
               <button
                 class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
@@ -109,7 +109,7 @@
             <strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong>
           </div>
 
-          <div class="cluster live-clock-card__actions">
+          <div class="action-flow live-clock-card__actions">
             @if (currentGame.status === 'DRAFT') {
               <button
                 class="button button--icon live-clock-card__control"
@@ -254,7 +254,7 @@
           </div>
         }
 
-        <div class="substitution-banner__actions">
+        <div class="action-flow action-flow--mobile-stack substitution-banner__actions">
           <button
             class="button"
             type="button"

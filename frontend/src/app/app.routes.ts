@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { modeAuthGuard } from './core/mode-auth.guard';
-import { GameSummaryPageComponent } from './pages/game-summary/game-summary.page';
 import { HomePageComponent } from './pages/home/home.page';
 import { LiveMatchPageComponent } from './pages/live-match/live-match.page';
 import { NewGameSetupPageComponent } from './pages/new-game-setup/new-game-setup.page';
@@ -32,7 +31,8 @@ export const routes: Routes = [
   },
   {
     path: 'games/:gameId/summary',
-    component: GameSummaryPageComponent,
+    loadComponent: () =>
+      import('./pages/game-summary/game-summary.page').then((module) => module.GameSummaryPageComponent),
     canActivate: [modeAuthGuard],
     title: 'Résumé du match'
   },

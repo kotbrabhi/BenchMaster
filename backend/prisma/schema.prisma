@@ -20,6 +20,13 @@ enum PeriodStatus {
   COMPLETED
 }
 
+enum RotationEventType {
+  PERIOD_START
+  SUBSTITUTION
+  PERIOD_END
+  GAME_END
+}
+
 enum TeamGender {
   MIXED
   FEMININE
@@ -72,6 +79,7 @@ model Game {
   updatedAt           DateTime     @updatedAt
   team                Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
   players             GamePlayer[]
+  rotationEvents      GameRotationEvent[]
 
   /// TODO(axis-2): Add per-possession and per-segment stat rollups here once player statistics are introduced.
 
@@ -121,4 +129,17 @@ model PlayerGameTime {
   gamePlayer    GamePlayer @relation(fields: [gamePlayerId], references: [id], onDelete: Cascade)
 
   /// TODO(axis-2): Link stats events to on-court time segments so advanced metrics can be calculated accurately.
+}
+
+model GameRotationEvent {
+  id               Int               @id @default(autoincrement())
+  gameId           Int
+  kind             RotationEventType
+  periodNumber     Int
+  clockMarkSeconds Int               @default(0)
+  payload          Json?
+  createdAt        DateTime          @default(now())
+  game             Game              @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, periodNumber, clockMarkSeconds, id])
 }
