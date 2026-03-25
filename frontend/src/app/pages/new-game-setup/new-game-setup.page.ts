@@ -14,7 +14,7 @@ import { TeamService } from '../../services/team.service';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
-interface RosterGroup {
+interface SummaryGroup {
   key: 'starters' | 'available' | 'unselected';
   titleKey: TranslationKey;
   emptyKey: TranslationKey;
@@ -22,10 +22,12 @@ interface RosterGroup {
 }
 
 interface SetupStep {
-  key: 'team' | 'available' | 'starters';
+  key: 'available' | 'starters' | 'summary';
   number: 1 | 2 | 3;
   titleKey: TranslationKey;
   isComplete: boolean;
+  isActive: boolean;
+  isUnlocked: boolean;
 }
 
 @Component({
@@ -52,6 +54,7 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly showGuestReplacementDialog = signal(false);
   readonly selectedTeamId = signal<number | null>(null);
   readonly selectedTeam = computed(() => this.teams().find((team) => team.id === this.selectedTeamId()) ?? null);
+  readonly wizardStep = signal<1 | 2 | 3>(1);
   readonly availablePlayerIds = signal<number[]>([]);
   readonly starterPlayerIds = signal<number[]>([]);
   readonly invalidStarterPlayerId = signal<number | null>(null);
@@ -62,11 +65,12 @@ export class NewGameSetupPageComponent implements OnInit {
     [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
   );
   readonly starterPlayers = computed(() => this.sortedRoster().filter((player) => this.isStarter(player)));
+  readonly selectableStarterPlayers = computed(() => this.sortedRoster().filter((player) => this.isAvailable(player)));
   readonly availableBenchPlayers = computed(() =>
     this.sortedRoster().filter((player) => this.isAvailable(player) && !this.isStarter(player))
   );
   readonly unselectedPlayers = computed(() => this.sortedRoster().filter((player) => !this.isAvailable(player)));
-  readonly rosterGroups = computed<RosterGroup[]>(() => [
+  readonly summaryGroups = computed<SummaryGroup[]>(() => [
     {
       key: 'starters',
       titleKey: 'newGame.group.starters.title',
@@ -86,42 +90,31 @@ export class NewGameSetupPageComponent implements OnInit {
       players: this.unselectedPlayers()
     }
   ]);
-  readonly completedStepCount = computed(() => {
-    let completed = 0;
-
-    if (this.selectedTeamId()) {
-      completed += 1;
-    }
-
-    if (this.availablePlayerIds().length >= 5) {
-      completed += 1;
-    }
-
-    if (this.starterPlayerIds().length === 5) {
-      completed += 1;
-    }
-
-    return completed;
-  });
-  readonly setupProgressPercent = computed(() => (this.completedStepCount() / 3) * 100);
+  readonly setupProgressPercent = computed(() => (this.wizardStep() / 3) * 100);
   readonly setupSteps = computed<SetupStep[]>(() => [
     {
-      key: 'team',
-      number: 1,
-      titleKey: 'newGame.chooseTeam.title',
-      isComplete: !!this.selectedTeamId()
-    },
-    {
       key: 'available',
-      number: 2,
-      titleKey: 'newGame.progress.step.available.title',
-      isComplete: this.availablePlayerIds().length >= 5
+      number: 1,
+      titleKey: 'newGame.wizard.available.title',
+      isComplete: this.availablePlayerIds().length >= 5,
+      isActive: this.wizardStep() === 1,
+      isUnlocked: !!this.selectedTeamId()
     },
     {
       key: 'starters',
+      number: 2,
+      titleKey: 'newGame.wizard.starters.title',
+      isComplete: this.starterPlayerIds().length === 5,
+      isActive: this.wizardStep() === 2,
+      isUnlocked: this.canVisitWizardStep(2)
+    },
+    {
+      key: 'summary',
       number: 3,
-      titleKey: 'newGame.progress.step.starters.title',
-      isComplete: this.starterPlayerIds().length === 5
+      titleKey: 'newGame.wizard.summary.title',
+      isComplete: this.canCreateGame(),
+      isActive: this.wizardStep() === 3,
+      isUnlocked: this.canVisitWizardStep(3)
     }
   ]);
 
@@ -152,6 +145,7 @@ export class NewGameSetupPageComponent implements OnInit {
       const playerIds = players.map((player) => player.id);
       this.availablePlayerIds.set(playerIds);
       this.starterPlayerIds.set(playerIds.slice(0, 5));
+      this.wizardStep.set(1);
       this.invalidStarterPlayerId.set(null);
       this.playerInlineError.set(null);
       this.errorMessage.set('');
@@ -197,6 +191,24 @@ export class NewGameSetupPageComponent implements OnInit {
     this.clearInvalidStarterAttempt();
     this.clearPlayerInlineError(playerId);
     this.errorMessage.set('');
+  }
+
+  selectWizardStep(step: 1 | 2 | 3) {
+    if (this.canVisitWizardStep(step)) {
+      this.wizardStep.set(step);
+    }
+  }
+
+  goToPreviousWizardStep() {
+    this.wizardStep.update((currentStep) => Math.max(1, currentStep - 1) as 1 | 2 | 3);
+  }
+
+  goToNextWizardStep() {
+    if (!this.canAdvanceWizard()) {
+      return;
+    }
+
+    this.wizardStep.update((currentStep) => Math.min(3, currentStep + 1) as 1 | 2 | 3);
   }
 
   async createGame() {
@@ -288,6 +300,60 @@ export class NewGameSetupPageComponent implements OnInit {
     return this.hasStarterSelectionError(player) || this.hasInlinePlayerError(player);
   }
 
+  canVisitWizardStep(step: 1 | 2 | 3) {
+    if (!this.selectedTeamId()) {
+      return false;
+    }
+
+    if (step === 1) {
+      return true;
+    }
+
+    if (step === 2) {
+      return this.availablePlayerIds().length >= 5;
+    }
+
+    return this.canCreateGame();
+  }
+
+  canAdvanceWizard() {
+    if (this.wizardStep() === 1) {
+      return this.availablePlayerIds().length >= 5;
+    }
+
+    if (this.wizardStep() === 2) {
+      return this.starterPlayerIds().length === 5;
+    }
+
+    return false;
+  }
+
+  wizardPrimaryActionLabel() {
+    return this.wizardStep() === 1
+      ? this.t('newGame.wizard.action.toStarters')
+      : this.t('newGame.wizard.action.toSummary');
+  }
+
+  wizardFooterMessage() {
+    if (this.wizardStep() === 1) {
+      return this.availableStepMessage();
+    }
+
+    if (this.wizardStep() === 2) {
+      return this.starterStepMessage();
+    }
+
+    return this.footerStatusMessage();
+  }
+
+  summaryGameLabel() {
+    return this.gameLabel.trim() || this.t('newGame.summary.labelFallback');
+  }
+
+  summaryGroupCountLabel(group: SummaryGroup) {
+    return `${group.players.length}`;
+  }
+
   private playerSortRank(playerId: number) {
     if (this.starterPlayerIds().includes(playerId)) {
       return 0;
@@ -324,14 +390,6 @@ export class NewGameSetupPageComponent implements OnInit {
     return player.id;
   }
 
-  availableSummaryParams() {
-    return {
-      availableCount: this.availablePlayerIds().length,
-      starterCount: this.starterPlayerIds().length,
-      ...this.labelParams()
-    };
-  }
-
   availableStepMessage() {
     if (!this.selectedTeamId()) {
       return this.t('newGame.available.reason.selectTeam');
@@ -360,7 +418,7 @@ export class NewGameSetupPageComponent implements OnInit {
     return this.canCreateGame() ? this.t('newGame.footer.ready') : this.createGameDisabledReason();
   }
 
-  trackByRosterGroup(_index: number, group: RosterGroup) {
+  trackBySummaryGroup(_index: number, group: SummaryGroup) {
     return group.key;
   }
 

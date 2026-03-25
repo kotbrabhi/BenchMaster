@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT, ViewportScroller } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
@@ -43,6 +43,7 @@ export class HomePageComponent implements OnInit {
   readonly isSubmittingTeam = signal(false);
   readonly deletingTeamId = signal<number | null>(null);
   readonly pendingTeamDeletion = signal<PendingTeamDeletion | null>(null);
+  readonly openTeamMenuId = signal<number | null>(null);
   readonly t = this.i18n.t;
   readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
     { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
@@ -86,6 +87,7 @@ export class HomePageComponent implements OnInit {
   }
 
   editTeam(team: Team) {
+    this.closeTeamMenu();
     this.editingTeamId = team.id;
     this.teamName = team.name;
     this.teamGender = team.gender;
@@ -93,6 +95,7 @@ export class HomePageComponent implements OnInit {
   }
 
   requestDeleteTeam(team: Team) {
+    this.closeTeamMenu();
     this.pendingTeamDeletion.set({
       teamId: team.id,
       title: this.t('home.confirmDeleteTeam.title', { teamName: team.name }),
@@ -131,6 +134,7 @@ export class HomePageComponent implements OnInit {
   }
 
   resetTeamForm() {
+    this.closeTeamMenu();
     this.teamName = '';
     this.teamGender = 'MIXED';
     this.teamPlayerNames = '';
@@ -166,6 +170,34 @@ export class HomePageComponent implements OnInit {
 
   primaryCtaLabel() {
     return this.teams().length ? this.t('home.hero.primaryCtaReady') : this.t('home.hero.primaryCtaEmpty');
+  }
+
+  isTeamMenuOpen(teamId: number) {
+    return this.openTeamMenuId() === teamId;
+  }
+
+  toggleTeamMenu(teamId: number, event: Event) {
+    event.stopPropagation();
+    this.openTeamMenuId.update((currentTeamId) => (currentTeamId === teamId ? null : teamId));
+  }
+
+  closeTeamMenu() {
+    this.openTeamMenuId.set(null);
+  }
+
+  async openTeamRoster(teamId: number) {
+    this.closeTeamMenu();
+    await this.router.navigate(['/teams', teamId]);
+  }
+
+  @HostListener('document:click')
+  handleDocumentClick() {
+    this.closeTeamMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  handleEscapeKey() {
+    this.closeTeamMenu();
   }
 
   gameLink(game: GameListItem) {

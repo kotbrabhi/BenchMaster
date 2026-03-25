@@ -144,24 +144,9 @@
             </div>
           </div>
 
-          <div class="action-flow action-flow--mobile-stack team-card__actions">
+          <div class="team-card__actions">
             <a
-              class="button button--secondary button--icon"
-              [routerLink]="['/teams', team.id]"
-              [attr.aria-label]="'home.teams.rosterAction' | t"
-              [attr.title]="'home.teams.rosterAction' | t">
-              <span class="button__icon" aria-hidden="true">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24">
-                  <path d="M8 6h12M8 12h12M8 18h12" />
-                  <circle cx="4" cy="6" r="1.25" />
-                  <circle cx="4" cy="12" r="1.25" />
-                  <circle cx="4" cy="18" r="1.25" />
-                </svg>
-              </span>
-              <span class="button__label">{{ 'home.teams.rosterAction' | t }}</span>
-            </a>
-            <a
-              class="button button--ghost button--icon"
+              class="button button--icon team-card__primary-action"
               [routerLink]="['/games/new']"
               [queryParams]="{ teamId: team.id }"
               [attr.aria-label]="'home.teams.newGameAction' | t"
@@ -173,36 +158,51 @@
               </span>
               <span class="button__label">{{ 'home.teams.newGameAction' | t }}</span>
             </a>
-            <button
-              class="button button--ghost button--icon"
-              type="button"
-              [attr.aria-label]="'home.teams.editAction' | t"
-              [attr.title]="'home.teams.editAction' | t"
-              (click)="editTeam(team)">
-              <span class="button__icon" aria-hidden="true">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24">
-                  <path d="M4 20h4l10-10-4-4L4 16v4Z" />
-                  <path d="m12 6 4 4" />
-                </svg>
-              </span>
-              <span class="button__label">{{ 'home.teams.editAction' | t }}</span>
-            </button>
-            <button
-              class="button button--danger button--icon"
-              type="button"
-              [attr.aria-label]="'home.teams.deleteAction' | t"
-              [attr.title]="'home.teams.deleteAction' | t"
-              (click)="requestDeleteTeam(team)">
-              <span class="button__icon" aria-hidden="true">
-                <svg class="icon icon--stroke" viewBox="0 0 24 24">
-                  <path d="M4 7h16" />
-                  <path d="M9 7V4h6v3" />
-                  <path d="M7 7l1 13h8l1-13" />
-                  <path d="M10 11v5M14 11v5" />
-                </svg>
-              </span>
-              <span class="button__label">{{ 'home.teams.deleteAction' | t }}</span>
-            </button>
+
+            <div class="team-card__menu" (click)="$event.stopPropagation()">
+              <button
+                class="button button--secondary button--icon team-card__menu-trigger"
+                type="button"
+                aria-haspopup="menu"
+                [attr.aria-expanded]="isTeamMenuOpen(team.id)"
+                [attr.aria-label]="'common.actions.label' | t"
+                [attr.title]="'common.actions.label' | t"
+                (click)="toggleTeamMenu(team.id, $event)">
+                <span class="button__icon" aria-hidden="true">
+                  <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                    <path d="M12 5.5a1.5 1.5 0 1 0 0 .01" />
+                    <path d="M12 12a1.5 1.5 0 1 0 0 .01" />
+                    <path d="M12 18.5a1.5 1.5 0 1 0 0 .01" />
+                  </svg>
+                </span>
+              </button>
+
+              @if (isTeamMenuOpen(team.id)) {
+                <div class="team-card__menu-panel" role="menu" [attr.aria-label]="'common.actions.label' | t">
+                  <button
+                    class="team-card__menu-item"
+                    type="button"
+                    role="menuitem"
+                    (click)="openTeamRoster(team.id)">
+                    {{ 'home.teams.rosterAction' | t }}
+                  </button>
+                  <button
+                    class="team-card__menu-item"
+                    type="button"
+                    role="menuitem"
+                    (click)="editTeam(team)">
+                    {{ 'home.teams.editAction' | t }}
+                  </button>
+                  <button
+                    class="team-card__menu-item team-card__menu-item--danger"
+                    type="button"
+                    role="menuitem"
+                    (click)="requestDeleteTeam(team)">
+                    {{ 'home.teams.deleteAction' | t }}
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         </article>
       }

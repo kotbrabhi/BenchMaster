@@ -84,6 +84,12 @@
   max-width: 100%;
 }
 
+.team-card:not(.team-card--editor) {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
 .team-card--editor {
   background: var(--color-accent-soft);
 }
@@ -152,6 +158,96 @@
 
 .team-card__actions {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.team-card__primary-action {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.team-card__primary-action .button__label {
+  white-space: nowrap;
+}
+
+.team-card:not(.team-card--editor) .team-card__header {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.team-card:not(.team-card--editor) .team-card__actions {
+  width: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.team-card:not(.team-card--editor) h3,
+.team-card:not(.team-card--editor) .team-card__meta {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-card__menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.team-card__menu-trigger {
+  min-width: var(--tap-target-min);
+  padding: 0 12px;
+}
+
+.team-card__menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  min-width: min(240px, calc(100vw - 64px));
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: rgba(255, 252, 248, 0.98);
+  box-shadow: 0 18px 40px rgba(55, 38, 24, 0.14);
+}
+
+.team-card__menu-item {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.team-card__menu-item:hover,
+.team-card__menu-item:focus-visible {
+  background: rgba(188, 99, 42, 0.08);
+  outline: none;
+}
+
+.team-card__menu-item--danger {
+  color: var(--color-danger);
+}
+
+.team-card__menu-item--danger:hover,
+.team-card__menu-item--danger:focus-visible {
+  background: rgba(158, 45, 26, 0.1);
 }
 
 .team-card__input {
