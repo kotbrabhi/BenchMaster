@@ -103,6 +103,11 @@
   gap: 18px;
 }
 
+.timeline-card__toggle {
+  min-height: 40px;
+  padding-inline: 14px;
+}
+
 .timeline-list {
   display: grid;
   gap: 12px;

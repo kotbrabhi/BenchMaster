@@ -200,6 +200,14 @@
   flex-shrink: 0;
 }
 
+.live-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .live-player-controls__correction svg {
   width: 18px;
   height: 18px;
@@ -349,6 +357,11 @@
     width: 100%;
   }
 
+  .live-player-controls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
   .live-clock-card__row {
     flex-wrap: wrap;
   }
@@ -419,6 +432,10 @@
 
   .live-thumb-dock__meta {
     font-weight: 700;
+  }
+
+  .live-thumb-dock__meta--warning {
+    color: var(--color-danger);
   }
 
   .live-thumb-dock__switch,

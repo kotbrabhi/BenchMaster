@@ -12,12 +12,64 @@
 
       @if (compact) {
         <div class="player-card__identity player-card__identity--compact">
-          <span class="player-card__name">{{ playerName }}</span>
+          <div class="player-card__identity-head">
+            <span class="player-card__name">{{ playerName }}</span>
+
+            @if (inlineStat; as currentInlineStat) {
+              @if (currentInlineStat.clickable) {
+                <button
+                  class="player-card__inline-stat"
+                  [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted"
+                  [class.player-card__inline-stat--danger]="currentInlineStat.tone === 'danger'"
+                  type="button"
+                  [disabled]="currentInlineStat.disabled"
+                  [attr.aria-label]="currentInlineStat.title || currentInlineStat.label"
+                  [attr.title]="currentInlineStat.title || currentInlineStat.label"
+                  (click)="handleInlineStatClick($event)">
+                  <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
+                  <strong>{{ currentInlineStat.value }}</strong>
+                </button>
+              } @else {
+                <span
+                  class="player-card__inline-stat"
+                  [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted">
+                  <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
+                  <strong>{{ currentInlineStat.value }}</strong>
+                </span>
+              }
+            }
+          </div>
           <span class="player-card__meta">{{ position || ('common.position.flexibleRole' | t) }}</span>
         </div>
       } @else {
         <div class="player-card__identity">
-          <h3>{{ playerName }}</h3>
+          <div class="player-card__identity-head">
+            <h3>{{ playerName }}</h3>
+
+            @if (inlineStat; as currentInlineStat) {
+              @if (currentInlineStat.clickable) {
+                <button
+                  class="player-card__inline-stat"
+                  [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted"
+                  [class.player-card__inline-stat--danger]="currentInlineStat.tone === 'danger'"
+                  type="button"
+                  [disabled]="currentInlineStat.disabled"
+                  [attr.aria-label]="currentInlineStat.title || currentInlineStat.label"
+                  [attr.title]="currentInlineStat.title || currentInlineStat.label"
+                  (click)="handleInlineStatClick($event)">
+                  <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
+                  <strong>{{ currentInlineStat.value }}</strong>
+                </button>
+              } @else {
+                <span
+                  class="player-card__inline-stat"
+                  [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted">
+                  <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
+                  <strong>{{ currentInlineStat.value }}</strong>
+                </span>
+              }
+            }
+          </div>
           <p>{{ position || ('common.position.flexibleRole' | t) }}</p>
         </div>
       }

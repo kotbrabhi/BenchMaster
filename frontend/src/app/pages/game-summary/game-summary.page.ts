@@ -16,7 +16,7 @@ import { GameService } from '../../services/game.service';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
-type SummarySortKey = 'name' | 'totalSeconds' | 'points' | 'assists' | 'blocks' | 'rebounds';
+type SummarySortKey = 'name' | 'totalSeconds' | 'points' | 'assists' | 'blocks' | 'rebounds' | 'fouls';
 type SortDirection = 'asc' | 'desc';
 
 const SUMMARY_SORT_LABEL_KEYS: Record<SummarySortKey, TranslationKey> = {
@@ -25,7 +25,8 @@ const SUMMARY_SORT_LABEL_KEYS: Record<SummarySortKey, TranslationKey> = {
   points: 'summary.table.points',
   assists: 'summary.table.assists',
   blocks: 'summary.table.blocks',
-  rebounds: 'summary.table.rebounds'
+  rebounds: 'summary.table.rebounds',
+  fouls: 'summary.table.fouls'
 };
 
 @Component({
@@ -43,6 +44,7 @@ export class GameSummaryPageComponent implements OnInit {
 
   readonly summary = signal<GameSummary | null>(null);
   readonly shareMessage = signal('');
+  readonly timelineExpanded = signal(false);
   readonly sort = signal<{ key: SummarySortKey; direction: SortDirection }>({
     key: 'totalSeconds',
     direction: 'desc'
@@ -73,13 +75,15 @@ export class GameSummaryPageComponent implements OnInit {
         points: totals.points + player.points,
         assists: totals.assists + player.assists,
         blocks: totals.blocks + player.blocks,
-        rebounds: totals.rebounds + player.rebounds
+        rebounds: totals.rebounds + player.rebounds,
+        fouls: totals.fouls + player.fouls
       }),
       {
         points: 0,
         assists: 0,
         blocks: 0,
-        rebounds: 0
+        rebounds: 0,
+        fouls: 0
       }
     );
   });
@@ -94,7 +98,7 @@ export class GameSummaryPageComponent implements OnInit {
   readonly leader = computed<SummaryUsageInsight | null>(() => this.topMinutes()[0] ?? null);
   readonly errorMessage = signal('');
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
-  readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'name'];
+  readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'fouls', 'name'];
   readonly t = this.i18n.t;
 
   async ngOnInit() {
@@ -205,6 +209,14 @@ export class GameSummaryPageComponent implements OnInit {
     return `${this.t('summary.timeline.onCourt')}: ${event.onCourt.map((player) => `#${player.jerseyNumber}`).join(', ')}`;
   }
 
+  toggleTimelineExpanded() {
+    this.timelineExpanded.update((current) => !current);
+  }
+
+  timelineToggleLabelKey(): TranslationKey {
+    return this.timelineExpanded() ? 'summary.timeline.hide' : 'summary.timeline.show';
+  }
+
   async shareSummary() {
     const gameSummary = this.summary();
     const browserNavigator = typeof globalThis.navigator === 'undefined' ? null : globalThis.navigator;
@@ -253,6 +265,7 @@ export class GameSummaryPageComponent implements OnInit {
     lines.push(
       `${this.t('summary.stats.starterBenchSplit')}: ${this.t('summary.insights.starterShare')} ${this.shareRatio(split.starterShare)} / ${this.t('summary.insights.benchShare')} ${this.shareRatio(split.benchShare)}`
     );
+    lines.push(`${this.t('summary.stats.teamFouls')}: ${gameSummary.players.reduce((total, player) => total + player.fouls, 0)}`);
 
     if (gameSummary.insights.overusedPlayers.length) {
       lines.push(this.t('summary.insights.overused'));

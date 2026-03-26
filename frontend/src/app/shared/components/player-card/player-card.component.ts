@@ -18,6 +18,16 @@ export interface PlayerCardStat {
   highlighted?: boolean;
 }
 
+export interface PlayerCardInlineStat {
+  label: string;
+  value: string | number;
+  title?: string;
+  disabled?: boolean;
+  highlighted?: boolean;
+  clickable?: boolean;
+  tone?: 'default' | 'danger';
+}
+
 @Component({
   selector: 'app-player-card',
   standalone: true,
@@ -34,6 +44,7 @@ export class PlayerCardComponent {
   @Input() stateLabel = '';
   @Input() actionLabel = '';
   @Input() stats: PlayerCardStat[] = [];
+  @Input() inlineStat: PlayerCardInlineStat | null = null;
   @Input() quickActions: PlayerCardQuickAction[] = [];
   @Input() quickActionsTone: 'default' | 'danger' = 'default';
   @Input() quickActionsCollapsible = false;
@@ -45,6 +56,7 @@ export class PlayerCardComponent {
   @Input() compact = false;
 
   @Output() actionPressed = new EventEmitter<void>();
+  @Output() inlineStatPressed = new EventEmitter<void>();
   @Output() quickActionPressed = new EventEmitter<PlayerCardQuickActionValue>();
   @Output() cardPressed = new EventEmitter<void>();
 
@@ -78,5 +90,15 @@ export class PlayerCardComponent {
   handleActionClick(event: MouseEvent) {
     event.stopPropagation();
     this.actionPressed.emit();
+  }
+
+  handleInlineStatClick(event: MouseEvent) {
+    event.stopPropagation();
+
+    if (!this.inlineStat?.clickable || this.inlineStat.disabled) {
+      return;
+    }
+
+    this.inlineStatPressed.emit();
   }
 }

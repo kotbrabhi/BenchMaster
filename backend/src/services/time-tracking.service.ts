@@ -18,7 +18,8 @@ const gameInclude = {
 const trackableStats = {
   assists: 'passe décisive',
   blocks: 'contre',
-  rebounds: 'rebond'
+  rebounds: 'rebond',
+  fouls: 'faute'
 } as const;
 
 type TrackableStat = keyof typeof trackableStats;
@@ -255,6 +256,7 @@ export async function startGame(gameId: number, userId: number) {
           data: {
             isOnCourt: player.isStarter,
             periodSeconds: 0,
+            periodFouls: 0,
             lastEnteredAt: player.isStarter ? now : null,
             lastPeriodEnteredAt: player.isStarter ? now : null
           }
@@ -286,6 +288,7 @@ export async function startGame(gameId: number, userId: number) {
           ...player.playingTime,
           isOnCourt: player.isStarter,
           periodSeconds: 0,
+          periodFouls: 0,
           lastEnteredAt: player.isStarter ? now : null,
           lastPeriodEnteredAt: player.isStarter ? now : null
         }
@@ -419,15 +422,8 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
     const game = await getGameForUpdate(transaction, gameId, userId);
     const labels = getTeamLabelSet(game.team.gender);
 
-    if (!playerInIds.length || !playerOutIds.length) {
-      throw new HttpError(
-        400,
-        `Sélectionnez au moins ${labels.playerIndefiniteSingular} ${labels.incomingSingular} et ${labels.playerIndefiniteSingular} ${labels.outgoingSingular}.`
-      );
-    }
-
-    if (playerInIds.length !== playerOutIds.length) {
-      throw new HttpError(400, `Le nombre de ${labels.incomingPlural} doit correspondre au nombre de ${labels.outgoingPlural}.`);
+    if (!playerInIds.length && !playerOutIds.length) {
+      throw new HttpError(400, 'Sélectionnez au moins un changement à appliquer.');
     }
 
     ensureUniqueIds(playerInIds, `${labels.playerSingular} ${labels.incomingSingular}`);
@@ -446,14 +442,19 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
       throw new HttpError(400, `Au moins un·e ${labels.incomingSingular} est déjà sur le terrain.`);
     }
 
+    if (playerIns.some((player) => (player!.playingTime?.fouls ?? 0) >= 5)) {
+      throw new HttpError(400, `Un·e ${labels.incomingSingular} disqualifié·e pour cinq fautes ne peut plus entrer.`);
+    }
+
     if (playerOuts.some((player) => !player!.playingTime?.isOnCourt)) {
       throw new HttpError(400, `Au moins un·e ${labels.outgoingSingular} n’est pas actuellement sur le terrain.`);
     }
 
     const activeCount = game.players.filter((player) => player.playingTime?.isOnCourt).length;
+    const nextActiveCount = activeCount - playerOutIds.length + playerInIds.length;
 
-    if (activeCount !== 5) {
-      throw new HttpError(400, `Un match en direct doit conserver exactement cinq ${labels.playerPlural} actif·ves.`);
+    if (nextActiveCount !== 5) {
+      throw new HttpError(400, `Le changement doit laisser exactement cinq ${labels.playerPlural} sur le terrain.`);
     }
 
     const now = new Date();
@@ -663,7 +664,7 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
       throw new HttpError(404, `${labels.playerSingular.charAt(0).toUpperCase()}${labels.playerSingular.slice(1)} introuvable pour ce match.`);
     }
 
-    if (!player.playingTime?.isOnCourt) {
+    if (trackableStat !== 'fouls' && !player.playingTime?.isOnCourt) {
       throw new HttpError(
         400,
         `Seul·e ${labels.playerIndefiniteSingular} actuellement sur le terrain peut recevoir un ${trackableStats[trackableStat]}.`
@@ -674,6 +675,22 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
       throw new HttpError(400, `Impossible de retirer un ${trackableStats[trackableStat]} non enregistré.`);
     }
 
+    if (trackableStat === 'fouls' && correction && (player.playingTime?.periodFouls ?? 0) < 1) {
+      throw new HttpError(400, 'Impossible de retirer une faute d’équipe déjà remise à zéro pour une période précédente.');
+    }
+
+    const now = new Date();
+    const disqualifyOnFifthFoul =
+      trackableStat === 'fouls' && !correction && (player.playingTime?.fouls ?? 0) + 1 >= 5 && player.playingTime?.isOnCourt;
+    const totalSecondsAtDisqualification =
+      disqualifyOnFifthFoul && game.isClockRunning && player.playingTime?.lastEnteredAt
+        ? (player.playingTime?.totalSeconds ?? 0) + diffSeconds(player.playingTime.lastEnteredAt, now)
+        : player.playingTime?.totalSeconds ?? 0;
+    const periodSecondsAtDisqualification =
+      disqualifyOnFifthFoul && game.isClockRunning && player.playingTime?.lastPeriodEnteredAt
+        ? (player.playingTime?.periodSeconds ?? 0) + diffSeconds(player.playingTime.lastPeriodEnteredAt, now)
+        : player.playingTime?.periodSeconds ?? 0;
+
     await transaction.playerGameTime.update({
       where: {
         gamePlayerId: player.id
@@ -681,9 +698,40 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
       data: {
         [trackableStat]: {
           [correction ? 'decrement' : 'increment']: 1
-        }
+        },
+        ...(trackableStat === 'fouls'
+          ? {
+              periodFouls: {
+                [correction ? 'decrement' : 'increment']: 1
+              }
+            }
+          : {}),
+        ...(disqualifyOnFifthFoul
+          ? {
+              isOnCourt: false,
+              totalSeconds: totalSecondsAtDisqualification,
+              periodSeconds: periodSecondsAtDisqualification,
+              lastEnteredAt: null,
+              lastPeriodEnteredAt: null
+            }
+          : {})
       }
     });
+
+    if (disqualifyOnFifthFoul) {
+      await createRotationEvent(
+        transaction,
+        game.id,
+        RotationEventType.SUBSTITUTION,
+        game.currentPeriodNumber,
+        currentPeriodClockSeconds(game, now),
+        {
+          onCourtPlayerIds: getOnCourtPlayerIds(game.players).filter((entryPlayerId) => entryPlayerId !== playerId),
+          playerInIds: [],
+          playerOutIds: [playerId]
+        }
+      );
+    }
 
     const updatedGame = cloneGameForUpdate(game);
     updatedGame.players = updatedGame.players.map((entry) => {
@@ -695,10 +743,40 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
         ...entry,
         playingTime: {
           ...entry.playingTime,
-          [trackableStat]: entry.playingTime[trackableStat] + (correction ? -1 : 1)
+          [trackableStat]: entry.playingTime[trackableStat] + (correction ? -1 : 1),
+          ...(trackableStat === 'fouls'
+            ? {
+                periodFouls: entry.playingTime.periodFouls + (correction ? -1 : 1)
+              }
+            : {}),
+          ...(disqualifyOnFifthFoul
+            ? {
+                isOnCourt: false,
+                totalSeconds: totalSecondsAtDisqualification,
+                periodSeconds: periodSecondsAtDisqualification,
+                lastEnteredAt: null,
+                lastPeriodEnteredAt: null
+              }
+            : {})
         }
       };
     });
+
+    if (disqualifyOnFifthFoul) {
+      updatedGame.rotationEvents.push({
+        id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+        gameId: game.id,
+        kind: RotationEventType.SUBSTITUTION,
+        periodNumber: game.currentPeriodNumber,
+        clockMarkSeconds: currentPeriodClockSeconds(game, now),
+        payload: {
+          onCourtPlayerIds: getOnCourtPlayerIds(updatedGame.players),
+          playerInIds: [],
+          playerOutIds: [playerId]
+        },
+        createdAt: now
+      });
+    }
 
     return serializeGame(updatedGame);
   });
@@ -810,6 +888,7 @@ export async function startNextPeriod(gameId: number, userId: number) {
           },
           data: {
             periodSeconds: 0,
+            periodFouls: 0,
             lastEnteredAt: player.playingTime?.isOnCourt ? now : null,
             lastPeriodEnteredAt: player.playingTime?.isOnCourt ? now : null
           }
@@ -835,6 +914,7 @@ export async function startNextPeriod(gameId: number, userId: number) {
         playingTime: {
           ...player.playingTime,
           periodSeconds: 0,
+          periodFouls: 0,
           lastEnteredAt: player.playingTime.isOnCourt ? now : null,
           lastPeriodEnteredAt: player.playingTime.isOnCourt ? now : null
         }

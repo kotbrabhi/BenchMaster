@@ -442,6 +442,25 @@
     display: inline;
   }
 
+  .shell--focus {
+    --sidebar-width: 232px;
+    --sidebar-logo-width: 116px;
+    --sidebar-content-offset: 252px;
+  }
+
+  .shell--focus .tabbar__item {
+    justify-content: flex-start;
+    padding: 0 16px;
+  }
+
+  .shell--focus .tabbar__label {
+    display: inline;
+  }
+
+  .shell--focus .shell__brand-logo {
+    width: min(var(--sidebar-logo-width), 100%);
+  }
+
   .shell__content-inner--wide {
     width: min(100%, 1360px);
   }

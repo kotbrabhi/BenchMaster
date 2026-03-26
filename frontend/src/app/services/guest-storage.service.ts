@@ -61,8 +61,17 @@ const GUEST_TEAM_ID = 1;
 const statLabels: Record<PlayerStatType, string> = {
   assists: 'passe décisive',
   blocks: 'contre',
-  rebounds: 'rebond'
+  rebounds: 'rebond',
+  fouls: 'faute'
 };
+
+function normalizeGamePlayer(player: GamePlayerState): GamePlayerState {
+  return {
+    ...player,
+    fouls: player.fouls ?? 0,
+    periodFouls: player.periodFouls ?? 0
+  };
+}
 
 function defaultState(): GuestState {
   return {
@@ -537,6 +546,8 @@ export class GuestStorageService {
         assists: 0,
         blocks: 0,
         rebounds: 0,
+        fouls: 0,
+        periodFouls: 0,
         isOnCourt: false,
         lastEnteredAt: null,
         lastPeriodEnteredAt: null
@@ -606,6 +617,7 @@ export class GuestStorageService {
         ...player,
         isOnCourt: player.isStarter,
         periodSeconds: 0,
+        periodFouls: 0,
         lastEnteredAt: player.isStarter ? now : null,
         lastPeriodEnteredAt: player.isStarter ? now : null
       }));
@@ -728,6 +740,7 @@ export class GuestStorageService {
       game.selectedPlayers = game.selectedPlayers.map((player) => ({
         ...player,
         periodSeconds: 0,
+        periodFouls: 0,
         lastEnteredAt: player.isOnCourt ? now : null,
         lastPeriodEnteredAt: player.isOnCourt ? now : null
       }));
@@ -772,12 +785,8 @@ export class GuestStorageService {
   async substitutePlayers(gameId: number, playerInIds: number[], playerOutIds: number[]) {
     return this.updateGame(gameId, (game) => {
       const labels = getTeamLabelSet(game.team.gender);
-      if (!playerInIds.length || !playerOutIds.length) {
-        throw new Error(`Sélectionnez au moins ${labels.playerIndefiniteSingular} ${labels.incomingSingular} et ${labels.playerIndefiniteSingular} ${labels.outgoingSingular}.`);
-      }
-
-      if (playerInIds.length !== playerOutIds.length) {
-        throw new Error(`Le nombre de ${labels.incomingPlural} doit correspondre au nombre de ${labels.outgoingPlural}.`);
+      if (!playerInIds.length && !playerOutIds.length) {
+        throw new Error('Sélectionnez au moins un changement à appliquer.');
       }
 
       if (new Set(playerInIds).size !== playerInIds.length || new Set(playerOutIds).size !== playerOutIds.length) {
@@ -797,12 +806,18 @@ export class GuestStorageService {
         throw new Error(`Au moins un·e ${labels.incomingSingular} est déjà sur le terrain.`);
       }
 
+      if (playerIns.some((player) => player!.fouls >= 5)) {
+        throw new Error(`Un·e ${labels.incomingSingular} disqualifié·e pour cinq fautes ne peut plus entrer.`);
+      }
+
       if (playerOuts.some((player) => !player!.isOnCourt)) {
         throw new Error(`Au moins un·e ${labels.outgoingSingular} n’est pas actuellement sur le terrain.`);
       }
 
-      if (game.activePlayers.length !== 5) {
-        throw new Error(`Un match en direct doit conserver exactement cinq ${labels.playerPlural} actif·ves.`);
+      const nextActiveCount = game.activePlayers.length - playerOutIds.length + playerInIds.length;
+
+      if (nextActiveCount !== 5) {
+        throw new Error(`Le changement doit laisser exactement cinq ${labels.playerPlural} sur le terrain.`);
       }
 
       const now = nowIso();
@@ -902,7 +917,7 @@ export class GuestStorageService {
         throw new Error(`${capitalize(labels.playerSingular)} introuvable pour ce match.`);
       }
 
-      if (!player.isOnCourt) {
+      if (stat !== 'fouls' && !player.isOnCourt) {
         throw new Error(`Seul·e un·e ${labels.playerSingular} actuellement sur le terrain peut recevoir un ${statLabels[stat]}.`);
       }
 
@@ -910,7 +925,42 @@ export class GuestStorageService {
         throw new Error(`Impossible de retirer un ${statLabels[stat]} non enregistré.`);
       }
 
+      if (stat === 'fouls' && correction && player.periodFouls < 1) {
+        throw new Error('Impossible de retirer une faute d’équipe déjà remise à zéro pour une période précédente.');
+      }
+
       player[stat] += correction ? -1 : 1;
+
+      if (stat === 'fouls') {
+        player.periodFouls += correction ? -1 : 1;
+      }
+
+      const disqualifyOnFifthFoul = stat === 'fouls' && !correction && player.fouls >= 5 && player.isOnCourt;
+
+      if (disqualifyOnFifthFoul) {
+        const now = new Date();
+        const nowTimestamp = now.toISOString();
+
+        player.totalSeconds += game.isClockRunning && player.lastEnteredAt ? diffSeconds(player.lastEnteredAt, now) : 0;
+        player.periodSeconds += game.isClockRunning && player.lastPeriodEnteredAt ? diffSeconds(player.lastPeriodEnteredAt, now) : 0;
+        player.isOnCourt = false;
+        player.lastEnteredAt = null;
+        player.lastPeriodEnteredAt = null;
+
+        pushRotationEvent(
+          game,
+          'SUBSTITUTION',
+          game.currentPeriodNumber,
+          currentPeriodClockSeconds(game, now),
+          {
+            onCourtPlayerIds: onCourtPlayerIds(game.selectedPlayers).filter((entryPlayerId) => entryPlayerId !== playerId),
+            playerInIds: [],
+            playerOutIds: [playerId]
+          },
+          nowTimestamp
+        );
+      }
+
       rebuildGameCollections(game);
     });
   }
@@ -1049,7 +1099,10 @@ export class GuestStorageService {
               ...parsedState.game.team,
               gender: parsedState.game.team.gender ?? 'MIXED'
             },
-            rotationTimeline: parsedState.game.rotationTimeline ?? []
+            rotationTimeline: parsedState.game.rotationTimeline ?? [],
+            selectedPlayers: (parsedState.game.selectedPlayers ?? []).map(normalizeGamePlayer),
+            activePlayers: (parsedState.game.activePlayers ?? []).map(normalizeGamePlayer),
+            benchPlayers: (parsedState.game.benchPlayers ?? []).map(normalizeGamePlayer)
           }
         : null;
 

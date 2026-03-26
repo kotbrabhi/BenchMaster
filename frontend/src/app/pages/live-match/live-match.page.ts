@@ -9,6 +9,7 @@ import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { LiveMatchService } from '../../services/live-match.service';
 import {
+  PlayerCardInlineStat,
   PlayerCardQuickAction,
   PlayerCardStat,
   PlayerCardQuickActionValue
@@ -104,6 +105,12 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   async toggleBenchPlayer(playerId: number) {
+    const player = this.game()?.benchPlayers.find((entry) => entry.playerId === playerId);
+
+    if (player && this.isDisqualified(player)) {
+      return;
+    }
+
     const wasSelected = this.isBenchSelected(playerId);
     this.liveMatchService.toggleBenchPlayer(playerId);
     this.errorMessage.set('');
@@ -238,6 +245,29 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     ];
   }
 
+  foulCounter(player: GamePlayerState, clickable: boolean): PlayerCardInlineStat {
+    const correctionMode = this.correctionMode();
+    const isDisqualified = this.isDisqualified(player);
+
+    return {
+      label: this.t('live.stats.fouls.short'),
+      value: player.fouls,
+      title: correctionMode ? this.t('live.actions.removeFoul') : this.t('live.actions.addFoul'),
+      disabled: this.isUpdatingStats(player.playerId) || (correctionMode && !this.canReverseAction(player, 'fouls')),
+      highlighted: player.fouls > 0,
+      clickable,
+      tone: correctionMode || player.fouls > 0 || isDisqualified ? 'danger' : 'default'
+    };
+  }
+
+  teamFouls(game: GameDetail) {
+    return game.selectedPlayers.reduce((total, player) => total + player.periodFouls, 0);
+  }
+
+  isTeamFoulsWarning(game: GameDetail) {
+    return this.teamFouls(game) >= 4;
+  }
+
   isBenchSelected(playerId: number) {
     return this.liveMatchService.selectedBenchPlayerIds().includes(playerId);
   }
@@ -255,10 +285,24 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   benchPlayerActionLabel(playerId: number) {
+    const player = this.game()?.benchPlayers.find((entry) => entry.playerId === playerId);
+
+    if (player && this.isDisqualified(player)) {
+      return this.t('live.actions.disqualified');
+    }
+
     return this.isBenchSelected(playerId) ? this.t('live.actions.cancelSubIn') : this.t('live.actions.selectSubInAction');
   }
 
   playerSelectionStateLabel(playerId: number, view: LiveRosterView) {
+    const player = view === 'court'
+      ? this.game()?.activePlayers.find((entry) => entry.playerId === playerId)
+      : this.game()?.benchPlayers.find((entry) => entry.playerId === playerId);
+
+    if (player && this.isDisqualified(player)) {
+      return this.t('live.states.disqualified');
+    }
+
     const isSelected = view === 'court' ? this.isActiveSelected(playerId) : this.isBenchSelected(playerId);
     return isSelected ? this.t('common.state.selected', this.labelParams()) : '';
   }
@@ -272,31 +316,44 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   pendingHeadline() {
+    const game = this.game();
     const incomingSelections = this.pendingBenchPlayers().length;
     const outgoingSelections = this.pendingActivePlayers().length;
     const totalSelections = incomingSelections + outgoingSelections;
+    const vacancyCount = game ? this.vacancyCount(game) : 0;
+    const requiredIncomingSelections = outgoingSelections + vacancyCount;
 
     if (totalSelections === 0) {
-      return this.t('live.pending.none');
+      return vacancyCount > 0
+        ? this.t('live.pending.needIncoming', { count: vacancyCount, ...this.labelParams() })
+        : this.t('live.pending.none');
     }
 
-    if (incomingSelections === 1 && outgoingSelections === 0) {
-      return this.t('live.pending.awaitingOut', this.labelParams());
+    if (incomingSelections < requiredIncomingSelections) {
+      return this.t('live.pending.awaitingInCount', {
+        count: requiredIncomingSelections - incomingSelections,
+        ...this.labelParams()
+      });
     }
 
-    if (incomingSelections === 0 && outgoingSelections === 1) {
-      return this.t('live.pending.awaitingIn', this.labelParams());
+    if (incomingSelections > requiredIncomingSelections) {
+      return this.t('live.pending.awaitingOutCount', {
+        count: incomingSelections - requiredIncomingSelections,
+        ...this.labelParams()
+      });
     }
 
-    return this.pendingCountsLabel();
+    return this.canApplySubstitutionBatch() ? this.pendingCountsLabel() : this.t('live.pending.none');
   }
 
   pendingStatusMessage() {
+    const game = this.game();
     const incomingSelections = this.pendingBenchPlayers().length;
     const outgoingSelections = this.pendingActivePlayers().length;
     const totalSelections = incomingSelections + outgoingSelections;
+    const vacancyCount = game ? this.vacancyCount(game) : 0;
 
-    if (totalSelections === 0 || (incomingSelections === 1 && outgoingSelections === 0) || (incomingSelections === 0 && outgoingSelections === 1)) {
+    if (totalSelections === 0) {
       return '';
     }
 
@@ -304,27 +361,37 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   pendingInstructionMessage() {
+    const game = this.game();
+    const vacancyCount = game ? this.vacancyCount(game) : 0;
+
     if (!this.hasPendingSelections()) {
       return this.t('live.pending.instructions', this.labelParams());
+    }
+
+    if (vacancyCount > 0 && this.pendingBenchPlayers().length === 0 && this.pendingActivePlayers().length === 0) {
+      return this.t('live.pending.instructionsVacancy', { count: vacancyCount, ...this.labelParams() });
     }
 
     return this.pendingStatusMessage() || this.t('live.pending.subtitle');
   }
 
   hasPendingSelections() {
-    return this.pendingBenchPlayers().length + this.pendingActivePlayers().length > 0;
+    return this.pendingBenchPlayers().length + this.pendingActivePlayers().length > 0 || this.vacancyCount(this.game()) > 0;
   }
 
   guidedRosterView(): LiveRosterView | null {
+    const game = this.game();
     const incomingSelections = this.pendingBenchPlayers().length;
     const outgoingSelections = this.pendingActivePlayers().length;
+    const vacancyCount = game ? this.vacancyCount(game) : 0;
+    const requiredIncomingSelections = outgoingSelections + vacancyCount;
 
-    if (incomingSelections > outgoingSelections) {
-      return 'court';
+    if (incomingSelections < requiredIncomingSelections) {
+      return 'bench';
     }
 
-    if (outgoingSelections > incomingSelections) {
-      return 'bench';
+    if (incomingSelections > requiredIncomingSelections) {
+      return 'court';
     }
 
     return null;
@@ -499,6 +566,30 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     return tone === 'court' ? this.t('live.notes.currentlyOnCourt') : this.t('live.notes.availableOnBench');
   }
 
+  playerNote(player: GamePlayerState, tone: LiveRosterView) {
+    if (this.isDisqualified(player)) {
+      return tone === 'court' ? this.t('live.notes.disqualifiedCourt') : this.t('live.notes.disqualifiedBench');
+    }
+
+    return this.livePlayerNote(tone);
+  }
+
+  isPlayerActionDisabled(player: GamePlayerState, view: LiveRosterView) {
+    return view === 'bench' && this.isDisqualified(player);
+  }
+
+  isFoulCounterClickable(player: GamePlayerState, view: LiveRosterView) {
+    if (this.isDisqualified(player)) {
+      return false;
+    }
+
+    if (view === 'court') {
+      return true;
+    }
+
+    return this.correctionMode() ? player.periodFouls >= 1 : true;
+  }
+
   togglePlayerStatsCard(playerId: number) {
     if (!this.isMobileViewport()) {
       return;
@@ -565,7 +656,19 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       return player.points >= action;
     }
 
+    if (action === 'fouls') {
+      return player.periodFouls >= 1;
+    }
+
     return player[action] >= 1;
+  }
+
+  private isDisqualified(player: GamePlayerState) {
+    return player.fouls >= 5;
+  }
+
+  private vacancyCount(game: GameDetail | null | undefined) {
+    return Math.max(0, 5 - (game?.activePlayers.length ?? 0));
   }
 
   private async loadGame() {
@@ -611,6 +714,10 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   private syncMobileRosterFlow(sourceView: LiveRosterView, wasSelected: boolean) {
     if (wasSelected) {
+      return;
+    }
+
+    if (this.canApplySubstitutionBatch()) {
       return;
     }
 

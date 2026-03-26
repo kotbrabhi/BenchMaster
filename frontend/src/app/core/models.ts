@@ -1,6 +1,6 @@
 export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-export type PlayerStatType = 'assists' | 'blocks' | 'rebounds';
+export type PlayerStatType = 'assists' | 'blocks' | 'rebounds' | 'fouls';
 export type AppMode = 'guest' | 'authenticated';
 export type TeamGender = 'MIXED' | 'FEMININE' | 'MASCULINE';
 export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
@@ -35,6 +35,8 @@ export interface GamePlayerState {
   assists: number;
   blocks: number;
   rebounds: number;
+  fouls: number;
+  periodFouls: number;
   isOnCourt: boolean;
   lastEnteredAt: string | null;
   lastPeriodEnteredAt: string | null;

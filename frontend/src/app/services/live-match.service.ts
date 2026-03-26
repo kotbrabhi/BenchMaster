@@ -25,10 +25,11 @@ export class LiveMatchService {
     const selectedIds = new Set(this.selectedActivePlayerIds());
     return game?.activePlayers.filter((player) => selectedIds.has(player.playerId)) ?? [];
   });
+  readonly vacancyCount = computed(() => Math.max(0, 5 - (this.game()?.activePlayers.length ?? 0)));
   readonly canApplySubstitutionBatch = computed(() => {
     const benchCount = this.selectedBenchPlayerIds().length;
     const activeCount = this.selectedActivePlayerIds().length;
-    return benchCount > 0 && benchCount === activeCount;
+    return benchCount > 0 && benchCount === activeCount + this.vacancyCount();
   });
 
   async loadGame(gameId: number) {

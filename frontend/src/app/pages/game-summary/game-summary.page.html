@@ -50,6 +50,12 @@
       </article>
 
       <article class="info-panel">
+        <span class="info-panel__eyebrow">{{ 'summary.stats.teamFouls' | t }}</span>
+        <strong class="info-panel__title">{{ totals()?.fouls ?? 0 }}</strong>
+        <p class="info-panel__text">{{ 'summary.table.fouls' | t }}</p>
+      </article>
+
+      <article class="info-panel">
         <span class="info-panel__eyebrow">{{ 'summary.timeline.title' | t }}</span>
         <strong class="info-panel__title">{{ substitutionCount() }}</strong>
         <p class="info-panel__text">{{ 'summary.stats.rotationCount' | t }}</p>
@@ -180,24 +186,38 @@
           <h2>{{ 'summary.timeline.title' | t }}</h2>
           <p>{{ 'summary.timeline.subtitle' | t }}</p>
         </div>
+
+        @if (rotationTimeline().length) {
+          <button
+            class="button button--secondary timeline-card__toggle"
+            type="button"
+            [attr.aria-expanded]="timelineExpanded()"
+            (click)="toggleTimelineExpanded()">
+            {{ timelineToggleLabelKey() | t }}
+          </button>
+        }
       </div>
 
       @if (rotationTimeline().length) {
-        <div class="timeline-list" role="list">
-          @for (event of rotationTimeline(); track event.id) {
-            <article class="timeline-item" role="listitem">
-              <div class="timeline-item__time">
-                <span>{{ 'live.period.label' | t : { number: event.periodNumber } }}</span>
-                <strong>{{ event.clockMarkSeconds | duration : 'clock' }}</strong>
-              </div>
+        @if (timelineExpanded()) {
+          <div class="timeline-list" role="list">
+            @for (event of rotationTimeline(); track event.id) {
+              <article class="timeline-item" role="listitem">
+                <div class="timeline-item__time">
+                  <span>{{ 'live.period.label' | t : { number: event.periodNumber } }}</span>
+                  <strong>{{ event.clockMarkSeconds | duration : 'clock' }}</strong>
+                </div>
 
-              <div class="timeline-item__body">
-                <strong>{{ timelineTitle(event) }}</strong>
-                <p>{{ timelineSecondary(event) }}</p>
-              </div>
-            </article>
-          }
-        </div>
+                <div class="timeline-item__body">
+                  <strong>{{ timelineTitle(event) }}</strong>
+                  <p>{{ timelineSecondary(event) }}</p>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="insight-empty">{{ 'summary.timeline.collapsed' | t }}</p>
+        }
       } @else {
         <p class="insight-empty">{{ 'summary.timeline.empty' | t }}</p>
       }
@@ -262,6 +282,10 @@
                 <dt>{{ 'summary.table.blocks' | t }}</dt>
                 <dd>{{ player.blocks }}</dd>
               </div>
+              <div>
+                <dt>{{ 'summary.table.fouls' | t }}</dt>
+                <dd>{{ player.fouls }}</dd>
+              </div>
             </dl>
           </article>
         }
@@ -295,6 +319,10 @@
               <div>
                 <dt>{{ 'summary.table.blocks' | t }}</dt>
                 <dd>{{ totals.blocks }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.fouls' | t }}</dt>
+                <dd>{{ totals.fouls }}</dd>
               </div>
             </dl>
           </article>
@@ -371,6 +399,17 @@
                   <span>{{ 'summary.table.rebounds' | t }}</span>
                 </button>
               </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('fouls')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('fouls')"
+                  [class.summary-table__sort-button--active]="isSortedBy('fouls')"
+                  [attr.aria-label]="sortButtonLabel('fouls')"
+                  [attr.title]="sortButtonLabel('fouls')">
+                  <span>{{ 'summary.table.fouls' | t }}</span>
+                </button>
+              </th>
             </tr>
           </thead>
 
@@ -383,6 +422,7 @@
                 <td class="summary-table__stat">{{ player.assists }}</td>
                 <td class="summary-table__stat">{{ player.blocks }}</td>
                 <td class="summary-table__stat">{{ player.rebounds }}</td>
+                <td class="summary-table__stat">{{ player.fouls }}</td>
               </tr>
             }
           </tbody>
@@ -396,6 +436,7 @@
                 <td class="summary-table__stat">{{ totals.assists }}</td>
                 <td class="summary-table__stat">{{ totals.blocks }}</td>
                 <td class="summary-table__stat">{{ totals.rebounds }}</td>
+                <td class="summary-table__stat">{{ totals.fouls }}</td>
               </tr>
             </tfoot>
           }

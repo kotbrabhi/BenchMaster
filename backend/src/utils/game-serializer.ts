@@ -50,6 +50,8 @@ function mapPlayerEntry(entry: GameWithRoster['players'][number]) {
     assists: entry.playingTime?.assists ?? 0,
     blocks: entry.playingTime?.blocks ?? 0,
     rebounds: entry.playingTime?.rebounds ?? 0,
+    fouls: entry.playingTime?.fouls ?? 0,
+    periodFouls: entry.playingTime?.periodFouls ?? 0,
     isOnCourt: entry.playingTime?.isOnCourt ?? false,
     lastEnteredAt: entry.playingTime?.lastEnteredAt?.toISOString() ?? null,
     lastPeriodEnteredAt: entry.playingTime?.lastPeriodEnteredAt?.toISOString() ?? null

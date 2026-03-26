@@ -47,9 +47,17 @@
   min-width: 0;
 }
 
+.player-card__identity-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .player-card__identity h3,
 .player-card__identity p,
-.player-card__meta {
+.player-card__meta,
+.player-card__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -91,6 +99,47 @@
   margin: 4px 0 0;
   color: var(--color-text-muted);
   font-size: var(--player-meta-size);
+}
+
+.player-card__inline-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.72);
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+
+.player-card__inline-stat--highlighted {
+  border-color: var(--color-accent-strong-soft);
+  background: rgba(188, 99, 42, 0.14);
+  color: var(--color-accent-strong);
+}
+
+.player-card__inline-stat--danger {
+  border-color: rgba(158, 45, 26, 0.24);
+  background: rgba(158, 45, 26, 0.1);
+  color: var(--color-danger);
+}
+
+button.player-card__inline-stat {
+  cursor: pointer;
+}
+
+.player-card__inline-stat-label {
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.player-card__inline-stat strong {
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 .player-card__meta-strip {
@@ -261,6 +310,14 @@
   color: var(--color-disabled-ink);
 }
 
+.player-card__inline-stat:disabled {
+  cursor: default;
+  opacity: 1;
+  background: rgba(73, 42, 19, 0.08);
+  border-color: var(--color-disabled-border);
+  color: var(--color-disabled-ink);
+}
+
 .player-card--compact {
   gap: var(--mobile-card-gap);
   padding: var(--mobile-card-padding);
@@ -283,12 +340,21 @@
   line-height: 1.2;
 }
 
+.player-card--compact .player-card__identity-head {
+  gap: 6px;
+}
+
 .player-card--compact .player-card__name {
   font-size: var(--player-name-size);
 }
 
 .player-card--compact .player-card__meta {
   font-size: var(--player-meta-size);
+}
+
+.player-card--compact .player-card__inline-stat {
+  min-height: 28px;
+  padding: 0 8px;
 }
 
 .player-card--compact .player-card__stats {
