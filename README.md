@@ -1,13 +1,39 @@
-# BenchMaster MVP
+# BenchMaster
 
-BenchMaster is a mobile-first MVP for basketball coaches and assistant coaches who need a fast way to manage playing time during games. This version implements only Axis 1: roster setup, game setup, live substitutions, and final playing-time summaries.
+BenchMaster is a mobile-first basketball coaching app built to prepare rosters, launch games quickly, track rotations live, and review player usage after the final buzzer.
+
+The repository is a JavaScript/TypeScript monorepo with:
+
+- an Angular 21 frontend
+- an Express + Prisma backend
+- a PostgreSQL database
+- Render deployment configuration
+
+## What The App Does Today
+
+BenchMaster already goes beyond the initial MVP scope.
+
+- Guest mode: one team and one game stored locally in the browser
+- Authenticated mode: sign up, sign in, and persist data in PostgreSQL
+- Team management: create, edit, and delete teams
+- Roster management: add, edit, and delete players
+- Game setup: select available players and define the starting five
+- Live match flow: start, pause, resume, substitute players, end a game
+- Period workflow: close the current period and start the next one
+- Live stat capture: points, assists, rebounds, blocks, and fouls
+- Correction support for live stat adjustments
+- Rotation timeline: period starts, substitutions, period ends, and game end events
+- Game summary: total playing time, starter/bench split, and usage insights
+- Bilingual UI: French and English
 
 ## Stack
 
 - Frontend: Angular 21 standalone app
-- Mobile UI style: Ionic-inspired cards, toolbars, pill selectors, and thumb-friendly tap targets
-- Backend: Node.js + Express REST API
-- Database: PostgreSQL with Prisma ORM
+- Backend: Node.js + Express
+- ORM: Prisma
+- Database: PostgreSQL
+- Tooling: npm workspaces, TypeScript, tsx
+- Deployment: Render Blueprint via [`render.yaml`](./render.yaml)
 
 ## Project Structure
 
@@ -15,113 +41,112 @@ BenchMaster is a mobile-first MVP for basketball coaches and assistant coaches w
 BenchMaster/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
 │   ├── src/
+│   │   ├── auth/
 │   │   ├── controllers/
 │   │   ├── routes/
 │   │   ├── services/
-│   │   ├── utils/
-│   │   ├── app.ts
-│   │   └── index.ts
-│   ├── .env
-│   ├── .env.example
+│   │   └── utils/
 │   └── package.json
-│
 ├── frontend/
+│   ├── public/
+│   ├── scripts/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── core/
 │   │   │   ├── pages/
 │   │   │   ├── services/
 │   │   │   └── shared/
-│   │   └── styles.scss
-│   ├── angular.json
+│   │   └── environments/
 │   └── package.json
-│
+├── .github/workflows/
+├── scripts/
 ├── package.json
+├── render.yaml
 └── README.md
 ```
 
-## MVP Features
+## Requirements
 
-- Team management: create, edit, and delete teams
-- Roster management: add, edit, and delete players
-- Game setup: pick available players and define the starting five
-- Live Match: start, pause, resume, substitute, and end a game
-- Automatic playing-time tracking per player
-- Final summary: mobile-friendly comparison of total minutes played
+- Node.js `20.19.0` or newer
+- npm `10.8.2` or newer
+- PostgreSQL running locally
 
-## Axis 2 Preparation
+Version files are included for common managers:
 
-Axis 2 is intentionally not implemented yet. Relevant TODO comments are already placed in:
+- `.nvmrc`
+- `.node-version`
+- `.tool-versions`
 
-- `backend/prisma/schema.prisma`
-- `backend/src/services/time-tracking.service.ts`
-- `frontend/src/app/pages/live-match/live-match.page.ts`
-- `frontend/src/app/pages/game-summary/game-summary.page.ts`
-
-These TODOs reserve space for future points, rebounds, assists, shooting, efficiency, and time-segment-linked statistics.
-
-## Setup
-
-### Node.js version
-
-This project requires Node.js `20.19.0` or newer because the frontend uses Angular CLI 21.
-
-The repository now includes `.nvmrc`, `.node-version`, and `.tool-versions`, so the most common Node version managers can pick the right runtime automatically.
-
-If you use a shell-based `nvm` setup, run this once from the project root before installing dependencies:
-
-```bash
-nvm use
-```
-
-You can also verify the active runtime explicitly at any time:
+Check your runtime at any time with:
 
 ```bash
 npm run check:node
 ```
 
-If Node is too old, the command now fails immediately with a targeted message instead of letting Angular fail later with a less actionable error.
+## Quick Start
 
 ### 1. Install dependencies
 
-Run from the project root:
+From the repository root:
 
 ```bash
 npm install
 ```
 
-### 2. Create the local PostgreSQL database
+### 2. Create local environment files
 
-Make sure your local PostgreSQL service is running, then create the development database once:
+Create these two files from the examples:
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
+Backend example:
+
+```env
+DATABASE_URL="postgresql://USER@localhost:5432/benchmaster?schema=public"
+PORT=3000
+FRONTEND_ORIGIN="http://localhost:4200"
+AUTH_TOKEN_SECRET="change-me-in-production"
+```
+
+Frontend example:
+
+```env
+API_BASE_URL="http://localhost:3000/api"
+```
+
+### 3. Create the database
 
 ```bash
 createdb benchmaster
 ```
 
-### 3. Generate Prisma client, apply migrations, and seed the database
+### 4. Apply migrations and generate Prisma client
 
 ```bash
 npm run db:setup
 ```
 
-The backend expects a PostgreSQL connection string in `backend/.env`. The default local format is:
+This command:
 
-```bash
-DATABASE_URL="postgresql://USER@localhost:5432/benchmaster?schema=public"
-```
+- generates the Prisma client
+- applies all backend migrations
+- runs the backend seed script
 
-### 4. Run the backend API
+Note: authenticated API data is scoped per user account. After registering in the app, create your own team to work in signed-in mode.
+
+### 5. Start the backend
 
 ```bash
 npm run dev:backend
 ```
 
-The API will start on [http://localhost:3000](http://localhost:3000).
+The API runs on [http://localhost:3000](http://localhost:3000).
 
-### 5. Run the frontend
+### 6. Start the frontend
 
 In another terminal:
 
@@ -129,10 +154,32 @@ In another terminal:
 npm run dev:frontend
 ```
 
-The Angular app will start on [http://localhost:4200](http://localhost:4200).
+The web app runs on [http://localhost:4200](http://localhost:4200).
 
-## Key API Endpoints
+## Available Root Scripts
 
+- `npm run check:node`: verify the required Node.js version
+- `npm run dev:backend`: start the backend in watch mode
+- `npm run dev:frontend`: start the frontend dev server
+- `npm run build`: build backend and frontend
+- `npm run db:migrate`: run Prisma development migrations in the backend workspace
+- `npm run db:setup`: generate Prisma client, deploy migrations, and seed the database
+- `npm run db:seed`: rerun the backend seed script
+
+## API Overview
+
+### Public endpoints
+
+- `GET /healthz`
+- `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### Protected endpoints
+
+All remaining `/api/*` routes require authentication.
+
+- `GET /api/auth/me`
 - `GET /api/teams`
 - `POST /api/teams`
 - `PUT /api/teams/:teamId`
@@ -145,51 +192,57 @@ The Angular app will start on [http://localhost:4200](http://localhost:4200).
 - `POST /api/games`
 - `GET /api/games/:gameId`
 - `GET /api/games/:gameId/players`
+- `GET /api/games/:gameId/summary`
 - `POST /api/games/:gameId/start`
 - `POST /api/games/:gameId/pause`
 - `POST /api/games/:gameId/resume`
+- `POST /api/games/:gameId/periods/complete`
+- `POST /api/games/:gameId/periods/start`
 - `POST /api/games/:gameId/substitutions`
+- `POST /api/games/:gameId/players/:playerId/points`
+- `POST /api/games/:gameId/players/:playerId/stats`
 - `POST /api/games/:gameId/end`
-- `GET /api/games/:gameId/summary`
 
-## Main Technical Decisions
+## Product Notes
 
-- Playing time logic is isolated in backend services so timers never depend on Angular components.
-- Live substitutions use a two-step mobile flow: select bench player first, then tap the player leaving the court.
-- PostgreSQL + Prisma keeps the local and production environments aligned while leaving room for richer stat models later.
-- Angular standalone components keep the frontend modular and easy to extend without extra NgModule ceremony.
-- The Live Match screen is the central workflow and uses minimal text input during active game usage.
+- Guest mode works entirely from browser storage and is limited to one local team and one local game.
+- Authenticated mode syncs through the API and scopes teams and games to the signed-in user.
+- Playing-time logic lives in backend services so match timing does not depend on frontend state.
+- Team labels adapt to the selected gender (`MIXED`, `FEMININE`, `MASCULINE`).
 
 ## CI/CD
 
-The repository now includes two GitHub Actions workflows:
+The repository includes two GitHub Actions workflows:
 
-- `CI`: installs dependencies, generates the Prisma client, builds the backend, and builds the frontend.
-- `CD Render`: triggers Render deployments after a successful `CI` run on the `main` branch.
+- `CI`: installs dependencies, generates Prisma client, and builds both apps
+- `CD Render`: triggers Render deploy hooks after a successful `CI` run on `main`
 
-### GitHub Actions
-
-Workflows are defined in:
+Workflow files:
 
 - `.github/workflows/ci.yml`
 - `.github/workflows/cd-render.yml`
 
-### Required GitHub Secrets
-
-Add these repository secrets before enabling production deploys:
+Required GitHub secrets for deployment:
 
 - `RENDER_API_DEPLOY_HOOK_URL`
 - `RENDER_WEB_DEPLOY_HOOK_URL`
 
-You can create each deploy hook from the Render dashboard in the corresponding service:
+## Render Deployment
 
-1. Open the service.
-2. Go to `Settings`.
-3. Create or copy a `Deploy Hook`.
-4. Save the hook URL in the matching GitHub secret.
+[`render.yaml`](./render.yaml) defines:
 
-### Deployment Flow
+- `benchmaster-api`: Node web service
+- `benchmaster-web`: static frontend service
 
-1. A push or pull request starts `CI`.
-2. If `CI` succeeds on `main`, `CD Render` triggers both Render services.
-3. Render then builds and deploys using `render.yaml`.
+The backend service expects:
+
+- `DATABASE_URL`
+- `FRONTEND_ORIGIN`
+
+The frontend service expects:
+
+- `API_BASE_URL`
+
+## Current Roadmap Direction
+
+The codebase already contains groundwork for deeper stat tracking and richer post-game analysis. The next logical step is to connect live stat events more tightly to time segments and advanced game insights.
