@@ -16,6 +16,7 @@ router.get('/health', (_request, response) => {
 router.post('/auth/register', asyncHandler(authController.register));
 router.post('/auth/login', asyncHandler(authController.login));
 router.get('/auth/me', asyncHandler(requireAuth), asyncHandler(authController.me));
+router.get('/public/game-shares/:shareId', asyncHandler(gameController.getPublicSharedSummary));
 
 router.use(asyncHandler(requireAuth));
 
@@ -34,6 +35,7 @@ router.post('/games', asyncHandler(gameController.createGame));
 router.get('/games/:gameId', asyncHandler(gameController.getGame));
 router.get('/games/:gameId/players', asyncHandler(gameController.getGamePlayers));
 router.get('/games/:gameId/summary', asyncHandler(gameController.getGameSummary));
+router.post('/games/:gameId/share', asyncHandler(gameController.createShare));
 
 router.post('/games/:gameId/start', asyncHandler(liveMatchController.startGame));
 router.post('/games/:gameId/pause', asyncHandler(liveMatchController.pauseGame));

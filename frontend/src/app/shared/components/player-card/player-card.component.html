@@ -2,10 +2,7 @@
   class="player-card"
   [class.player-card--active]="tone === 'active'"
   [class.player-card--compact]="compact"
-  [class.player-card--selected]="selected"
-  [class.player-card--quick-actions-collapsible]="quickActionsCollapsible && quickActions.length > 0"
-  [class.player-card--quick-actions-expanded]="quickActionsExpanded"
-  (click)="handleCardPress($event)">
+  [class.player-card--selected]="selected">
   <div class="player-card__header">
     <div class="player-card__summary">
       <div class="player-card__number">#{{ jerseyNumber }}</div>
@@ -95,36 +92,34 @@
   @if (stats.length) {
     <dl class="player-card__stats">
       @for (stat of stats; track stat.label) {
-        <div class="player-card__stat" [class.player-card__stat--highlighted]="stat.highlighted">
-          <dt>{{ stat.label }}</dt>
-          <dd>{{ stat.value }}</dd>
-        </div>
+        @if (stat.clickable) {
+          <button
+            class="player-card__stat player-card__stat-button"
+            [class.player-card__stat--highlighted]="stat.highlighted"
+            [class.player-card__stat--danger]="stat.tone === 'danger'"
+            type="button"
+            [disabled]="stat.disabled"
+            [attr.aria-label]="stat.title || stat.label"
+            [attr.title]="stat.title || stat.label"
+            (click)="handleStatClick($event, stat)">
+            <span class="player-card__stat-label">{{ stat.label }}</span>
+            <span class="player-card__stat-value">{{ stat.value }}</span>
+          </button>
+        } @else {
+          <div class="player-card__stat" [class.player-card__stat--highlighted]="stat.highlighted">
+            <dt>{{ stat.label }}</dt>
+            <dd>{{ stat.value }}</dd>
+          </div>
+        }
       }
     </dl>
   }
 
-  @if (quickActions.length && (!quickActionsCollapsible || quickActionsExpanded)) {
+  @if (quickActions.length) {
     <div class="player-card__quick-actions-stack">
-      @if (primaryQuickActions.length) {
+      @for (quickActionRow of quickActionRows; track quickActionRow.row) {
         <div class="player-card__quick-actions-row">
-          @for (quickAction of primaryQuickActions; track quickAction.value) {
-            <button
-              class="player-card__quick-action"
-              [class.player-card__quick-action--danger]="quickActionsTone === 'danger'"
-              type="button"
-              [disabled]="quickAction.disabled"
-              [attr.aria-label]="quickAction.title || quickAction.label"
-              [attr.title]="quickAction.title || quickAction.label"
-              (click)="handleQuickActionClick($event, quickAction.value)">
-              {{ quickAction.label }}
-            </button>
-          }
-        </div>
-      }
-
-      @if (secondaryQuickActions.length) {
-        <div class="player-card__quick-actions-row">
-          @for (quickAction of secondaryQuickActions; track quickAction.value) {
+          @for (quickAction of quickActionRow.actions; track quickAction.value) {
             <button
               class="player-card__quick-action"
               [class.player-card__quick-action--danger]="quickActionsTone === 'danger'"

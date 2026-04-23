@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { AppModeService } from '../../core/app-mode.service';
 import { getErrorMessage } from '../../core/api';
 import { I18nService } from '../../core/i18n.service';
 import {
   GamePlayerState,
+  GameShareInfo,
+  GameSummaryExport,
   GameSummary,
   RotationTimelineEvent,
   StarterBenchSplit,
@@ -16,7 +19,7 @@ import { GameService } from '../../services/game.service';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
-type SummarySortKey = 'name' | 'totalSeconds' | 'points' | 'assists' | 'blocks' | 'rebounds' | 'fouls';
+type SummarySortKey = 'name' | 'totalSeconds' | 'points' | 'assists' | 'blocks' | 'rebounds' | 'interceptions' | 'fouls';
 type SortDirection = 'asc' | 'desc';
 
 const SUMMARY_SORT_LABEL_KEYS: Record<SummarySortKey, TranslationKey> = {
@@ -26,6 +29,7 @@ const SUMMARY_SORT_LABEL_KEYS: Record<SummarySortKey, TranslationKey> = {
   assists: 'summary.table.assists',
   blocks: 'summary.table.blocks',
   rebounds: 'summary.table.rebounds',
+  interceptions: 'summary.table.interceptions',
   fouls: 'summary.table.fouls'
 };
 
@@ -40,11 +44,14 @@ export class GameSummaryPageComponent implements OnInit {
   private readonly i18n = inject(I18nService);
   private readonly route = inject(ActivatedRoute);
   private readonly gameService = inject(GameService);
+  private readonly appModeService = inject(AppModeService);
   private readonly durationPipe = new DurationPipe();
 
   readonly summary = signal<GameSummary | null>(null);
-  readonly shareMessage = signal('');
+  readonly statusMessage = signal('');
+  readonly publicShareInfo = signal<GameShareInfo | null>(null);
   readonly timelineExpanded = signal(false);
+  readonly isAuthenticatedMode = computed(() => this.appModeService.mode() === 'authenticated');
   readonly sort = signal<{ key: SummarySortKey; direction: SortDirection }>({
     key: 'totalSeconds',
     direction: 'desc'
@@ -76,6 +83,7 @@ export class GameSummaryPageComponent implements OnInit {
         assists: totals.assists + player.assists,
         blocks: totals.blocks + player.blocks,
         rebounds: totals.rebounds + player.rebounds,
+        interceptions: totals.interceptions + player.interceptions,
         fouls: totals.fouls + player.fouls
       }),
       {
@@ -83,6 +91,7 @@ export class GameSummaryPageComponent implements OnInit {
         assists: 0,
         blocks: 0,
         rebounds: 0,
+        interceptions: 0,
         fouls: 0
       }
     );
@@ -98,13 +107,14 @@ export class GameSummaryPageComponent implements OnInit {
   readonly leader = computed<SummaryUsageInsight | null>(() => this.topMinutes()[0] ?? null);
   readonly errorMessage = signal('');
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
-  readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'fouls', 'name'];
+  readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'interceptions', 'fouls', 'name'];
   readonly t = this.i18n.t;
 
   async ngOnInit() {
     try {
       this.summary.set(await this.gameService.getSummary(this.gameId));
       this.errorMessage.set('');
+      this.statusMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error));
     }
@@ -233,19 +243,75 @@ export class GameSummaryPageComponent implements OnInit {
           title: gameSummary.label,
           text
         });
-        this.shareMessage.set(this.t('summary.share.nativeSuccess'));
+        this.statusMessage.set(this.t('summary.share.nativeSuccess'));
         return;
       }
 
       if (browserNavigator?.clipboard?.writeText) {
         await browserNavigator.clipboard.writeText(text);
-        this.shareMessage.set(this.t('summary.share.copySuccess'));
+        this.statusMessage.set(this.t('summary.share.copySuccess'));
         return;
       }
 
-      this.shareMessage.set(this.t('summary.share.unavailable'));
+      this.statusMessage.set(this.t('summary.share.unavailable'));
     } catch {
-      this.shareMessage.set(this.t('summary.share.unavailable'));
+      this.statusMessage.set(this.t('summary.share.unavailable'));
+    }
+  }
+
+  exportSummaryJson() {
+    const gameSummary = this.summary();
+
+    if (!gameSummary) {
+      return;
+    }
+
+    const payload = this.buildExportPayload(gameSummary, this.publicShareInfo()?.shareId ?? null);
+    const filename = this.buildExportFilename(gameSummary.label);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
+    this.statusMessage.set(this.t('summary.export.success', { fileName: filename }));
+  }
+
+  async sharePublicJson() {
+    const gameSummary = this.summary();
+    const browserNavigator = typeof globalThis.navigator === 'undefined' ? null : globalThis.navigator;
+
+    if (!gameSummary || !this.isAuthenticatedMode()) {
+      return;
+    }
+
+    try {
+      const shareInfo = await this.gameService.createShare(this.gameId);
+      this.publicShareInfo.set(shareInfo);
+
+      const shareText = `${gameSummary.label}\nID: ${shareInfo.shareId}\nAPI: ${shareInfo.path}`;
+
+      if (browserNavigator?.share) {
+        await browserNavigator.share({
+          title: `${gameSummary.label} JSON`,
+          text: shareText,
+          url: shareInfo.url
+        });
+        this.statusMessage.set(this.t('summary.shareApi.nativeSuccess'));
+        return;
+      }
+
+      if (browserNavigator?.clipboard?.writeText) {
+        await browserNavigator.clipboard.writeText(shareInfo.url);
+        this.statusMessage.set(this.t('summary.shareApi.copySuccess'));
+        return;
+      }
+
+      this.statusMessage.set(this.t('summary.shareApi.ready'));
+    } catch (error) {
+      this.statusMessage.set(getErrorMessage(error));
     }
   }
 
@@ -295,6 +361,88 @@ export class GameSummaryPageComponent implements OnInit {
     }
 
     return lines.join('\n');
+  }
+
+  private buildExportPayload(gameSummary: GameSummary, shareId: string | null): GameSummaryExport {
+    return {
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      shareId,
+      game: {
+        id: gameSummary.id,
+        label: gameSummary.label,
+        status: gameSummary.status,
+        startedAt: gameSummary.startedAt,
+        endedAt: gameSummary.endedAt,
+        totalGameSeconds: gameSummary.totalGameSeconds,
+        totalPlayerSeconds: gameSummary.totalPlayerSeconds,
+        maxPlayerSeconds: gameSummary.maxPlayerSeconds
+      },
+      team: gameSummary.team,
+      totals: {
+        points: gameSummary.players.reduce((total, player) => total + player.points, 0),
+        assists: gameSummary.players.reduce((total, player) => total + player.assists, 0),
+        blocks: gameSummary.players.reduce((total, player) => total + player.blocks, 0),
+        rebounds: gameSummary.players.reduce((total, player) => total + player.rebounds, 0),
+        interceptions: gameSummary.players.reduce((total, player) => total + player.interceptions, 0),
+        fouls: gameSummary.players.reduce((total, player) => total + player.fouls, 0)
+      },
+      players: gameSummary.players.map((player) => ({
+        playerId: player.playerId,
+        name: player.name,
+        jerseyNumber: player.jerseyNumber,
+        position: player.position,
+        isStarter: player.isStarter,
+        isOnCourt: player.isOnCourt,
+        timing: {
+          totalSeconds: player.totalSeconds,
+          periodSeconds: player.periodSeconds
+        },
+        stats: {
+          points: player.points,
+          assists: player.assists,
+          blocks: player.blocks,
+          rebounds: player.rebounds,
+          interceptions: player.interceptions,
+          fouls: player.fouls,
+          periodFouls: player.periodFouls
+        }
+      })),
+      insights: gameSummary.insights,
+      rotationTimeline: gameSummary.rotationTimeline.map((event) => ({
+        id: event.id,
+        kind: event.kind,
+        periodNumber: event.periodNumber,
+        clockMarkSeconds: event.clockMarkSeconds,
+        createdAt: event.createdAt,
+        playersIn: event.playersIn.map((player) => ({
+          playerId: player.playerId,
+          name: player.name,
+          jerseyNumber: player.jerseyNumber
+        })),
+        playersOut: event.playersOut.map((player) => ({
+          playerId: player.playerId,
+          name: player.name,
+          jerseyNumber: player.jerseyNumber
+        })),
+        onCourt: event.onCourt.map((player) => ({
+          playerId: player.playerId,
+          name: player.name,
+          jerseyNumber: player.jerseyNumber
+        }))
+      }))
+    };
+  }
+
+  private buildExportFilename(label: string) {
+    const normalized = label
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+
+    return `${normalized || 'match'}-stats.json`;
   }
 
   private comparePlayers(left: GamePlayerState, right: GamePlayerState, key: SummarySortKey) {

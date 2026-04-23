@@ -19,6 +19,7 @@ const trackableStats = {
   assists: 'passe décisive',
   blocks: 'contre',
   rebounds: 'rebond',
+  interceptions: 'interception',
   fouls: 'faute'
 } as const;
 

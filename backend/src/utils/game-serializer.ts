@@ -50,6 +50,7 @@ function mapPlayerEntry(entry: GameWithRoster['players'][number]) {
     assists: entry.playingTime?.assists ?? 0,
     blocks: entry.playingTime?.blocks ?? 0,
     rebounds: entry.playingTime?.rebounds ?? 0,
+    interceptions: entry.playingTime?.interceptions ?? 0,
     fouls: entry.playingTime?.fouls ?? 0,
     periodFouls: entry.playingTime?.periodFouls ?? 0,
     isOnCourt: entry.playingTime?.isOnCourt ?? false,
@@ -210,6 +211,27 @@ function buildUsageInsights(players: SerializedPlayer[]) {
   };
 }
 
+function buildStatTotals(players: SerializedPlayer[]) {
+  return players.reduce(
+    (totals, player) => ({
+      points: totals.points + player.points,
+      assists: totals.assists + player.assists,
+      blocks: totals.blocks + player.blocks,
+      rebounds: totals.rebounds + player.rebounds,
+      interceptions: totals.interceptions + player.interceptions,
+      fouls: totals.fouls + player.fouls
+    }),
+    {
+      points: 0,
+      assists: 0,
+      blocks: 0,
+      rebounds: 0,
+      interceptions: 0,
+      fouls: 0
+    }
+  );
+}
+
 export function serializeSelectedPlayers(players: GameWithRoster['players']) {
   return sortByJersey(players.map(mapPlayerEntry));
 }
@@ -284,5 +306,71 @@ export function serializeSummary(game: GameWithRoster) {
     insights,
     rotationTimeline: serializeRotationTimeline(game, players),
     players
+  };
+}
+
+export function serializeSummaryExport(game: GameWithRoster, shareId: string | null = game.shareToken ?? null) {
+  const summary = serializeSummary(game);
+
+  return {
+    schemaVersion: 1,
+    exportedAt: new Date().toISOString(),
+    shareId,
+    game: {
+      id: summary.id,
+      label: summary.label,
+      status: summary.status,
+      startedAt: summary.startedAt,
+      endedAt: summary.endedAt,
+      totalGameSeconds: summary.totalGameSeconds,
+      totalPlayerSeconds: summary.totalPlayerSeconds,
+      maxPlayerSeconds: summary.maxPlayerSeconds
+    },
+    team: summary.team,
+    totals: buildStatTotals(summary.players),
+    players: summary.players.map((player) => ({
+      playerId: player.playerId,
+      name: player.name,
+      jerseyNumber: player.jerseyNumber,
+      position: player.position,
+      isStarter: player.isStarter,
+      isOnCourt: player.isOnCourt,
+      timing: {
+        totalSeconds: player.totalSeconds,
+        periodSeconds: player.periodSeconds
+      },
+      stats: {
+        points: player.points,
+        assists: player.assists,
+        blocks: player.blocks,
+        rebounds: player.rebounds,
+        interceptions: player.interceptions,
+        fouls: player.fouls,
+        periodFouls: player.periodFouls
+      }
+    })),
+    insights: summary.insights,
+    rotationTimeline: summary.rotationTimeline.map((event) => ({
+      id: event.id,
+      kind: event.kind,
+      periodNumber: event.periodNumber,
+      clockMarkSeconds: event.clockMarkSeconds,
+      createdAt: event.createdAt,
+      playersIn: event.playersIn.map((player) => ({
+        playerId: player.playerId,
+        name: player.name,
+        jerseyNumber: player.jerseyNumber
+      })),
+      playersOut: event.playersOut.map((player) => ({
+        playerId: player.playerId,
+        name: player.name,
+        jerseyNumber: player.jerseyNumber
+      })),
+      onCourt: event.onCourt.map((player) => ({
+        playerId: player.playerId,
+        name: player.name,
+        jerseyNumber: player.jerseyNumber
+      }))
+    }))
   };
 }

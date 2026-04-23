@@ -1,6 +1,6 @@
 export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-export type PlayerStatType = 'assists' | 'blocks' | 'rebounds' | 'fouls';
+export type PlayerStatType = 'assists' | 'blocks' | 'rebounds' | 'interceptions' | 'fouls';
 export type AppMode = 'guest' | 'authenticated';
 export type TeamGender = 'MIXED' | 'FEMININE' | 'MASCULINE';
 export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
@@ -35,6 +35,7 @@ export interface GamePlayerState {
   assists: number;
   blocks: number;
   rebounds: number;
+  interceptions: number;
   fouls: number;
   periodFouls: number;
   isOnCourt: boolean;
@@ -136,6 +137,85 @@ export interface GameSummary {
   insights: GameSummaryInsights;
   rotationTimeline: RotationTimelineEvent[];
   players: GamePlayerState[];
+}
+
+export interface GameSummaryExport {
+  schemaVersion: number;
+  exportedAt: string;
+  shareId: string | null;
+  game: {
+    id: number;
+    label: string;
+    status: GameStatus;
+    startedAt: string | null;
+    endedAt: string | null;
+    totalGameSeconds: number;
+    totalPlayerSeconds: number;
+    maxPlayerSeconds: number;
+  };
+  team: {
+    id: number;
+    name: string;
+    gender: TeamGender;
+  };
+  totals: {
+    points: number;
+    assists: number;
+    blocks: number;
+    rebounds: number;
+    interceptions: number;
+    fouls: number;
+  };
+  players: Array<{
+    playerId: number;
+    name: string;
+    jerseyNumber: string;
+    position: string | null;
+    isStarter: boolean;
+    isOnCourt: boolean;
+    timing: {
+      totalSeconds: number;
+      periodSeconds: number;
+    };
+    stats: {
+      points: number;
+      assists: number;
+      blocks: number;
+      rebounds: number;
+      interceptions: number;
+      fouls: number;
+      periodFouls: number;
+    };
+  }>;
+  insights: GameSummaryInsights;
+  rotationTimeline: Array<{
+    id: number;
+    kind: RotationEventType;
+    periodNumber: number;
+    clockMarkSeconds: number;
+    createdAt: string;
+    playersIn: Array<{
+      playerId: number;
+      name: string;
+      jerseyNumber: string;
+    }>;
+    playersOut: Array<{
+      playerId: number;
+      name: string;
+      jerseyNumber: string;
+    }>;
+    onCourt: Array<{
+      playerId: number;
+      name: string;
+      jerseyNumber: string;
+    }>;
+  }>;
+}
+
+export interface GameShareInfo {
+  shareId: string;
+  path: string;
+  url: string;
 }
 
 export interface AuthUser {

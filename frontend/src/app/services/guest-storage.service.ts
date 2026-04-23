@@ -62,12 +62,14 @@ const statLabels: Record<PlayerStatType, string> = {
   assists: 'passe décisive',
   blocks: 'contre',
   rebounds: 'rebond',
+  interceptions: 'interception',
   fouls: 'faute'
 };
 
 function normalizeGamePlayer(player: GamePlayerState): GamePlayerState {
   return {
     ...player,
+    interceptions: player.interceptions ?? 0,
     fouls: player.fouls ?? 0,
     periodFouls: player.periodFouls ?? 0
   };
@@ -546,6 +548,7 @@ export class GuestStorageService {
         assists: 0,
         blocks: 0,
         rebounds: 0,
+        interceptions: 0,
         fouls: 0,
         periodFouls: 0,
         isOnCourt: false,

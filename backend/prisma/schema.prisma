@@ -65,6 +65,7 @@ model Game {
   id                  Int          @id @default(autoincrement())
   teamId              Int
   label               String
+  shareToken          String?      @unique
   status              GameStatus   @default(DRAFT)
   currentPeriodNumber Int          @default(1)
   currentPeriodStatus PeriodStatus @default(NOT_STARTED)
@@ -121,6 +122,7 @@ model PlayerGameTime {
   assists       Int        @default(0)
   blocks        Int        @default(0)
   rebounds      Int        @default(0)
+  interceptions Int        @default(0)
   fouls         Int        @default(0)
   periodFouls   Int        @default(0)
   isOnCourt     Boolean    @default(false)

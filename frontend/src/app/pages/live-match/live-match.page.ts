@@ -57,7 +57,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   readonly correctionMode = signal(false);
   readonly mobileRosterView = signal<LiveRosterView>('court');
   readonly isMobileViewport = signal(false);
-  readonly expandedStatsPlayerId = signal<number | null>(null);
   readonly pendingConfirmation = signal<PendingLiveConfirmation | null>(null);
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly t = this.i18n.t;
@@ -114,6 +113,12 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     const wasSelected = this.isBenchSelected(playerId);
     this.liveMatchService.toggleBenchPlayer(playerId);
     this.errorMessage.set('');
+
+    if (this.isMobileViewport() && this.canApplySubstitutionBatch()) {
+      await this.substituteBatch();
+      return;
+    }
+
     this.syncMobileRosterFlow('bench', wasSelected);
   }
 
@@ -121,6 +126,12 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     const wasSelected = this.isActiveSelected(playerId);
     this.liveMatchService.toggleActivePlayer(playerId);
     this.errorMessage.set('');
+
+    if (this.isMobileViewport() && this.canApplySubstitutionBatch()) {
+      await this.substituteBatch();
+      return;
+    }
+
     this.syncMobileRosterFlow('court', wasSelected);
   }
 
@@ -134,10 +145,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   setMobileRosterView(view: LiveRosterView) {
     this.mobileRosterView.set(view);
-
-    if (view !== 'court') {
-      this.expandedStatsPlayerId.set(null);
-    }
   }
 
   handleRosterTouchStart(event: TouchEvent) {
@@ -221,28 +228,56 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   playerStats(player: GamePlayerState): PlayerCardStat[] {
-    return [
+    const correctionMode = this.correctionMode();
+    const isMobileQuickTapEnabled = this.isMobileViewport() && player.isOnCourt;
+    const statConfig: Array<{
+      labelKey: TranslationKey;
+      valueKey: PlayerCardQuickActionValue;
+      value: number;
+      title: string;
+    }> = [
       {
-        label: this.t('live.stats.points.short'),
+        labelKey: 'live.stats.points.short',
+        valueKey: 1,
         value: player.points,
-        highlighted: player.points > 0
+        title: correctionMode ? this.t('live.actions.removePoints', { count: 1 }) : this.t('live.actions.addPoints', { count: 1 })
       },
       {
-        label: this.t('live.stats.assists.short'),
+        labelKey: 'live.stats.assists.short',
+        valueKey: 'assists',
         value: player.assists,
-        highlighted: player.assists > 0
+        title: correctionMode ? this.t('live.actions.removeAssist') : this.t('live.actions.addAssist')
       },
       {
-        label: this.t('live.stats.rebounds.short'),
+        labelKey: 'live.stats.rebounds.short',
+        valueKey: 'rebounds',
         value: player.rebounds,
-        highlighted: player.rebounds > 0
+        title: correctionMode ? this.t('live.actions.removeRebound') : this.t('live.actions.addRebound')
       },
       {
-        label: this.t('live.stats.blocks.short'),
+        labelKey: 'live.stats.interceptions.short',
+        valueKey: 'interceptions',
+        value: player.interceptions,
+        title: correctionMode ? this.t('live.actions.removeInterception') : this.t('live.actions.addInterception')
+      },
+      {
+        labelKey: 'live.stats.blocks.short',
+        valueKey: 'blocks',
         value: player.blocks,
-        highlighted: player.blocks > 0
+        title: correctionMode ? this.t('live.actions.removeBlock') : this.t('live.actions.addBlock')
       }
     ];
+
+    return statConfig.map((stat) => ({
+      label: this.t(stat.labelKey),
+      value: stat.value,
+      highlighted: stat.value > 0,
+      clickable: isMobileQuickTapEnabled,
+      disabled: this.isUpdatingStats(player.playerId) || (correctionMode && !this.canReverseAction(player, stat.valueKey)),
+      title: stat.title,
+      valueKey: stat.valueKey,
+      tone: correctionMode ? 'danger' : 'default'
+    }));
   }
 
   foulCounter(player: GamePlayerState, clickable: boolean): PlayerCardInlineStat {
@@ -515,18 +550,27 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
         row: 'secondary' as const
       },
       {
-        value: 'blocks' as const,
-        label: statLabel('live.stats.blocks.short'),
-        title: correctionMode ? this.t('live.actions.removeBlock') : this.t('live.actions.addBlock'),
-        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'blocks')),
-        row: 'secondary' as const
-      },
-      {
         value: 'rebounds' as const,
         label: statLabel('live.stats.rebounds.short'),
         title: correctionMode ? this.t('live.actions.removeRebound') : this.t('live.actions.addRebound'),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, 'rebounds')),
         row: 'secondary' as const
+      },
+      {
+        value: 'blocks' as const,
+        label: statLabel('live.stats.blocks.short'),
+        title: correctionMode ? this.t('live.actions.removeBlock') : this.t('live.actions.addBlock'),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'blocks')),
+        row: 'tertiary' as const
+      },
+      {
+        value: 'interceptions' as const,
+        label: statLabel('live.stats.interceptions.short'),
+        title: correctionMode
+          ? this.t('live.actions.removeInterception')
+          : this.t('live.actions.addInterception'),
+        disabled: disabled || (correctionMode && !this.canReverseAction(player, 'interceptions')),
+        row: 'tertiary' as const
       }
     ];
   }
@@ -544,10 +588,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
       if (correctionMode) {
         this.correctionMode.set(false);
-      }
-
-      if (this.isMobileViewport()) {
-        this.expandedStatsPlayerId.set(null);
       }
 
       this.errorMessage.set('');
@@ -588,18 +628,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     }
 
     return this.correctionMode() ? player.periodFouls >= 1 : true;
-  }
-
-  togglePlayerStatsCard(playerId: number) {
-    if (!this.isMobileViewport()) {
-      return;
-    }
-
-    this.expandedStatsPlayerId.update((current) => (current === playerId ? null : playerId));
-  }
-
-  isPlayerStatsCardExpanded(playerId: number) {
-    return !this.isMobileViewport() || this.expandedStatsPlayerId() === playerId;
   }
 
   mobileRosterTabLabel(view: LiveRosterView) {
@@ -706,10 +734,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   private readonly handleMobileViewportChange = (event: MediaQueryListEvent) => {
     this.isMobileViewport.set(event.matches);
-
-    if (!event.matches) {
-      this.expandedStatsPlayerId.set(null);
-    }
   };
 
   private syncMobileRosterFlow(sourceView: LiveRosterView, wasSelected: boolean) {

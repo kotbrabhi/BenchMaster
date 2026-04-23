@@ -1,6 +1,7 @@
+import { randomBytes } from 'crypto';
 import { GameStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { serializeGame, serializeSelectedPlayers, serializeSummary } from '../utils/game-serializer';
+import { serializeGame, serializeSelectedPlayers, serializeSummary, serializeSummaryExport } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';
 import { getTeamLabelSet } from '../utils/team-labels';
 
@@ -9,6 +10,11 @@ export interface CreateGameInput {
   label?: string;
   availablePlayerIds: number[];
   starterPlayerIds: number[];
+}
+
+export interface GameShareResult {
+  shareId: string;
+  path: string;
 }
 
 const gameInclude = {
@@ -76,6 +82,14 @@ function defaultGameLabel() {
   });
 
   return `Match ${formatter.format(new Date())}`;
+}
+
+function buildPublicSharePath(shareId: string) {
+  return `/api/public/game-shares/${shareId}`;
+}
+
+function createShareToken() {
+  return randomBytes(12).toString('hex');
 }
 
 export async function listGames(userId: number, teamId?: number) {
@@ -238,4 +252,75 @@ export async function getGameSummary(gameId: number, userId: number) {
   }
 
   return serializeSummary(game);
+}
+
+export async function createGameShare(gameId: number, userId: number): Promise<GameShareResult> {
+  const existingGame = await prisma.game.findFirst({
+    where: {
+      id: gameId,
+      team: {
+        is: {
+          userId
+        }
+      }
+    },
+    select: {
+      id: true,
+      shareToken: true
+    }
+  });
+
+  if (!existingGame) {
+    throw new HttpError(404, 'Match introuvable.');
+  }
+
+  if (existingGame.shareToken) {
+    return {
+      shareId: existingGame.shareToken,
+      path: buildPublicSharePath(existingGame.shareToken)
+    };
+  }
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const shareId = createShareToken();
+
+    try {
+      await prisma.game.update({
+        where: {
+          id: existingGame.id
+        },
+        data: {
+          shareToken: shareId
+        }
+      });
+
+      return {
+        shareId,
+        path: buildPublicSharePath(shareId)
+      };
+    } catch {
+      // Retry with a new token if an unlikely collision occurs.
+    }
+  }
+
+  throw new HttpError(500, 'Impossible de generer un identifiant de partage.');
+}
+
+export async function getPublicSharedSummary(shareId: string) {
+  if (!shareId?.trim()) {
+    throw new HttpError(400, 'Identifiant de partage invalide.');
+  }
+
+  const game = await prisma.game.findFirst({
+    where: {
+      shareToken: shareId
+    },
+    include: gameInclude
+  });
+
+  if (!game) {
+    throw new HttpError(404, 'Partage introuvable.');
+  }
+
+  return serializeSummaryExport(game, shareId);
 }

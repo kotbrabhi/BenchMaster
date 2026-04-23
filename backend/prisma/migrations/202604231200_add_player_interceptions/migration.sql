@@ -1,0 +1,2 @@
+ALTER TABLE "PlayerGameTime"
+ADD COLUMN "interceptions" INTEGER NOT NULL DEFAULT 0;

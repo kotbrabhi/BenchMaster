@@ -348,15 +348,13 @@
                 [timeLabel]="playerTimeSummary(currentGame, player)"
                 [inlineStat]="foulCounter(player, isFoulCounterClickable(player, 'court'))"
                 [stats]="playerStats(player)"
-                [quickActions]="pointActions(player)"
+                [quickActions]="isMobileViewport() ? [] : pointActions(player)"
                 [quickActionsTone]="correctionMode() ? 'danger' : 'default'"
-                [quickActionsCollapsible]="isMobileViewport()"
-                [quickActionsExpanded]="isPlayerStatsCardExpanded(player.playerId)"
                 [actionLabel]="activePlayerActionLabel(player.playerId)"
                 [actionDisabled]="isPlayerActionDisabled(player, 'court')"
                 (inlineStatPressed)="handleQuickAction(player.playerId, 'fouls')"
+                (statPressed)="handleQuickAction(player.playerId, $event)"
                 (quickActionPressed)="handleQuickAction(player.playerId, $event)"
-                (cardPressed)="togglePlayerStatsCard(player.playerId)"
                 (actionPressed)="toggleActivePlayer(player.playerId)">
               </app-player-card>
             }

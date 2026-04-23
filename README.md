@@ -174,6 +174,7 @@ The web app runs on [http://localhost:4200](http://localhost:4200).
 - `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `GET /api/public/game-shares/:shareId`
 
 ### Protected endpoints
 
@@ -193,6 +194,7 @@ All remaining `/api/*` routes require authentication.
 - `GET /api/games/:gameId`
 - `GET /api/games/:gameId/players`
 - `GET /api/games/:gameId/summary`
+- `POST /api/games/:gameId/share`
 - `POST /api/games/:gameId/start`
 - `POST /api/games/:gameId/pause`
 - `POST /api/games/:gameId/resume`

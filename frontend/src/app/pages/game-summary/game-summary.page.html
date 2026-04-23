@@ -7,13 +7,48 @@
         <p class="toolbar__subtitle">{{ 'summary.hero.subtitle' | t }}</p>
       </div>
 
-      <button class="button button--secondary" type="button" (click)="shareSummary()">
-        {{ 'summary.actions.share' | t }}
-      </button>
+      <div class="toolbar__actions">
+        <button class="button button--secondary" type="button" (click)="shareSummary()">
+          {{ 'summary.actions.share' | t }}
+        </button>
+
+        <button class="button button--secondary" type="button" (click)="exportSummaryJson()">
+          {{ 'summary.actions.exportJson' | t }}
+        </button>
+
+        @if (isAuthenticatedMode()) {
+          <button class="button" type="button" (click)="sharePublicJson()">
+            {{ 'summary.actions.shareJsonApi' | t }}
+          </button>
+        }
+      </div>
     </header>
 
-    @if (shareMessage()) {
-      <div class="info-banner" aria-live="polite">{{ shareMessage() }}</div>
+    @if (statusMessage()) {
+      <div class="info-banner" aria-live="polite">{{ statusMessage() }}</div>
+    }
+
+    @if (publicShareInfo(); as shareInfo) {
+      <section class="surface-card share-api-card" aria-live="polite">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'summary.shareApi.title' | t }}</h2>
+            <p>{{ 'summary.shareApi.subtitle' | t }}</p>
+          </div>
+        </div>
+
+        <div class="share-api-card__grid">
+          <article class="share-api-card__item">
+            <span>{{ 'summary.shareApi.idLabel' | t }}</span>
+            <strong>{{ shareInfo.shareId }}</strong>
+          </article>
+
+          <article class="share-api-card__item">
+            <span>{{ 'summary.shareApi.pathLabel' | t }}</span>
+            <code>{{ shareInfo.path }}</code>
+          </article>
+        </div>
+      </section>
     }
 
     @if (errorMessage()) {
@@ -283,6 +318,10 @@
                 <dd>{{ player.blocks }}</dd>
               </div>
               <div>
+                <dt>{{ 'summary.table.interceptions' | t }}</dt>
+                <dd>{{ player.interceptions }}</dd>
+              </div>
+              <div>
                 <dt>{{ 'summary.table.fouls' | t }}</dt>
                 <dd>{{ player.fouls }}</dd>
               </div>
@@ -319,6 +358,10 @@
               <div>
                 <dt>{{ 'summary.table.blocks' | t }}</dt>
                 <dd>{{ totals.blocks }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'summary.table.interceptions' | t }}</dt>
+                <dd>{{ totals.interceptions }}</dd>
               </div>
               <div>
                 <dt>{{ 'summary.table.fouls' | t }}</dt>
@@ -399,6 +442,17 @@
                   <span>{{ 'summary.table.rebounds' | t }}</span>
                 </button>
               </th>
+              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('interceptions')">
+                <button
+                  class="summary-table__sort-button"
+                  type="button"
+                  (click)="toggleSort('interceptions')"
+                  [class.summary-table__sort-button--active]="isSortedBy('interceptions')"
+                  [attr.aria-label]="sortButtonLabel('interceptions')"
+                  [attr.title]="sortButtonLabel('interceptions')">
+                  <span>{{ 'summary.table.interceptions' | t }}</span>
+                </button>
+              </th>
               <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('fouls')">
                 <button
                   class="summary-table__sort-button"
@@ -422,6 +476,7 @@
                 <td class="summary-table__stat">{{ player.assists }}</td>
                 <td class="summary-table__stat">{{ player.blocks }}</td>
                 <td class="summary-table__stat">{{ player.rebounds }}</td>
+                <td class="summary-table__stat">{{ player.interceptions }}</td>
                 <td class="summary-table__stat">{{ player.fouls }}</td>
               </tr>
             }
@@ -436,6 +491,7 @@
                 <td class="summary-table__stat">{{ totals.assists }}</td>
                 <td class="summary-table__stat">{{ totals.blocks }}</td>
                 <td class="summary-table__stat">{{ totals.rebounds }}</td>
+                <td class="summary-table__stat">{{ totals.interceptions }}</td>
                 <td class="summary-table__stat">{{ totals.fouls }}</td>
               </tr>
             </tfoot>

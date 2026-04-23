@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../core/api';
 import { AppModeService } from '../core/app-mode.service';
-import { GameDetail, GameListItem, GameSummary } from '../core/models';
+import { GameDetail, GameListItem, GameShareInfo, GameSummary } from '../core/models';
 import { GuestStorageService } from './guest-storage.service';
 
 export interface CreateGamePayload {
@@ -50,5 +50,13 @@ export class GameService {
     return this.appModeService.isGuestMode()
       ? this.guestStorageService.getSummary(gameId)
       : firstValueFrom(this.http.get<GameSummary>(`${API_BASE_URL}/games/${gameId}/summary`));
+  }
+
+  createShare(gameId: number) {
+    if (this.appModeService.isGuestMode()) {
+      throw new Error('Le partage public est reserve au mode connecte.');
+    }
+
+    return firstValueFrom(this.http.post<GameShareInfo>(`${API_BASE_URL}/games/${gameId}/share`, {}));
   }
 }

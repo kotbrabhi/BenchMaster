@@ -4,18 +4,25 @@ import { PlayerStatType } from '../../../core/models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 export type PlayerCardQuickActionValue = number | PlayerStatType;
+type PlayerCardQuickActionRow = 'primary' | 'secondary' | 'tertiary';
+
 export interface PlayerCardQuickAction {
   value: PlayerCardQuickActionValue;
   label: string;
   title?: string;
   disabled?: boolean;
-  row?: 'primary' | 'secondary';
+  row?: PlayerCardQuickActionRow;
 }
 
 export interface PlayerCardStat {
   label: string;
   value: string | number;
   highlighted?: boolean;
+  clickable?: boolean;
+  disabled?: boolean;
+  title?: string;
+  valueKey?: PlayerCardQuickActionValue;
+  tone?: 'default' | 'danger';
 }
 
 export interface PlayerCardInlineStat {
@@ -47,8 +54,6 @@ export class PlayerCardComponent {
   @Input() inlineStat: PlayerCardInlineStat | null = null;
   @Input() quickActions: PlayerCardQuickAction[] = [];
   @Input() quickActionsTone: 'default' | 'danger' = 'default';
-  @Input() quickActionsCollapsible = false;
-  @Input() quickActionsExpanded = true;
   @Input() actionDisabled = false;
   @Input() selected = false;
   @Input() tone: 'active' | 'bench' | 'summary' = 'bench';
@@ -58,33 +63,17 @@ export class PlayerCardComponent {
   @Output() actionPressed = new EventEmitter<void>();
   @Output() inlineStatPressed = new EventEmitter<void>();
   @Output() quickActionPressed = new EventEmitter<PlayerCardQuickActionValue>();
-  @Output() cardPressed = new EventEmitter<void>();
+  @Output() statPressed = new EventEmitter<PlayerCardQuickActionValue>();
 
-  get primaryQuickActions() {
-    return this.quickActions.filter((quickAction) => quickAction.row !== 'secondary');
-  }
+  get quickActionRows() {
+    const orderedRows: PlayerCardQuickActionRow[] = ['primary', 'secondary', 'tertiary'];
 
-  get secondaryQuickActions() {
-    return this.quickActions.filter((quickAction) => quickAction.row === 'secondary');
-  }
-
-  handleCardPress(event: MouseEvent) {
-    if (!this.quickActionsCollapsible || this.quickActions.length === 0) {
-      return;
-    }
-
-    const target = event.target as HTMLElement | null;
-
-    if (target?.closest('button, a, input, select, textarea, label')) {
-      return;
-    }
-
-    this.cardPressed.emit();
-  }
-
-  handleQuickActionClick(event: MouseEvent, value: PlayerCardQuickActionValue) {
-    event.stopPropagation();
-    this.quickActionPressed.emit(value);
+    return orderedRows
+      .map((row) => ({
+        row,
+        actions: this.quickActions.filter((quickAction) => (quickAction.row ?? 'primary') === row)
+      }))
+      .filter((entry) => entry.actions.length > 0);
   }
 
   handleActionClick(event: MouseEvent) {
@@ -100,5 +89,20 @@ export class PlayerCardComponent {
     }
 
     this.inlineStatPressed.emit();
+  }
+
+  handleQuickActionClick(event: MouseEvent, value: PlayerCardQuickActionValue) {
+    event.stopPropagation();
+    this.quickActionPressed.emit(value);
+  }
+
+  handleStatClick(event: MouseEvent, stat: PlayerCardStat) {
+    event.stopPropagation();
+
+    if (!stat.clickable || stat.disabled || stat.valueKey == null) {
+      return;
+    }
+
+    this.statPressed.emit(stat.valueKey);
   }
 }
