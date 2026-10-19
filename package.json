@@ -2,11 +2,11 @@
   "name": "benchmaster",
   "private": true,
   "engines": {
-    "node": ">=20.19.0",
+    "node": ">=22.18.0",
     "npm": ">=10.8.2"
   },
   "volta": {
-    "node": "20.19.0",
+    "node": "22.18.0",
     "npm": "10.8.2"
   },
   "workspaces": [
@@ -20,8 +20,9 @@
     "dev:frontend": "npm run check:node && npm run start --workspace frontend",
     "dev:backend": "npm run check:node && npm run dev --workspace backend",
     "build": "npm run check:node && npm run build --workspace backend && npm run build --workspace frontend",
-    "db:migrate": "npm run check:node && npm run prisma:migrate --workspace backend",
-    "db:setup": "npm run check:node && npm run prisma:generate --workspace backend && npm run db:setup --workspace backend",
+    "db:migrate": "npm run check:node && npm run prisma7:migrate --workspace backend",
+    "prisma8:emit": "npm run check:node && npm run prisma8:emit --workspace backend",
+    "db:setup": "npm run check:node && npm run prisma7:generate --workspace backend && npm run db:setup --workspace backend",
     "db:seed": "npm run check:node && npm run db:seed --workspace backend"
   }
 }

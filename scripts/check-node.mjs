@@ -1,4 +1,4 @@
-const REQUIRED_NODE = '20.19.0';
+const REQUIRED_NODE = '22.18.0';
 const currentVersion = process.versions.node;
 
 function parseVersion(version) {
@@ -29,11 +29,11 @@ if (compareVersions(parseVersion(currentVersion), parseVersion(REQUIRED_NODE)) <
   console.error(`BenchMaster requires Node.js ${REQUIRED_NODE} or newer.`);
   console.error(`Current runtime: ${currentVersion}`);
   console.error('');
-  console.error('Angular CLI 21 will not build on Node 20.10.0.');
+  console.error('Prisma ORM 8 requires Node.js 22.18.0 or newer.');
   console.error('Switch to the pinned project runtime, then rerun your command:');
   console.error('');
   console.error('  nvm use');
-  console.error('  volta install node@20.19.0');
+  console.error('  volta install node@22.18.0');
   console.error('  asdf install');
   console.error('');
   console.error('The repository includes .nvmrc, .node-version, and .tool-versions.');

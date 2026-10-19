@@ -1,6 +1,6 @@
 # Frontend
 
-This project uses [Angular CLI](https://github.com/angular/angular-cli) 21 and requires Node.js 20.19.0 or newer.
+This project uses [Angular CLI](https://github.com/angular/angular-cli) 21 and requires Node.js 22.18.0 or newer.
 
 From the repository root, you can check the runtime with:
 

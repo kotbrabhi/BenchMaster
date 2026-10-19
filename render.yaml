@@ -7,8 +7,8 @@ services:
     name: benchmaster-api
     plan: free
     region: frankfurt
-    buildCommand: npm install && npm run prisma:generate --workspace backend && npm run build --workspace backend
-    preDeployCommand: npx prisma migrate deploy --schema backend/prisma/schema.prisma && npm run db:bootstrap --workspace backend
+    buildCommand: npm install && npm run prisma7:generate --workspace backend && npm run prisma8:emit --workspace backend && npm run build --workspace backend
+    preDeployCommand: npx prisma7 migrate deploy --config backend/prisma7.config.ts && npm run db:bootstrap --workspace backend
     startCommand: npm run start --workspace backend
     healthCheckPath: /healthz
     buildFilter:
@@ -18,7 +18,7 @@ services:
         - package-lock.json
     envVars:
       - key: NODE_VERSION
-        value: 20.19.0
+        value: 22.18.0
       - key: DATABASE_URL
         sync: false
       - key: FRONTEND_ORIGIN
@@ -37,7 +37,7 @@ services:
         - package-lock.json
     envVars:
       - key: NODE_VERSION
-        value: 20.19.0
+        value: 22.18.0
       - key: API_BASE_URL
         sync: false
     routes:
