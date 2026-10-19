@@ -1,0 +1,1064 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.GameStatus",
+    "label": "Create enum type \"GameStatus\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "GameStatus"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"GameStatus\"",
+        "sql": "CREATE TYPE \"public\".\"GameStatus\" AS ENUM ('DRAFT', 'LIVE', 'PAUSED', 'FINISHED')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.PeriodStatus",
+    "label": "Create enum type \"PeriodStatus\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "PeriodStatus"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"PeriodStatus\"",
+        "sql": "CREATE TYPE \"public\".\"PeriodStatus\" AS ENUM ('NOT_STARTED', 'LIVE', 'COMPLETED')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.RotationEventType",
+    "label": "Create enum type \"RotationEventType\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "RotationEventType"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"RotationEventType\"",
+        "sql": "CREATE TYPE \"public\".\"RotationEventType\" AS ENUM ('PERIOD_START', 'SUBSTITUTION', 'PERIOD_END', 'GAME_END')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "createNativeEnumType.TeamGender",
+    "label": "Create enum type \"TeamGender\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "type",
+        "name": "TeamGender"
+      }
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "create enum type \"TeamGender\"",
+        "sql": "CREATE TYPE \"public\".\"TeamGender\" AS ENUM ('MIXED', 'FEMININE', 'MASCULINE')",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.Game",
+    "label": "Create table \"Game\"",
+    "summary": "Creates table \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Game\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Game\"",
+        "sql": "CREATE TABLE \"public\".\"Game\" (\n  \"clockElapsedSeconds\" int4 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"currentPeriodNumber\" int4 DEFAULT 1 NOT NULL,\n  \"currentPeriodStatus\" \"PeriodStatus\" DEFAULT 'NOT_STARTED'::\"PeriodStatus\" NOT NULL,\n  \"endedAt\" timestamp(3),\n  \"id\" SERIAL NOT NULL,\n  \"isClockRunning\" bool DEFAULT false NOT NULL,\n  \"label\" text NOT NULL,\n  \"lastClockStartedAt\" timestamp(3),\n  \"lastPeriodStartedAt\" timestamp(3),\n  \"periodElapsedSeconds\" int4 DEFAULT 0 NOT NULL,\n  \"shareToken\" text,\n  \"startedAt\" timestamp(3),\n  \"status\" \"GameStatus\" DEFAULT 'DRAFT'::\"GameStatus\" NOT NULL,\n  \"teamId\" int4 NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Game\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.GamePlayer",
+    "label": "Create table \"GamePlayer\"",
+    "summary": "Creates table \"GamePlayer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GamePlayer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"GamePlayer\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"GamePlayer\"",
+        "sql": "CREATE TABLE \"public\".\"GamePlayer\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"gameId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isAvailable\" bool DEFAULT true NOT NULL,\n  \"isStarter\" bool DEFAULT false NOT NULL,\n  \"playerId\" int4 NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GamePlayer\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.GameRotationEvent",
+    "label": "Create table \"GameRotationEvent\"",
+    "summary": "Creates table \"GameRotationEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GameRotationEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"GameRotationEvent\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GameRotationEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"GameRotationEvent\"",
+        "sql": "CREATE TABLE \"public\".\"GameRotationEvent\" (\n  \"clockMarkSeconds\" int4 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"gameId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"kind\" \"RotationEventType\" NOT NULL,\n  \"payload\" jsonb,\n  \"periodNumber\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GameRotationEvent\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GameRotationEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Player",
+    "label": "Create table \"Player\"",
+    "summary": "Creates table \"Player\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Player"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Player\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Player\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Player\"",
+        "sql": "CREATE TABLE \"public\".\"Player\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"jerseyNumber\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"position\" text,\n  \"teamId\" int4 NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Player\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Player\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PlayerGameTime",
+    "label": "Create table \"PlayerGameTime\"",
+    "summary": "Creates table \"PlayerGameTime\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PlayerGameTime"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PlayerGameTime\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlayerGameTime\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PlayerGameTime\"",
+        "sql": "CREATE TABLE \"public\".\"PlayerGameTime\" (\n  \"assists\" int4 DEFAULT 0 NOT NULL,\n  \"blocks\" int4 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"fouls\" int4 DEFAULT 0 NOT NULL,\n  \"gamePlayerId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"interceptions\" int4 DEFAULT 0 NOT NULL,\n  \"isOnCourt\" bool DEFAULT false NOT NULL,\n  \"lastEnteredAt\" timestamp(3),\n  \"lastPeriodEnteredAt\" timestamp(3),\n  \"periodFouls\" int4 DEFAULT 0 NOT NULL,\n  \"periodSeconds\" int4 DEFAULT 0 NOT NULL,\n  \"points\" int4 DEFAULT 0 NOT NULL,\n  \"rebounds\" int4 DEFAULT 0 NOT NULL,\n  \"totalSeconds\" int4 DEFAULT 0 NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PlayerGameTime\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlayerGameTime\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.SharedGameSnapshot",
+    "label": "Create table \"SharedGameSnapshot\"",
+    "summary": "Creates table \"SharedGameSnapshot\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "SharedGameSnapshot"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"SharedGameSnapshot\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SharedGameSnapshot\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"SharedGameSnapshot\"",
+        "sql": "CREATE TABLE \"public\".\"SharedGameSnapshot\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"payload\" jsonb NOT NULL,\n  \"shareId\" text NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"SharedGameSnapshot\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SharedGameSnapshot\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Team",
+    "label": "Create table \"Team\"",
+    "summary": "Creates table \"Team\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Team"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Team\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Team\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Team\"",
+        "sql": "CREATE TABLE \"public\".\"Team\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"gender\" \"TeamGender\" DEFAULT 'MIXED'::\"TeamGender\" NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  \"userId\" int4,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Team\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Team\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.User",
+    "label": "Create table \"User\"",
+    "summary": "Creates table \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"User\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"User\"",
+        "sql": "CREATE TABLE \"public\".\"User\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text,\n  \"passwordHash\" text NOT NULL,\n  \"passwordSalt\" text NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"User\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Game.Game_shareToken_key",
+    "label": "Create index \"Game_shareToken_key\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Game_shareToken_key",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Game_shareToken_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game_shareToken_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Game_shareToken_key\"",
+        "sql": "CREATE UNIQUE INDEX \"Game_shareToken_key\" ON \"public\".\"Game\" (\"shareToken\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Game_shareToken_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game_shareToken_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Game.Game_teamId_idx",
+    "label": "Create index \"Game_teamId_idx\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Game_teamId_idx",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Game_teamId_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game_teamId_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Game_teamId_idx\"",
+        "sql": "CREATE INDEX \"Game_teamId_idx\" ON \"public\".\"Game\" (\"teamId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Game_teamId_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Game_teamId_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.GamePlayer.GamePlayer_gameId_playerId_key",
+    "label": "Create index \"GamePlayer_gameId_playerId_key\" on \"GamePlayer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GamePlayer_gameId_playerId_key",
+        "table": "GamePlayer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"GamePlayer_gameId_playerId_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GamePlayer_gameId_playerId_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"GamePlayer_gameId_playerId_key\"",
+        "sql": "CREATE UNIQUE INDEX \"GamePlayer_gameId_playerId_key\" ON \"public\".\"GamePlayer\" (\"gameId\", \"playerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GamePlayer_gameId_playerId_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GamePlayer_gameId_playerId_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.GameRotationEvent.GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx",
+    "label": "Create index \"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\" on \"GameRotationEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx",
+        "table": "GameRotationEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\"",
+        "sql": "CREATE INDEX \"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\" ON \"public\".\"GameRotationEvent\" (\"gameId\", \"periodNumber\", \"clockMarkSeconds\", \"id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GameRotationEvent_gameId_periodNumber_clockMarkSeconds_id_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Player.Player_teamId_jerseyNumber_key",
+    "label": "Create index \"Player_teamId_jerseyNumber_key\" on \"Player\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Player_teamId_jerseyNumber_key",
+        "table": "Player"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Player_teamId_jerseyNumber_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Player_teamId_jerseyNumber_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Player_teamId_jerseyNumber_key\"",
+        "sql": "CREATE UNIQUE INDEX \"Player_teamId_jerseyNumber_key\" ON \"public\".\"Player\" (\"teamId\", \"jerseyNumber\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Player_teamId_jerseyNumber_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Player_teamId_jerseyNumber_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PlayerGameTime.PlayerGameTime_gamePlayerId_key",
+    "label": "Create index \"PlayerGameTime_gamePlayerId_key\" on \"PlayerGameTime\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PlayerGameTime_gamePlayerId_key",
+        "table": "PlayerGameTime"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PlayerGameTime_gamePlayerId_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlayerGameTime_gamePlayerId_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PlayerGameTime_gamePlayerId_key\"",
+        "sql": "CREATE UNIQUE INDEX \"PlayerGameTime_gamePlayerId_key\" ON \"public\".\"PlayerGameTime\" (\"gamePlayerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PlayerGameTime_gamePlayerId_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlayerGameTime_gamePlayerId_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SharedGameSnapshot.SharedGameSnapshot_shareId_key",
+    "label": "Create index \"SharedGameSnapshot_shareId_key\" on \"SharedGameSnapshot\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SharedGameSnapshot_shareId_key",
+        "table": "SharedGameSnapshot"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SharedGameSnapshot_shareId_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SharedGameSnapshot_shareId_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SharedGameSnapshot_shareId_key\"",
+        "sql": "CREATE UNIQUE INDEX \"SharedGameSnapshot_shareId_key\" ON \"public\".\"SharedGameSnapshot\" (\"shareId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SharedGameSnapshot_shareId_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SharedGameSnapshot_shareId_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Team.Team_userId_idx",
+    "label": "Create index \"Team_userId_idx\" on \"Team\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Team_userId_idx",
+        "table": "Team"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Team_userId_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Team_userId_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Team_userId_idx\"",
+        "sql": "CREATE INDEX \"Team_userId_idx\" ON \"public\".\"Team\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Team_userId_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Team_userId_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.User.User_email_key",
+    "label": "Create index \"User_email_key\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "User_email_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"User_email_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User_email_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"User_email_key\"",
+        "sql": "CREATE UNIQUE INDEX \"User_email_key\" ON \"public\".\"User\" (\"email\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"User_email_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User_email_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Game.Game_teamId_fkey",
+    "label": "Add foreign key \"Game_teamId_fkey\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Game_teamId_fkey",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Game_teamId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_teamId_fkey",
+          "public",
+          "\"public\".\"Game\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Game_teamId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Game\"\nADD CONSTRAINT \"Game_teamId_fkey\"\nFOREIGN KEY (\"teamId\")\nREFERENCES \"public\".\"Team\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Game_teamId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_teamId_fkey",
+          "public",
+          "\"public\".\"Game\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.GamePlayer.GamePlayer_gameId_fkey",
+    "label": "Add foreign key \"GamePlayer_gameId_fkey\" on \"GamePlayer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GamePlayer_gameId_fkey",
+        "table": "GamePlayer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"GamePlayer_gameId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GamePlayer_gameId_fkey",
+          "public",
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"GamePlayer_gameId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GamePlayer\"\nADD CONSTRAINT \"GamePlayer_gameId_fkey\"\nFOREIGN KEY (\"gameId\")\nREFERENCES \"public\".\"Game\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"GamePlayer_gameId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GamePlayer_gameId_fkey",
+          "public",
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.GamePlayer.GamePlayer_playerId_fkey",
+    "label": "Add foreign key \"GamePlayer_playerId_fkey\" on \"GamePlayer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GamePlayer_playerId_fkey",
+        "table": "GamePlayer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"GamePlayer_playerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GamePlayer_playerId_fkey",
+          "public",
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"GamePlayer_playerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GamePlayer\"\nADD CONSTRAINT \"GamePlayer_playerId_fkey\"\nFOREIGN KEY (\"playerId\")\nREFERENCES \"public\".\"Player\" (\"id\")\nON DELETE RESTRICT\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"GamePlayer_playerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GamePlayer_playerId_fkey",
+          "public",
+          "\"public\".\"GamePlayer\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.GameRotationEvent.GameRotationEvent_gameId_fkey",
+    "label": "Add foreign key \"GameRotationEvent_gameId_fkey\" on \"GameRotationEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "GameRotationEvent_gameId_fkey",
+        "table": "GameRotationEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"GameRotationEvent_gameId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GameRotationEvent_gameId_fkey",
+          "public",
+          "\"public\".\"GameRotationEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"GameRotationEvent_gameId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"GameRotationEvent\"\nADD CONSTRAINT \"GameRotationEvent_gameId_fkey\"\nFOREIGN KEY (\"gameId\")\nREFERENCES \"public\".\"Game\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"GameRotationEvent_gameId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "GameRotationEvent_gameId_fkey",
+          "public",
+          "\"public\".\"GameRotationEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Player.Player_teamId_fkey",
+    "label": "Add foreign key \"Player_teamId_fkey\" on \"Player\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Player_teamId_fkey",
+        "table": "Player"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Player_teamId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Player_teamId_fkey",
+          "public",
+          "\"public\".\"Player\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Player_teamId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Player\"\nADD CONSTRAINT \"Player_teamId_fkey\"\nFOREIGN KEY (\"teamId\")\nREFERENCES \"public\".\"Team\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Player_teamId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Player_teamId_fkey",
+          "public",
+          "\"public\".\"Player\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PlayerGameTime.PlayerGameTime_gamePlayerId_fkey",
+    "label": "Add foreign key \"PlayerGameTime_gamePlayerId_fkey\" on \"PlayerGameTime\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PlayerGameTime_gamePlayerId_fkey",
+        "table": "PlayerGameTime"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PlayerGameTime_gamePlayerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlayerGameTime_gamePlayerId_fkey",
+          "public",
+          "\"public\".\"PlayerGameTime\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PlayerGameTime_gamePlayerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PlayerGameTime\"\nADD CONSTRAINT \"PlayerGameTime_gamePlayerId_fkey\"\nFOREIGN KEY (\"gamePlayerId\")\nREFERENCES \"public\".\"GamePlayer\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PlayerGameTime_gamePlayerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlayerGameTime_gamePlayerId_fkey",
+          "public",
+          "\"public\".\"PlayerGameTime\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Team.Team_userId_fkey",
+    "label": "Add foreign key \"Team_userId_fkey\" on \"Team\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Team_userId_fkey",
+        "table": "Team"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Team_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Team_userId_fkey",
+          "public",
+          "\"public\".\"Team\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Team_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Team\"\nADD CONSTRAINT \"Team_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE SET NULL\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Team_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Team_userId_fkey",
+          "public",
+          "\"public\".\"Team\""
+        ]
+      }
+    ]
+  }
+]
