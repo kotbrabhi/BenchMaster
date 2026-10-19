@@ -10,6 +10,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
+    "prisma:generate": "npm run prisma7:generate",
     "prisma7:generate": "prisma7 generate --config prisma7.config.ts",
     "prisma7:migrate": "prisma7 migrate dev --name init --config prisma7.config.ts",
     "prisma8:emit": "prisma contract emit",
