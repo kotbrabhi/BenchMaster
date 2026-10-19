@@ -24,5 +24,8 @@
     "prisma8:emit": "npm run check:node && npm run prisma8:emit --workspace backend",
     "db:setup": "npm run check:node && npm run prisma7:generate --workspace backend && npm run db:setup --workspace backend",
     "db:seed": "npm run check:node && npm run db:seed --workspace backend"
+  },
+  "devDependencies": {
+    "prisma": "8.0.0-rc.23"
   }
 }
