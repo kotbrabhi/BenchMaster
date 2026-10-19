@@ -36,6 +36,14 @@ export async function createShare(request: Request, response: Response) {
   });
 }
 
+export async function createPublicShare(request: Request, response: Response) {
+  const share = await gameService.createPublicShareSnapshot(request.body);
+  response.status(201).json({
+    ...share,
+    url: buildAbsoluteUrl(request, share.path)
+  });
+}
+
 export async function getPublicSharedSummary(request: Request, response: Response) {
   const shareId = Array.isArray(request.params.shareId) ? request.params.shareId[0] : request.params.shareId;
   response.json(await gameService.getPublicSharedSummary(shareId));

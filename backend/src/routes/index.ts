@@ -16,6 +16,7 @@ router.get('/health', (_request, response) => {
 router.post('/auth/register', asyncHandler(authController.register));
 router.post('/auth/login', asyncHandler(authController.login));
 router.get('/auth/me', asyncHandler(requireAuth), asyncHandler(authController.me));
+router.post('/public/game-shares', asyncHandler(gameController.createPublicShare));
 router.get('/public/game-shares/:shareId', asyncHandler(gameController.getPublicSharedSummary));
 
 router.use(asyncHandler(requireAuth));

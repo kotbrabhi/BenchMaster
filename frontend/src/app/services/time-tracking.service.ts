@@ -1,14 +1,40 @@
-import { Injectable, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Injectable, OnDestroy, inject, signal } from '@angular/core';
 import { GameDetail, GamePlayerState } from '../core/models';
 
 @Injectable({ providedIn: 'root' })
-export class TimeTrackingService {
+export class TimeTrackingService implements OnDestroy {
+  private readonly document = inject(DOCUMENT);
   private readonly now = signal(Date.now());
+  private intervalId: number | null = null;
 
-  constructor() {
-    window.setInterval(() => {
+  start() {
+    if (this.intervalId !== null) {
+      return;
+    }
+
+    const view = this.document.defaultView;
+    if (!view) {
+      return;
+    }
+
+    this.now.set(Date.now());
+    this.intervalId = view.setInterval(() => {
       this.now.set(Date.now());
     }, 1000);
+  }
+
+  stop() {
+    if (this.intervalId === null) {
+      return;
+    }
+
+    this.document.defaultView?.clearInterval(this.intervalId);
+    this.intervalId = null;
+  }
+
+  ngOnDestroy() {
+    this.stop();
   }
 
   getClockSeconds(game: Pick<GameDetail, 'clockElapsedSeconds' | 'isClockRunning' | 'lastClockStartedAt'>) {

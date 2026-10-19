@@ -1,13 +1,13 @@
 @if (open) {
-  <div class="confirmation-dialog" role="presentation">
-    <button
-      class="confirmation-dialog__backdrop"
-      type="button"
-      [disabled]="confirmBusy"
-      [attr.aria-label]="cancelLabel"
-      (click)="cancelled.emit()"></button>
-
-    <section class="confirmation-dialog__panel surface-card" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId">
+  <dialog
+    #dialog
+    class="confirmation-dialog"
+    tabindex="-1"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId"
+    (cancel)="handleCancel($event)"
+    (click)="handleDialogClick($event)">
+    <section class="confirmation-dialog__panel surface-card">
       <div class="confirmation-dialog__copy">
         @if (eyebrow) {
           <span class="confirmation-dialog__eyebrow">{{ eyebrow }}</span>
@@ -22,18 +22,24 @@
       </div>
 
       <div class="confirmation-dialog__actions">
-        <button class="button button--secondary" type="button" [disabled]="confirmBusy" (click)="cancelled.emit()">
+        <button
+          #cancelButton
+          class="button button--secondary"
+          type="button"
+          [disabled]="confirmBusy"
+          (click)="cancelDialog()">
           {{ cancelLabel }}
         </button>
         <button
           class="button"
           [class.button--danger]="tone === 'danger'"
           type="button"
-          [attr.aria-busy]="confirmBusy"
-          (click)="confirmed.emit()">
+          [disabled]="confirmBusy || confirmPending"
+          [attr.aria-busy]="confirmBusy || confirmPending"
+          (click)="confirmDialog()">
           {{ confirmLabel }}
         </button>
       </div>
     </section>
-  </div>
+  </dialog>
 }

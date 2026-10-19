@@ -15,10 +15,10 @@
 
 .info-banner {
   padding: 12px 14px;
-  border: 1px solid rgba(32, 132, 107, 0.24);
+  border: 1px solid var(--color-status-success-border);
   border-radius: 16px;
-  background: rgba(232, 252, 246, 0.9);
-  color: #145846;
+  background: var(--color-status-success-bg);
+  color: var(--color-status-success);
   font-weight: 700;
 }
 
@@ -38,7 +38,7 @@
   padding: 14px;
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--color-player-surface);
 }
 
 .share-api-card__item span {
@@ -70,9 +70,9 @@
   display: grid;
   gap: 14px;
   padding: 18px;
-  border: 1px solid rgba(143, 67, 24, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 253, 250, 0.96), rgba(255, 248, 242, 0.96));
+  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
 }
 
 .insight-panel__header h3 {
@@ -92,7 +92,7 @@
   gap: 12px;
   padding: 12px 14px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-player-surface);
 }
 
 .insight-row strong,
@@ -123,7 +123,7 @@
   min-height: 16px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(143, 67, 24, 0.12);
+  background: var(--color-chart-track);
 }
 
 .split-bar__segment {
@@ -131,11 +131,11 @@
 }
 
 .split-bar__segment--starter {
-  background: linear-gradient(90deg, #b86422, #df9555);
+  background: linear-gradient(90deg, var(--color-chart-starter), var(--color-chart-starter-highlight));
 }
 
 .split-bar__segment--bench {
-  background: linear-gradient(90deg, #2f7e76, #69b5aa);
+  background: linear-gradient(90deg, var(--color-chart-bench), var(--color-chart-bench-highlight));
 }
 
 .timeline-card {
@@ -144,7 +144,7 @@
 }
 
 .timeline-card__toggle {
-  min-height: 40px;
+  min-height: var(--tap-target-min);
   padding-inline: 14px;
 }
 
@@ -160,7 +160,7 @@
   padding: 14px;
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(255, 255, 255, 0.96));
+  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
 }
 
 .timeline-item__time {
@@ -188,7 +188,7 @@
 }
 
 .summary-sort-pills .pill {
-  min-height: 40px;
+  min-height: var(--tap-target-min);
   padding-inline: 12px;
 }
 
@@ -203,12 +203,12 @@
   padding: 16px;
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.94), rgba(255, 247, 239, 0.94));
+  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
 }
 
 .summary-card--total {
-  border-color: rgba(143, 67, 24, 0.22);
-  background: linear-gradient(180deg, rgba(255, 245, 234, 0.97), rgba(255, 250, 245, 0.97));
+  border-color: var(--color-accent-strong-soft);
+  background: linear-gradient(180deg, var(--color-court-soft), var(--color-summary-panel-start));
 }
 
 .summary-card__header,
@@ -269,7 +269,7 @@
 .summary-card__stats div {
   padding: 12px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.54);
+  background: var(--color-player-surface-soft);
 }
 
 .summary-card__stats dt,
@@ -295,6 +295,20 @@
   margin: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+
+.summary-table-wrap:focus-visible {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: 3px;
+}
+
+.summary-table-hint {
+  display: none;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 .summary-table {
@@ -318,11 +332,12 @@
 
 .summary-table th.summary-table__player,
 .summary-table td.summary-table__player {
-  width: auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 30%;
+  min-width: 8rem;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .summary-table tbody tr:last-child td {
@@ -380,7 +395,7 @@
 }
 
 .summary-table__minutes {
-  width: 3rem;
+  width: 2.75rem;
 }
 
 .summary-table__player {
@@ -388,7 +403,7 @@
 }
 
 .summary-table__stat {
-  width: 2.4rem;
+  width: 2.75rem;
 }
 
 @media (max-width: 640px) {
@@ -397,6 +412,10 @@
   }
 
   .summary-table-wrap {
+    display: block;
+  }
+
+  .summary-cards {
     display: none;
   }
 
@@ -418,11 +437,17 @@
   }
 
   .summary-table__minutes {
-    width: 2.6rem;
+    width: 2.75rem;
   }
 
   .summary-table__stat {
-    width: 2rem;
+    width: 2.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .summary-table-hint {
+    display: block;
   }
 }
 

@@ -51,7 +51,6 @@ export class GameSummaryPageComponent implements OnInit {
   readonly statusMessage = signal('');
   readonly publicShareInfo = signal<GameShareInfo | null>(null);
   readonly timelineExpanded = signal(false);
-  readonly isAuthenticatedMode = computed(() => this.appModeService.mode() === 'authenticated');
   readonly sort = signal<{ key: SummarySortKey; direction: SortDirection }>({
     key: 'totalSeconds',
     direction: 'desc'
@@ -106,6 +105,10 @@ export class GameSummaryPageComponent implements OnInit {
   );
   readonly leader = computed<SummaryUsageInsight | null>(() => this.topMinutes()[0] ?? null);
   readonly errorMessage = signal('');
+  readonly loadError = signal(false);
+  readonly displayErrorMessage = computed(() =>
+    this.loadError() ? this.t('summary.errors.loadFailed') : this.errorMessage()
+  );
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'interceptions', 'fouls', 'name'];
   readonly t = this.i18n.t;
@@ -113,10 +116,11 @@ export class GameSummaryPageComponent implements OnInit {
   async ngOnInit() {
     try {
       this.summary.set(await this.gameService.getSummary(this.gameId));
+      this.loadError.set(false);
       this.errorMessage.set('');
       this.statusMessage.set('');
-    } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+    } catch {
+      this.loadError.set(true);
     }
   }
 
@@ -175,10 +179,16 @@ export class GameSummaryPageComponent implements OnInit {
   sortButtonLabel(key: SummarySortKey) {
     const label = this.t(this.sortLabelKey(key), this.labelParams());
     const currentSort = this.sort();
-    const shouldSortAscending = currentSort.key === key ? currentSort.direction === 'desc' : false;
+
+    if (currentSort.key === key) {
+      return this.t(
+        currentSort.direction === 'asc' ? 'summary.table.sortedAscending' : 'summary.table.sortedDescending',
+        { label }
+      );
+    }
 
     return this.t(
-      shouldSortAscending ? 'summary.table.sortAscending' : 'summary.table.sortDescending',
+      'summary.table.sortDescending',
       { label }
     );
   }
@@ -235,27 +245,36 @@ export class GameSummaryPageComponent implements OnInit {
       return;
     }
 
-    const text = this.buildShareText(gameSummary);
-
     try {
+      const existingShare = this.publicShareInfo();
+      const shareInfo =
+        existingShare ??
+        (this.appModeService.isGuestMode()
+          ? await this.gameService.createPublicShare(this.buildExportPayload(gameSummary, null))
+          : await this.gameService.createShare(this.gameId));
+
+      this.publicShareInfo.set(shareInfo);
+      const text = this.buildShareText(gameSummary, shareInfo);
+
       if (browserNavigator?.share) {
         await browserNavigator.share({
           title: gameSummary.label,
-          text
+          text,
+          url: shareInfo.url
         });
         this.statusMessage.set(this.t('summary.share.nativeSuccess'));
         return;
       }
 
       if (browserNavigator?.clipboard?.writeText) {
-        await browserNavigator.clipboard.writeText(text);
+        await browserNavigator.clipboard.writeText(shareInfo.url);
         this.statusMessage.set(this.t('summary.share.copySuccess'));
         return;
       }
 
-      this.statusMessage.set(this.t('summary.share.unavailable'));
-    } catch {
-      this.statusMessage.set(this.t('summary.share.unavailable'));
+      this.statusMessage.set(this.t('summary.share.ready'));
+    } catch (error) {
+      this.statusMessage.set(getErrorMessage(error, this.t));
     }
   }
 
@@ -278,47 +297,12 @@ export class GameSummaryPageComponent implements OnInit {
     URL.revokeObjectURL(objectUrl);
     this.statusMessage.set(this.t('summary.export.success', { fileName: filename }));
   }
-
-  async sharePublicJson() {
-    const gameSummary = this.summary();
-    const browserNavigator = typeof globalThis.navigator === 'undefined' ? null : globalThis.navigator;
-
-    if (!gameSummary || !this.isAuthenticatedMode()) {
-      return;
-    }
-
-    try {
-      const shareInfo = await this.gameService.createShare(this.gameId);
-      this.publicShareInfo.set(shareInfo);
-
-      const shareText = `${gameSummary.label}\nID: ${shareInfo.shareId}\nAPI: ${shareInfo.path}`;
-
-      if (browserNavigator?.share) {
-        await browserNavigator.share({
-          title: `${gameSummary.label} JSON`,
-          text: shareText,
-          url: shareInfo.url
-        });
-        this.statusMessage.set(this.t('summary.shareApi.nativeSuccess'));
-        return;
-      }
-
-      if (browserNavigator?.clipboard?.writeText) {
-        await browserNavigator.clipboard.writeText(shareInfo.url);
-        this.statusMessage.set(this.t('summary.shareApi.copySuccess'));
-        return;
-      }
-
-      this.statusMessage.set(this.t('summary.shareApi.ready'));
-    } catch (error) {
-      this.statusMessage.set(getErrorMessage(error));
-    }
-  }
-
-  private buildShareText(gameSummary: GameSummary) {
+  private buildShareText(gameSummary: GameSummary, shareInfo: GameShareInfo) {
     const lines = [
       `${gameSummary.label} - ${this.t('summary.hero.eyebrow')}`,
-      `${this.t('summary.stats.totalClock')}: ${this.formatDuration(gameSummary.totalGameSeconds, 'clock')}`
+      `${this.t('summary.stats.totalClock')}: ${this.formatDuration(gameSummary.totalGameSeconds, 'clock')}`,
+      `${this.t('summary.shareApi.idLabel')}: ${shareInfo.shareId}`,
+      `${this.t('summary.shareApi.pathLabel')}: ${shareInfo.path}`
     ];
 
     const leader = gameSummary.insights.topMinutes[0];

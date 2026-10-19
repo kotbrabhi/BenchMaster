@@ -40,6 +40,10 @@ export class TeamRosterPageComponent implements OnInit {
 
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
+  readonly loadError = signal(false);
+  readonly displayErrorMessage = computed(() =>
+    this.loadError() ? this.t('teamRoster.errors.loadFailed') : this.errorMessage()
+  );
   readonly isSavingTeamName = signal(false);
   readonly isAddingPlayer = signal(false);
   readonly isSavingEditedPlayer = signal(false);
@@ -86,7 +90,7 @@ export class TeamRosterPageComponent implements OnInit {
       this.editingTeamName = false;
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.isSavingTeamName.set(false);
     }
@@ -122,7 +126,7 @@ export class TeamRosterPageComponent implements OnInit {
       this.resetNewPlayerForm();
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.isAddingPlayer.set(false);
     }
@@ -154,7 +158,7 @@ export class TeamRosterPageComponent implements OnInit {
       this.syncSuggestedJerseyNumber();
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.isSavingEditedPlayer.set(false);
     }
@@ -195,7 +199,7 @@ export class TeamRosterPageComponent implements OnInit {
       this.errorMessage.set('');
       this.pendingPlayerDeletion.set(null);
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.deletingPlayerId.set(null);
     }
@@ -287,9 +291,10 @@ export class TeamRosterPageComponent implements OnInit {
       this.teamName = team?.name ?? '';
       this.teamGender = team?.gender ?? 'MIXED';
       this.syncSuggestedJerseyNumber(true);
+      this.loadError.set(false);
       this.errorMessage.set('');
-    } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+    } catch {
+      this.loadError.set(true);
     }
   }
 

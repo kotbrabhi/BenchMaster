@@ -1,11 +1,13 @@
 <section class="page page--live">
+  <p class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true">{{ displayErrorMessage() }}</p>
   @if (game(); as currentGame) {
     <header class="toolbar">
       <span class="toolbar__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
+      <h1 class="toolbar__title">{{ 'live.hero.title' | t : { game: currentGame.label } }}</h1>
     </header>
 
-    @if (errorMessage()) {
-      <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
+    @if (displayErrorMessage()) {
+      <div class="error-banner" aria-hidden="true">{{ displayErrorMessage() }}</div>
     }
 
     <section class="surface-card live-control-panel live-control-panel--clock">
@@ -35,6 +37,7 @@
               <button
                 class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
                 type="button"
+                data-live-control="pause"
                 [attr.aria-busy]="isActionBusy('pause')"
                 [attr.aria-label]="'live.actions.pauseClock' | t"
                 [attr.title]="'live.actions.pauseClock' | t"
@@ -51,6 +54,7 @@
               <button
                 class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
                 type="button"
+                data-live-control="resume"
                 [attr.aria-busy]="isActionBusy('resume')"
                 [attr.aria-label]="'live.actions.resumeClock' | t"
                 [attr.title]="'live.actions.resumeClock' | t"
@@ -66,6 +70,7 @@
               <button
                 class="button button--danger button--icon live-clock-card__control live-clock-card__control--fixed-width"
                 type="button"
+                data-live-control="end-game"
                 [attr.aria-busy]="isActionBusy('end-game')"
                 [attr.aria-label]="'live.actions.end' | t"
                 [attr.title]="'live.actions.end' | t"
@@ -114,6 +119,7 @@
               <button
                 class="button button--icon live-clock-card__control"
                 type="button"
+                data-live-control="start"
                 [attr.aria-busy]="isActionBusy('start')"
                 [attr.aria-label]="'live.actions.start' | t"
                 [attr.title]="'live.actions.start' | t"
@@ -129,6 +135,7 @@
               <button
                 class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
                 type="button"
+                data-live-control="complete-period"
                 [attr.aria-busy]="isActionBusy('complete-period')"
                 [attr.aria-label]="'live.actions.completePeriod' | t"
                 [attr.title]="'live.actions.completePeriod' | t"
@@ -144,6 +151,7 @@
               <button
                 class="button button--icon live-clock-card__control"
                 type="button"
+                data-live-control="start-next-period"
                 [attr.aria-busy]="isActionBusy('start-next-period')"
                 [attr.aria-label]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
                 [attr.title]="'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 }"
@@ -173,6 +181,7 @@
         <div class="stack live-player-list">
           @for (player of currentGame.selectedPlayers; track player.playerId) {
             <app-player-card
+              [playerId]="player.playerId"
               [playerName]="player.name"
               [jerseyNumber]="player.jerseyNumber"
               [position]="player.position"
@@ -286,13 +295,14 @@
       </section>
 
       <div class="live-roster-switch-wrap">
-        <div class="live-roster-switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
+        <div class="live-roster-switch" role="group" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
           <button
             class="pill live-roster-tab live-roster-tab--court"
             type="button"
-            role="tab"
+            data-roster-view="court"
             [class.pill--active]="mobileRosterView() === 'court'"
-            [attr.aria-selected]="mobileRosterView() === 'court'"
+            [attr.aria-pressed]="mobileRosterView() === 'court'"
+            aria-controls="live-roster-court"
             (click)="setMobileRosterView('court')">
             {{ mobileRosterTabLabel('court') }}
           </button>
@@ -300,9 +310,10 @@
           <button
             class="pill live-roster-tab live-roster-tab--bench"
             type="button"
-            role="tab"
+            data-roster-view="bench"
             [class.pill--active]="mobileRosterView() === 'bench'"
-            [attr.aria-selected]="mobileRosterView() === 'bench'"
+            [attr.aria-pressed]="mobileRosterView() === 'bench'"
+            aria-controls="live-roster-bench"
             (click)="setMobileRosterView('bench')">
             {{ mobileRosterTabLabel('bench') }}
           </button>
@@ -337,6 +348,7 @@
           <div class="stack live-player-list">
             @for (player of currentGame.activePlayers; track player.playerId) {
               <app-player-card
+                [playerId]="player.playerId"
                 [playerName]="player.name"
                 [jerseyNumber]="player.jerseyNumber"
                 [position]="player.position"
@@ -383,6 +395,7 @@
           <div class="stack live-player-list">
             @for (player of currentGame.benchPlayers; track player.playerId) {
               <app-player-card
+                [playerId]="player.playerId"
                 [playerName]="player.name"
                 [jerseyNumber]="player.jerseyNumber"
                 [position]="player.position"
@@ -425,13 +438,14 @@
           </span>
         </div>
 
-        <div class="live-thumb-dock__switch" role="tablist" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
+        <div class="live-thumb-dock__switch" role="group" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
           <button
             class="pill live-roster-tab live-roster-tab--court"
             type="button"
-            role="tab"
+            data-roster-view="court"
             [class.pill--active]="mobileRosterView() === 'court'"
-            [attr.aria-selected]="mobileRosterView() === 'court'"
+            [attr.aria-pressed]="mobileRosterView() === 'court'"
+            aria-controls="live-roster-court"
             (click)="setMobileRosterView('court')">
             {{ mobileRosterTabLabel('court') }}
           </button>
@@ -439,9 +453,10 @@
           <button
             class="pill live-roster-tab live-roster-tab--bench"
             type="button"
-            role="tab"
+            data-roster-view="bench"
             [class.pill--active]="mobileRosterView() === 'bench'"
-            [attr.aria-selected]="mobileRosterView() === 'bench'"
+            [attr.aria-pressed]="mobileRosterView() === 'bench'"
+            aria-controls="live-roster-bench"
             (click)="setMobileRosterView('bench')">
             {{ mobileRosterTabLabel('bench') }}
           </button>
@@ -464,6 +479,7 @@
             <button
               class="button button--secondary"
               type="button"
+              data-live-control="complete-period"
               [attr.aria-busy]="isActionBusy('complete-period')"
               (click)="requestCompletePeriod()">
               {{ 'live.actions.completePeriod' | t }}
@@ -472,6 +488,7 @@
             <button
               class="button button--secondary"
               type="button"
+              data-live-control="start-next-period"
               [attr.aria-busy]="isActionBusy('start-next-period')"
               (click)="startNextPeriod()">
               {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
@@ -501,6 +518,7 @@
             <button
               class="button"
               type="button"
+              data-live-control="pause"
               [attr.aria-busy]="isActionBusy('pause')"
               (click)="pauseGame()">
               {{ 'live.actions.pauseClock' | t }}
@@ -509,6 +527,7 @@
             <button
               class="button button--danger"
               type="button"
+              data-live-control="end-game"
               [attr.aria-busy]="isActionBusy('end-game')"
               (click)="requestEndGame()">
               {{ 'live.actions.end' | t }}
@@ -517,6 +536,7 @@
             <button
               class="button"
               type="button"
+              data-live-control="resume"
               [attr.aria-busy]="isActionBusy('resume')"
               (click)="resumeGame()">
               {{ 'live.actions.resumeClock' | t }}
@@ -525,6 +545,7 @@
             <button
               class="button button--danger"
               type="button"
+              data-live-control="end-game"
               [attr.aria-busy]="isActionBusy('end-game')"
               (click)="requestEndGame()">
               {{ 'live.actions.end' | t }}
@@ -533,6 +554,7 @@
             <button
               class="button button--danger"
               type="button"
+              data-live-control="end-game"
               [attr.aria-busy]="isActionBusy('end-game')"
               (click)="requestEndGame()">
               {{ 'live.actions.end' | t }}
@@ -542,12 +564,16 @@
       </section>
     }
   } @else {
-    <section class="page">
-      <div class="status-panel status-panel--loading">
-        <span class="status-panel__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
-        <p class="status-panel__text">{{ 'live.loading' | t }}</p>
-      </div>
-    </section>
+    @if (displayErrorMessage()) {
+      <div class="error-banner" aria-hidden="true">{{ displayErrorMessage() }}</div>
+    } @else {
+      <section class="page">
+        <div class="status-panel status-panel--loading">
+          <span class="status-panel__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
+          <p class="status-panel__text">{{ 'live.loading' | t }}</p>
+        </div>
+      </section>
+    }
   }
 
   @if (pendingConfirmation(); as confirmation) {

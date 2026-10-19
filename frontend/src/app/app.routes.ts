@@ -9,32 +9,32 @@ export const routes: Routes = [
   {
     path: '',
     component: HomePageComponent,
-    title: 'BenchMaster'
+    title: 'document.title.home'
   },
   {
     path: 'teams/:teamId',
     component: TeamRosterPageComponent,
     canActivate: [modeAuthGuard],
-    title: 'Effectif'
+    title: 'document.title.roster'
   },
   {
     path: 'games/new',
     component: NewGameSetupPageComponent,
     canActivate: [modeAuthGuard],
-    title: 'Nouveau match'
+    title: 'document.title.newGame'
   },
   {
     path: 'games/:gameId/live',
     component: LiveMatchPageComponent,
     canActivate: [modeAuthGuard],
-    title: 'Match en direct'
+    title: 'document.title.liveMatch'
   },
   {
     path: 'games/:gameId/summary',
     loadComponent: () =>
       import('./pages/game-summary/game-summary.page').then((module) => module.GameSummaryPageComponent),
     canActivate: [modeAuthGuard],
-    title: 'Résumé du match'
+    title: 'document.title.summary'
   },
   {
     path: '**',

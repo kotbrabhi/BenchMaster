@@ -80,7 +80,7 @@ export class HomePageComponent implements OnInit {
 
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.isSubmittingTeam.set(false);
     }
@@ -127,7 +127,7 @@ export class HomePageComponent implements OnInit {
       this.resetTeamForm();
       this.pendingTeamDeletion.set(null);
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.deletingTeamId.set(null);
     }
@@ -181,8 +181,26 @@ export class HomePageComponent implements OnInit {
     this.openTeamMenuId.update((currentTeamId) => (currentTeamId === teamId ? null : teamId));
   }
 
-  closeTeamMenu() {
+  handleTeamMenuFocusOut(teamId: number, event: FocusEvent) {
+    const menu = event.currentTarget as HTMLElement;
+    const nextTarget = event.relatedTarget;
+
+    if (nextTarget instanceof Node && menu.contains(nextTarget)) {
+      return;
+    }
+
+    if (this.isTeamMenuOpen(teamId)) {
+      this.closeTeamMenu();
+    }
+  }
+
+  closeTeamMenu(restoreFocus = false) {
+    const openTeamId = this.openTeamMenuId();
     this.openTeamMenuId.set(null);
+
+    if (restoreFocus && openTeamId !== null) {
+      this.document.querySelector<HTMLButtonElement>(`[aria-controls="team-actions-${openTeamId}"]`)?.focus();
+    }
   }
 
   async openTeamRoster(teamId: number) {
@@ -197,7 +215,7 @@ export class HomePageComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   handleEscapeKey() {
-    this.closeTeamMenu();
+    this.closeTeamMenu(true);
   }
 
   gameLink(game: GameListItem) {
@@ -248,7 +266,7 @@ export class HomePageComponent implements OnInit {
       await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     }
   }
 

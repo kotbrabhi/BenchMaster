@@ -5,8 +5,9 @@
     <p class="toolbar__subtitle">{{ 'newGame.hero.subtitle' | t }}</p>
   </header>
 
+  <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ errorMessage() }}</p>
   @if (errorMessage()) {
-    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
+    <div class="error-banner" aria-hidden="true">{{ errorMessage() }}</div>
   }
 
   <section class="surface-card step-card" [class.step-card--complete]="selectedTeamId()">
@@ -61,6 +62,8 @@
       <div class="setup-progress__bar" aria-hidden="true">
         <span class="setup-progress__bar-fill" [style.width.%]="setupProgressPercent()"></span>
       </div>
+
+      <p class="visually-hidden" aria-live="polite" aria-atomic="true">{{ activeSetupStepAnnouncement() }}</p>
 
       <div class="setup-progress__steps">
         @for (step of setupSteps(); track step.key) {

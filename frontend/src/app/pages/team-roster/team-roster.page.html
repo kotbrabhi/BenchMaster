@@ -5,8 +5,9 @@
     <p class="toolbar__subtitle">{{ 'teamRoster.hero.subtitle' | t }}</p>
   </header>
 
-  @if (errorMessage()) {
-    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
+  <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ displayErrorMessage() }}</p>
+  @if (displayErrorMessage()) {
+    <div class="error-banner" aria-hidden="true">{{ displayErrorMessage() }}</div>
   }
 
   <section class="surface-card">

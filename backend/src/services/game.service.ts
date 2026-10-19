@@ -92,6 +92,22 @@ function createShareToken() {
   return randomBytes(12).toString('hex');
 }
 
+function createSnapshotShareId() {
+  return `pub_${createShareToken()}`;
+}
+
+function asSharePayload(payload: unknown, shareId: string): Prisma.InputJsonObject {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new HttpError(400, 'Le JSON de partage est invalide.');
+  }
+
+  return {
+    ...(payload as Prisma.InputJsonObject),
+    shareId,
+    exportedAt: new Date().toISOString()
+  };
+}
+
 export async function listGames(userId: number, teamId?: number) {
   const games = await prisma.game.findMany({
     where: {
@@ -306,9 +322,43 @@ export async function createGameShare(gameId: number, userId: number): Promise<G
   throw new HttpError(500, 'Impossible de generer un identifiant de partage.');
 }
 
+export async function createPublicShareSnapshot(payload: unknown): Promise<GameShareResult> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const shareId = createSnapshotShareId();
+
+    try {
+      await prisma.sharedGameSnapshot.create({
+        data: {
+          shareId,
+          payload: asSharePayload(payload, shareId)
+        }
+      });
+
+      return {
+        shareId,
+        path: buildPublicSharePath(shareId)
+      };
+    } catch {
+      // Retry with a new token if an unlikely collision occurs.
+    }
+  }
+
+  throw new HttpError(500, 'Impossible de generer un identifiant de partage.');
+}
+
 export async function getPublicSharedSummary(shareId: string) {
   if (!shareId?.trim()) {
     throw new HttpError(400, 'Identifiant de partage invalide.');
+  }
+
+  const snapshot = await prisma.sharedGameSnapshot.findUnique({
+    where: {
+      shareId
+    }
+  });
+
+  if (snapshot) {
+    return snapshot.payload;
   }
 
   const game = await prisma.game.findFirst({

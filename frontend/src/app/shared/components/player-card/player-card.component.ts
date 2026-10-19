@@ -44,6 +44,7 @@ export interface PlayerCardInlineStat {
 })
 export class PlayerCardComponent {
   @Input({ required: true }) playerName!: string;
+  @Input() playerId: number | null = null;
   @Input({ required: true }) jerseyNumber!: string;
   @Input() position: string | null = null;
   @Input() note = '';
@@ -74,6 +75,10 @@ export class PlayerCardComponent {
         actions: this.quickActions.filter((quickAction) => (quickAction.row ?? 'primary') === row)
       }))
       .filter((entry) => entry.actions.length > 0);
+  }
+
+  accessibleActionLabel(action: string) {
+    return `${this.playerName}, ${action}`;
   }
 
   handleActionClick(event: MouseEvent) {

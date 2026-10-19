@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../core/api';
 import { AppModeService } from '../core/app-mode.service';
-import { GameDetail, GameListItem, GameShareInfo, GameSummary } from '../core/models';
+import { GameDetail, GameListItem, GameShareInfo, GameSummary, GameSummaryExport } from '../core/models';
 import { GuestStorageService } from './guest-storage.service';
 
 export interface CreateGamePayload {
@@ -58,5 +58,9 @@ export class GameService {
     }
 
     return firstValueFrom(this.http.post<GameShareInfo>(`${API_BASE_URL}/games/${gameId}/share`, {}));
+  }
+
+  createPublicShare(payload: GameSummaryExport) {
+    return firstValueFrom(this.http.post<GameShareInfo>(`${API_BASE_URL}/public/game-shares`, payload));
   }
 }

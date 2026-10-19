@@ -16,11 +16,14 @@
               @if (currentInlineStat.clickable) {
                 <button
                   class="player-card__inline-stat"
+                  [class.player-card__inline-stat--interactive]="true"
                   [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted"
                   [class.player-card__inline-stat--danger]="currentInlineStat.tone === 'danger'"
                   type="button"
+                  [attr.data-player-id]="playerId"
+                  data-player-control="stat"
                   [disabled]="currentInlineStat.disabled"
-                  [attr.aria-label]="currentInlineStat.title || currentInlineStat.label"
+                  [attr.aria-label]="accessibleActionLabel(currentInlineStat.title || currentInlineStat.label)"
                   [attr.title]="currentInlineStat.title || currentInlineStat.label"
                   (click)="handleInlineStatClick($event)">
                   <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
@@ -47,11 +50,14 @@
               @if (currentInlineStat.clickable) {
                 <button
                   class="player-card__inline-stat"
+                  [class.player-card__inline-stat--interactive]="true"
                   [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted"
                   [class.player-card__inline-stat--danger]="currentInlineStat.tone === 'danger'"
                   type="button"
+                  [attr.data-player-id]="playerId"
+                  data-player-control="stat"
                   [disabled]="currentInlineStat.disabled"
-                  [attr.aria-label]="currentInlineStat.title || currentInlineStat.label"
+                  [attr.aria-label]="accessibleActionLabel(currentInlineStat.title || currentInlineStat.label)"
                   [attr.title]="currentInlineStat.title || currentInlineStat.label"
                   (click)="handleInlineStatClick($event)">
                   <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
@@ -98,8 +104,10 @@
             [class.player-card__stat--highlighted]="stat.highlighted"
             [class.player-card__stat--danger]="stat.tone === 'danger'"
             type="button"
+            [attr.data-player-id]="playerId"
+            data-player-control="stat"
             [disabled]="stat.disabled"
-            [attr.aria-label]="stat.title || stat.label"
+            [attr.aria-label]="accessibleActionLabel(stat.title || stat.label)"
             [attr.title]="stat.title || stat.label"
             (click)="handleStatClick($event, stat)">
             <span class="player-card__stat-label">{{ stat.label }}</span>
@@ -124,8 +132,10 @@
               class="player-card__quick-action"
               [class.player-card__quick-action--danger]="quickActionsTone === 'danger'"
               type="button"
+              [attr.data-player-id]="playerId"
+              data-player-control="stat"
               [disabled]="quickAction.disabled"
-              [attr.aria-label]="quickAction.title || quickAction.label"
+              [attr.aria-label]="accessibleActionLabel(quickAction.title || quickAction.label)"
               [attr.title]="quickAction.title || quickAction.label"
               (click)="handleQuickActionClick($event, quickAction.value)">
               {{ quickAction.label }}
@@ -142,7 +152,10 @@
       type="button"
       [class.player-card__action--selected]="selected"
       [disabled]="actionDisabled"
-      [attr.aria-label]="actionLabel"
+      [attr.aria-label]="accessibleActionLabel(actionLabel)"
+      [attr.data-player-id]="playerId"
+      data-player-control="selection"
+      [attr.data-player-selection]="playerId"
       [attr.title]="actionLabel"
       (click)="handleActionClick($event)">
       <span class="player-card__action-label">{{ actionLabel }}</span>

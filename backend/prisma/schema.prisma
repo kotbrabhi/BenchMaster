@@ -147,3 +147,11 @@ model GameRotationEvent {
 
   @@index([gameId, periodNumber, clockMarkSeconds, id])
 }
+
+model SharedGameSnapshot {
+  id        Int      @id @default(autoincrement())
+  shareId   String   @unique
+  payload   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

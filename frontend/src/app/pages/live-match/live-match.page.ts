@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
@@ -39,6 +39,7 @@ interface PendingLiveConfirmation {
   styleUrl: './live-match.page.scss'
 })
 export class LiveMatchPageComponent implements OnInit, OnDestroy {
+  private readonly document = inject(DOCUMENT);
   private readonly i18n = inject(I18nService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -52,6 +53,10 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   readonly pendingActivePlayers = this.liveMatchService.pendingActivePlayers;
   readonly canApplySubstitutionBatch = this.liveMatchService.canApplySubstitutionBatch;
   readonly errorMessage = signal('');
+  readonly loadError = signal(false);
+  readonly displayErrorMessage = computed(() =>
+    this.loadError() ? this.t('live.errors.loadFailed') : this.errorMessage()
+  );
   readonly busyAction = signal<string | null>(null);
   readonly statUpdatePlayerIds = signal<number[]>([]);
   readonly correctionMode = signal(false);
@@ -63,11 +68,13 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.initMobileViewport();
+    this.timeTrackingService.start();
     await this.loadGame();
   }
 
   ngOnDestroy() {
     this.mobileMediaQuery?.removeEventListener('change', this.handleMobileViewportChange);
+    this.timeTrackingService.stop();
   }
 
   async startGame() {
@@ -104,6 +111,8 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   async toggleBenchPlayer(playerId: number) {
+    const previousView = this.mobileRosterView();
+    const selectionHadFocus = this.isFocusedPlayerSelection();
     const player = this.game()?.benchPlayers.find((entry) => entry.playerId === playerId);
 
     if (player && this.isDisqualified(player)) {
@@ -115,24 +124,28 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     this.errorMessage.set('');
 
     if (this.isMobileViewport() && this.canApplySubstitutionBatch()) {
-      await this.substituteBatch();
+      await this.substituteBatch(playerId);
       return;
     }
 
     this.syncMobileRosterFlow('bench', wasSelected);
+    this.focusRosterAfterViewChange(previousView, selectionHadFocus);
   }
 
   async toggleActivePlayer(playerId: number) {
+    const previousView = this.mobileRosterView();
+    const selectionHadFocus = this.isFocusedPlayerSelection();
     const wasSelected = this.isActiveSelected(playerId);
     this.liveMatchService.toggleActivePlayer(playerId);
     this.errorMessage.set('');
 
     if (this.isMobileViewport() && this.canApplySubstitutionBatch()) {
-      await this.substituteBatch();
+      await this.substituteBatch(playerId);
       return;
     }
 
     this.syncMobileRosterFlow('court', wasSelected);
+    this.focusRosterAfterViewChange(previousView, selectionHadFocus);
   }
 
   clearSelections() {
@@ -180,16 +193,27 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     this.setMobileRosterView(deltaX < 0 ? 'bench' : 'court');
   }
 
-  async substituteBatch() {
+  async substituteBatch(focusPlayerId?: number) {
+    const incomingPlayerIds = this.pendingBenchPlayers().map((player) => player.playerId);
+    const playerToFocus = focusPlayerId != null && incomingPlayerIds.includes(focusPlayerId)
+      ? focusPlayerId
+      : incomingPlayerIds[0];
+    let succeeded = false;
+
     try {
       this.busyAction.set('apply-substitution');
       await this.liveMatchService.substitute(this.gameId);
       this.mobileRosterView.set('court');
       this.errorMessage.set('');
+      succeeded = true;
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.busyAction.set(null);
+    }
+
+    if (succeeded && playerToFocus != null) {
+      this.focusPlayerSelection(playerToFocus);
     }
   }
 
@@ -576,6 +600,8 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   async handleQuickAction(playerId: number, action: PlayerCardQuickActionValue) {
+    const activeControl = this.document.activeElement as HTMLElement | null;
+    const activeControlBelongsToPlayer = Number(activeControl?.dataset['playerId']) === playerId;
     const correctionMode = this.correctionMode();
     this.statUpdatePlayerIds.update((current) => (current.includes(playerId) ? current : [...current, playerId]));
 
@@ -592,9 +618,19 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.statUpdatePlayerIds.update((current) => current.filter((id) => id !== playerId));
+    }
+
+    if (activeControlBelongsToPlayer) {
+      this.document.defaultView?.requestAnimationFrame(() => {
+        if (activeControl?.isConnected && !activeControl.hasAttribute('disabled')) {
+          activeControl.focus();
+        } else {
+          this.focusPlayerSelection(playerId);
+        }
+      });
     }
   }
 
@@ -702,21 +738,31 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   private async loadGame() {
     try {
       await this.liveMatchService.loadGame(this.gameId);
+      this.loadError.set(false);
       this.errorMessage.set('');
-    } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+    } catch {
+      this.loadError.set(true);
     }
   }
 
   private async runAction(actionKey: string, callback: () => Promise<unknown>) {
+    const activeControl = (this.document.activeElement as HTMLElement | null)?.dataset['liveControl'];
+    let succeeded = false;
+
     try {
       this.busyAction.set(actionKey);
       await callback();
       this.errorMessage.set('');
+      succeeded = true;
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.busyAction.set(null);
+    }
+
+    const replacementControl = this.replacementControl(actionKey);
+    if (succeeded && activeControl === actionKey && replacementControl) {
+      this.focusLiveControl(replacementControl);
     }
   }
 
@@ -763,10 +809,59 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       await this.liveMatchService.completePeriod(this.gameId);
       this.pendingConfirmation.set(null);
       this.errorMessage.set('');
+      const game = this.game();
+      this.focusLiveControl(game && this.canStartNextPeriod(game) ? 'start-next-period' : 'end-game');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.busyAction.set(null);
+    }
+  }
+
+  private replacementControl(actionKey: string): string | null {
+    switch (actionKey) {
+      case 'start':
+        return 'pause';
+      case 'pause':
+        return 'resume';
+      case 'resume':
+        return 'pause';
+      case 'start-next-period':
+        return 'complete-period';
+      default:
+        return null;
+    }
+  }
+
+  private focusLiveControl(control: string) {
+    this.document.defaultView?.requestAnimationFrame(() => {
+      const targets = this.document.querySelectorAll<HTMLElement>(`[data-live-control="${control}"]`);
+      const target = Array.from(targets).find((element) => element.getClientRects().length > 0);
+      target?.focus();
+    });
+  }
+
+  private focusPlayerSelection(playerId: number) {
+    this.document.defaultView?.requestAnimationFrame(() => {
+      const targets = this.document.querySelectorAll<HTMLElement>(`[data-player-selection="${playerId}"]`);
+      const target = Array.from(targets).find((element) => element.getClientRects().length > 0);
+      target?.focus();
+    });
+  }
+
+  private isFocusedPlayerSelection() {
+    return this.document.activeElement?.hasAttribute('data-player-selection') ?? false;
+  }
+
+  private focusRosterAfterViewChange(previousView: LiveRosterView, selectionHadFocus: boolean) {
+    const nextView = this.mobileRosterView();
+
+    if (this.isMobileViewport() && selectionHadFocus && previousView !== nextView) {
+      this.document.defaultView?.requestAnimationFrame(() => {
+        const targets = this.document.querySelectorAll<HTMLElement>(`[data-roster-view="${nextView}"]`);
+        const target = Array.from(targets).find((element) => element.getClientRects().length > 0);
+        target?.focus();
+      });
     }
   }
 
@@ -777,7 +872,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       this.pendingConfirmation.set(null);
       await this.router.navigate(['/games', this.gameId, 'summary']);
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.busyAction.set(null);
     }

@@ -174,6 +174,7 @@ The web app runs on [http://localhost:4200](http://localhost:4200).
 - `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/public/game-shares`
 - `GET /api/public/game-shares/:shareId`
 
 ### Protected endpoints

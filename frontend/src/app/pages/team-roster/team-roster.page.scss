@@ -139,7 +139,8 @@
 
 .roster-player-card__identity {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex: 1 1 auto;
   gap: 12px;
   min-width: 0;
 }
@@ -157,8 +158,8 @@
 
 .roster-player-card__copy h3,
 .roster-player-card__copy p {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .roster-player-card__copy h3 {
@@ -167,8 +168,11 @@
 
 .roster-player-card__pill {
   align-self: flex-start;
+  max-width: 100%;
   min-height: var(--tap-target-min);
   padding: 0 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 768px) {
@@ -193,5 +197,10 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+
+  .roster-player-card__actions > .roster-player-card__action {
+    flex: 1 1 10rem;
+    min-width: min(100%, 10rem);
   }
 }

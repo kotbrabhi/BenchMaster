@@ -91,6 +91,19 @@ export class NewGameSetupPageComponent implements OnInit {
     }
   ]);
   readonly setupProgressPercent = computed(() => (this.wizardStep() / 3) * 100);
+  readonly activeSetupStepAnnouncement = computed(() => {
+    const activeStep = this.setupSteps().find((step) => step.isActive);
+
+    if (!activeStep) {
+      return '';
+    }
+
+    return this.t('newGame.progress.currentStepAnnouncement', {
+      step: activeStep.number,
+      total: this.setupSteps().length,
+      title: this.t(activeStep.titleKey)
+    });
+  });
   readonly setupSteps = computed<SetupStep[]>(() => [
     {
       key: 'available',
@@ -130,7 +143,7 @@ export class NewGameSetupPageComponent implements OnInit {
         await this.selectTeam(preselectedTeamId || firstTeamId);
       }
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     }
   }
 
@@ -150,7 +163,7 @@ export class NewGameSetupPageComponent implements OnInit {
       this.playerInlineError.set(null);
       this.errorMessage.set('');
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     }
   }
 
@@ -270,7 +283,7 @@ export class NewGameSetupPageComponent implements OnInit {
       await this.gameService.loadGames();
       this.router.navigate(['/games', game.id, 'live']);
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error));
+      this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {
       this.isCreatingGame.set(false);
     }

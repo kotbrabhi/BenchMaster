@@ -1,6 +1,7 @@
 <section class="page">
+  <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ errorMessage() }}</p>
   @if (errorMessage()) {
-    <div class="error-banner" aria-live="polite">{{ errorMessage() }}</div>
+    <div class="error-banner" aria-hidden="true">{{ errorMessage() }}</div>
   }
 
   @if (shouldShowOnboarding()) {
@@ -159,12 +160,15 @@
               <span class="button__label">{{ 'home.teams.newGameAction' | t }}</span>
             </a>
 
-            <div class="team-card__menu" (click)="$event.stopPropagation()">
+            <div
+              class="team-card__menu"
+              (click)="$event.stopPropagation()"
+              (focusout)="handleTeamMenuFocusOut(team.id, $event)">
               <button
                 class="button button--secondary button--icon team-card__menu-trigger"
                 type="button"
-                aria-haspopup="menu"
                 [attr.aria-expanded]="isTeamMenuOpen(team.id)"
+                [attr.aria-controls]="'team-actions-' + team.id"
                 [attr.aria-label]="'common.actions.label' | t"
                 [attr.title]="'common.actions.label' | t"
                 (click)="toggleTeamMenu(team.id, $event)">
@@ -178,25 +182,22 @@
               </button>
 
               @if (isTeamMenuOpen(team.id)) {
-                <div class="team-card__menu-panel" role="menu" [attr.aria-label]="'common.actions.label' | t">
+                <div class="team-card__menu-panel" [id]="'team-actions-' + team.id">
                   <button
                     class="team-card__menu-item"
                     type="button"
-                    role="menuitem"
                     (click)="openTeamRoster(team.id)">
                     {{ 'home.teams.rosterAction' | t }}
                   </button>
                   <button
                     class="team-card__menu-item"
                     type="button"
-                    role="menuitem"
                     (click)="editTeam(team)">
                     {{ 'home.teams.editAction' | t }}
                   </button>
                   <button
                     class="team-card__menu-item team-card__menu-item--danger"
                     type="button"
-                    role="menuitem"
                     (click)="requestDeleteTeam(team)">
                     {{ 'home.teams.deleteAction' | t }}
                   </button>

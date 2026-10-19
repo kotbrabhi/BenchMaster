@@ -16,7 +16,7 @@
 .player-card--selected {
   border-color: var(--color-accent-strong);
   background: linear-gradient(135deg, var(--color-accent-soft), var(--color-surface-glass-strong));
-  box-shadow: inset 0 0 0 1px rgba(188, 99, 42, 0.18);
+  box-shadow: inset 0 0 0 1px var(--color-selection-shadow);
 }
 
 .player-card__header {
@@ -40,7 +40,8 @@
 
 .player-card__identity-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
 }
@@ -49,9 +50,13 @@
 .player-card__identity p,
 .player-card__meta,
 .player-card__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.player-card__identity-head h3,
+.player-card__identity-head .player-card__name {
+  flex: 1 1 12ch;
 }
 
 .player-card__identity--compact {
@@ -100,20 +105,20 @@
   padding: 0 10px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 253, 249, 0.72);
+  background: var(--color-player-surface);
   color: var(--color-ink);
   flex-shrink: 0;
 }
 
 .player-card__inline-stat--highlighted {
   border-color: var(--color-accent-strong-soft);
-  background: rgba(188, 99, 42, 0.14);
+  background: var(--color-accent-soft);
   color: var(--color-accent-strong);
 }
 
 .player-card__inline-stat--danger {
-  border-color: rgba(158, 45, 26, 0.24);
-  background: rgba(158, 45, 26, 0.1);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
 }
 
@@ -161,6 +166,8 @@ button.player-card__inline-stat {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   margin: 0;
 }
 
@@ -172,7 +179,7 @@ button.player-card__inline-stat {
   padding: 10px 8px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: rgba(255, 253, 249, 0.64);
+  background: var(--color-player-surface-soft);
   text-align: center;
 }
 
@@ -182,12 +189,12 @@ button.player-card__inline-stat {
 
 .player-card__stat--highlighted {
   border-color: var(--color-accent-strong-soft);
-  background: rgba(188, 99, 42, 0.12);
+  background: var(--color-accent-soft);
 }
 
 .player-card__stat--danger {
-  border-color: rgba(158, 45, 26, 0.24);
-  background: rgba(158, 45, 26, 0.1);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
 }
 
 .player-card__stat dt,
@@ -241,8 +248,8 @@ button.player-card__inline-stat {
 }
 
 .player-card__quick-action--danger {
-  border-color: rgba(158, 45, 26, 0.24);
-  background: rgba(158, 45, 26, 0.1);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
 }
 
@@ -256,7 +263,7 @@ button.player-card__inline-stat {
   border: 1px solid transparent;
   border-radius: 16px;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
-  color: var(--color-surface-strong);
+  color: var(--color-on-accent);
   text-align: left;
 }
 
@@ -267,9 +274,13 @@ button.player-card__inline-stat {
 }
 
 .player-card__action-label {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.8125rem;
   font-weight: 800;
   line-height: 1.15;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .player-card__bar {
@@ -311,13 +322,13 @@ button.player-card__inline-stat {
 .player-card__stat-button:disabled {
   cursor: default;
   opacity: 1;
-  background: rgba(73, 42, 19, 0.08);
+  background: var(--color-ink-soft);
   border-color: var(--color-disabled-border);
   color: var(--color-disabled-ink);
 }
 
 .player-card__quick-action:disabled {
-  background: rgba(73, 42, 19, 0.08);
+  background: var(--color-ink-soft);
   border-color: var(--color-disabled-border);
   color: var(--color-disabled-ink);
 }
@@ -325,7 +336,7 @@ button.player-card__inline-stat {
 .player-card__inline-stat:disabled {
   cursor: default;
   opacity: 1;
-  background: rgba(73, 42, 19, 0.08);
+  background: var(--color-ink-soft);
   border-color: var(--color-disabled-border);
   color: var(--color-disabled-ink);
 }
@@ -362,11 +373,17 @@ button.player-card__inline-stat {
 
 .player-card--compact .player-card__meta {
   font-size: var(--player-meta-size);
+  white-space: normal;
 }
 
 .player-card--compact .player-card__inline-stat {
   min-height: 28px;
   padding: 0 8px;
+}
+
+button.player-card__inline-stat--interactive,
+.player-card--compact button.player-card__inline-stat--interactive {
+  min-height: 44px;
 }
 
 .player-card--compact .player-card__stats {
