@@ -1,12 +1,6 @@
 import { Routes } from '@angular/router';
 import { modeAuthGuard } from './core/mode-auth.guard';
 import { HomePageComponent } from './pages/home/home.page';
-import { LiveMatchPageComponent } from './pages/live-match/live-match.page';
-import { NewGameSetupPageComponent } from './pages/new-game-setup/new-game-setup.page';
-import { TeamRosterPageComponent } from './pages/team-roster/team-roster.page';
-import { FriendliesPageComponent } from './pages/friendlies/friendlies.page';
-import { FriendlyApplicationPageComponent } from './pages/friendlies/friendly-application.page';
-import { FriendlyInvitePageComponent } from './pages/friendlies/friendly-invite.page';
 
 export const routes: Routes = [
   {
@@ -16,49 +10,49 @@ export const routes: Routes = [
   },
   {
     path: 'teams/:teamId',
-    component: TeamRosterPageComponent,
+    loadComponent: () => import('./pages/team-roster/team-roster.page').then((module) => module.TeamRosterPageComponent),
     canActivate: [modeAuthGuard],
     title: 'document.title.roster'
   },
   {
     path: 'games/new',
-    component: NewGameSetupPageComponent,
+    loadComponent: () => import('./pages/new-game-setup/new-game-setup.page').then((module) => module.NewGameSetupPageComponent),
     canActivate: [modeAuthGuard],
     title: 'document.title.newGame'
   },
   {
     path: 'friendlies/respond/:token',
-    component: FriendlyInvitePageComponent,
+    loadComponent: () => import('./pages/friendlies/friendly-invite.page').then((module) => module.FriendlyInvitePageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'friendlies/applications/:applicationId',
-    component: FriendlyApplicationPageComponent,
+    loadComponent: () => import('./pages/friendlies/friendly-application.page').then((module) => module.FriendlyApplicationPageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'friendlies',
-    component: FriendliesPageComponent,
+    loadComponent: () => import('./pages/friendlies/friendlies.page').then((module) => module.FriendliesPageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'friendlies/new',
-    component: FriendliesPageComponent,
+    loadComponent: () => import('./pages/friendlies/friendlies.page').then((module) => module.FriendliesPageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'friendlies/:proposalId/edit',
-    component: FriendliesPageComponent,
+    loadComponent: () => import('./pages/friendlies/friendlies.page').then((module) => module.FriendliesPageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'friendlies/:proposalId',
-    component: FriendliesPageComponent,
+    loadComponent: () => import('./pages/friendlies/friendlies.page').then((module) => module.FriendliesPageComponent),
     title: 'document.title.friendlies'
   },
   {
     path: 'games/:gameId/live',
-    component: LiveMatchPageComponent,
+    loadComponent: () => import('./pages/live-match/live-match.page').then((module) => module.LiveMatchPageComponent),
     canActivate: [modeAuthGuard],
     title: 'document.title.liveMatch'
   },

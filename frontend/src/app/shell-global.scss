@@ -1,0 +1,227 @@
+.shell::before,
+.shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.shell::before {
+  z-index: -2;
+  background:
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center / 100% 3px no-repeat,
+    radial-gradient(circle, transparent 0 43%, var(--color-court-line) 43.5% 45.2%, transparent 45.7%) center / min(40vh, 320px) min(40vh, 320px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(80px + min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 80px - min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
+    radial-gradient(circle at 50% 0, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) top center / min(100vw, 720px) min(48vh, 420px) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) bottom center / min(100vw, 720px) min(48vh, 420px) no-repeat,
+    radial-gradient(circle at 50% 0, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center 118px / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center calc(100% - 118px) / min(24vh, 192px) min(12vh, 96px) no-repeat,
+    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center 48px / 22px 22px no-repeat,
+    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center calc(100% - 48px) / 22px 22px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center 38px / 64px 3px no-repeat,
+    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 38px) / 64px 3px no-repeat,
+    repeating-linear-gradient(
+      90deg,
+      var(--color-shell-grain) 0 2px,
+      transparent 2px 88px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      var(--color-shell-line) 0 1px,
+      transparent 1px 144px
+    ),
+    linear-gradient(
+      90deg,
+      var(--color-wood-light) 0%,
+      var(--color-wood-light) 11%,
+      var(--color-wood-mid) 24%,
+      var(--color-wood-mid) 36%,
+      var(--color-wood-dark) 50%,
+      var(--color-wood-light) 64%,
+      var(--color-wood-mid) 78%,
+      var(--color-wood-light) 100%
+    );
+  opacity: 0.28;
+  transition: opacity 220ms ease;
+}
+
+.shell::after {
+  z-index: -1;
+  background:
+    radial-gradient(circle at top center, var(--color-shell-glow), transparent 32%),
+    radial-gradient(circle at center, var(--color-shell-glow-soft), transparent 46%),
+    linear-gradient(180deg, var(--color-shell-wash-start), var(--color-shell-wash-end));
+  opacity: 0.94;
+}
+
+.shell--focus::before {
+  opacity: 0.68;
+}
+
+.shell--focus::after {
+  opacity: 0.78;
+}
+
+
+.shell__account-toggle {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-glass-strong);
+  color: var(--color-ink);
+  box-shadow: 0 4px 14px var(--color-shadow);
+  cursor: pointer;
+}
+
+.shell__account-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.shell__account-toggle:hover { background: var(--color-toggle-hover); }
+.shell__account-toggle:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 3px; }
+
+
+.shell__header-actions {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  right: 16px;
+  z-index: 37;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shell__header-actions .shell__theme-toggle {
+  position: relative;
+  top: auto;
+  right: auto;
+}
+
+.shell__notifications {
+  position: relative;
+}
+
+.shell__notifications-toggle {
+  position: relative;
+  top: auto;
+  right: auto;
+}
+
+.shell__notification-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  place-items: center;
+  border: 2px solid var(--color-surface-glass-strong);
+  border-radius: 999px;
+  background: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.shell-notifications-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  width: min(340px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 18px 46px var(--color-shadow);
+}
+
+.shell-notifications-popover__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: var(--color-ink);
+}
+
+.shell-notifications-popover__heading span {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-toggle-hover);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.shell-notifications-popover__list {
+  display: grid;
+  gap: 4px;
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+
+.shell-notification {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.shell-notification:hover,
+.shell-notification:focus-visible,
+.shell-notification--unread {
+  background: var(--color-toggle-hover);
+  color: var(--color-text);
+}
+
+.shell-notification:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 1px;
+}
+
+.shell-notification__dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.shell-notification--unread .shell-notification__dot {
+  background: var(--color-accent-strong);
+}
+
+.shell-notification__content {
+  display: grid;
+  gap: 4px;
+}
+
+.shell-notification__content strong {
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.shell-notification__content small,
+.shell-notifications-popover__empty {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+}
+
+.shell-notifications-popover__empty {
+  margin: 12px 2px 4px;
+}
