@@ -1,4 +1,4 @@
-import { GameStatus, Prisma } from '@prisma/client';
+import { GameStatus, Prisma } from '../generated/prisma/client.js';
 import { compareJerseyNumbers } from './jersey-number';
 
 type GameWithRoster = Prisma.GameGetPayload<{

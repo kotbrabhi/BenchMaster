@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { GameStatus, Prisma } from '@prisma/client';
+import { GameStatus, Prisma } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma';
 import { serializeGame, serializeSelectedPlayers, serializeSummary, serializeSummaryExport } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';

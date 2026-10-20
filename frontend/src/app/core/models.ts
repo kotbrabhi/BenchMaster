@@ -3,6 +3,11 @@ export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
 export type PlayerStatType = 'assists' | 'blocks' | 'rebounds' | 'interceptions' | 'fouls';
 export type AppMode = 'guest' | 'authenticated';
 export type TeamGender = 'MIXED' | 'FEMININE' | 'MASCULINE';
+export type FriendlyProposalStatus = 'DRAFT' | 'OPEN' | 'IN_DISCUSSION' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'EXPIRED';
+export type FriendlyApplicationStatus = 'INTERESTED' | 'COLLECTING' | 'SUBMITTED' | 'NEEDS_RECONFIRMATION' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN' | 'EXPIRED';
+export type FriendlyAvailability = 'AVAILABLE' | 'UNAVAILABLE';
+export type FriendlyNotificationType = 'INTEREST_RECEIVED' | 'TEAM_SUBMITTED' | 'MATCH_CONFIRMED' | 'APPLICATION_REJECTED' | 'MATCH_CANCELLED';
+export type FriendlyMatchLifecycle = 'CONFIRMED' | 'CANCELLED';
 export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
 
 export interface Player {
@@ -20,6 +25,140 @@ export interface Team {
   playerCount: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface FriendlyMatchProposal {
+  id: number;
+  organizerTeamId: number;
+  createdByUserId?: number;
+  status: FriendlyProposalStatus;
+  category: string;
+  startsAt: string;
+  durationMinutes: number | null;
+  area: string;
+  venueName: string | null;
+  format: string;
+  requestedPlayerCount: number | null;
+  level: string | null;
+  notes: string | null;
+  responseDeadline: string | null;
+  createdAt: string;
+  updatedAt: string;
+  cancelledAt: string | null;
+  organizerTeam: Pick<Team, 'id' | 'name' | 'gender'>;
+}
+
+export interface FriendlyMatchProposalPayload {
+  organizerTeamId: number;
+  category: string;
+  startsAt: string;
+  durationMinutes?: number | null;
+  area: string;
+  venueName?: string | null;
+  format: string;
+  requestedPlayerCount?: number | null;
+  level?: string | null;
+  notes?: string | null;
+  responseDeadline?: string | null;
+}
+
+export interface FriendlyPlayerResponse {
+  id: number;
+  playerId: number | null;
+  playerNameSnapshot: string;
+  jerseyNumberSnapshot: string;
+  availability: FriendlyAvailability | null;
+  respondedAt: string | null;
+  revision: number;
+  invite: { expiresAt: string; revokedAt: string | null } | null;
+  availabilityHistory: Array<{ availability: FriendlyAvailability; respondedAt: string | null; changedAt: string }>;
+}
+
+export interface FriendlyMatchApplication {
+  id: number;
+  proposalId: number;
+  teamId: number;
+  coachUserId: number;
+  status: FriendlyApplicationStatus;
+  submittedAt: string | null;
+  acceptedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  team: Pick<Team, 'id' | 'name' | 'gender'>;
+  proposal: {
+    id: number;
+    status: FriendlyProposalStatus;
+    category: string;
+    startsAt: string;
+    durationMinutes: number | null;
+    area: string;
+    format: string;
+    requestedPlayerCount: number | null;
+    responseDeadline: string | null;
+    organizerTeam: { name: string };
+  };
+  playerResponses: FriendlyPlayerResponse[];
+  teamInvite: { expiresAt: string; revokedAt: string | null } | null;
+  proposedPlayers: Array<{ id: number; playerId: number | null; playerNameSnapshot: string; jerseyNumberSnapshot: string }>;
+}
+
+export interface FriendlyCandidateApplication {
+  id: number;
+  proposalId: number;
+  teamId: number;
+  status: FriendlyApplicationStatus;
+  submittedAt: string | null;
+  updatedAt: string;
+  team: Pick<Team, 'id' | 'name' | 'gender'>;
+  proposedPlayers: Array<{ id: number; playerNameSnapshot: string; jerseyNumberSnapshot: string }>;
+}
+
+export interface FriendlyConfirmedMatch {
+  id: number;
+  proposalId: number;
+  applicationId: number;
+  startsAt: string;
+  durationMinutes: number | null;
+  area: string;
+  format: string;
+  status: FriendlyMatchLifecycle;
+  confirmedAt: string;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  organizerTeam: { id: number; name: string };
+  candidateTeam: { id: number; name: string };
+  proposal: { category: string };
+  application: { proposedPlayers: Array<{ playerNameSnapshot: string; jerseyNumberSnapshot: string }> };
+}
+
+export interface FriendlyNotification {
+  id: number;
+  type: FriendlyNotificationType;
+  proposalId: number | null;
+  applicationId: number | null;
+  createdAt: string;
+  readAt: string | null;
+  perspective: 'ORGANIZER' | 'CANDIDATE';
+  proposal: { category: string; startsAt: string; organizerTeam: { name: string } } | null;
+  application: { team: { name: string } } | null;
+}
+
+export interface FriendlyInviteLink {
+  path: string;
+  expiresAt: string;
+}
+
+export interface PublicFriendlyInvite {
+  proposal: {
+    organizer: string;
+    category: string;
+    startsAt: string;
+    durationMinutes: number | null;
+    area: string;
+    format: string;
+    responseDeadline: string | null;
+  };
+  expiresAt: string;
 }
 
 export interface GamePlayerState {

@@ -253,3 +253,20 @@ The frontend service expects:
 ## Current Roadmap Direction
 
 The codebase already contains groundwork for deeper stat tracking and richer post-game analysis. The next logical step is to connect live stat events more tightly to time segments and advanced game insights.
+
+# Tester le module « Trouver un adversaire »
+
+Après avoir appliqué les migrations (`npm run db:setup --workspace backend` ou votre procédure habituelle), ajoutez un scénario de démonstration avec :
+
+```sh
+npm run db:seed:friendlies --workspace backend
+```
+
+Ce seed est additif : il ne supprime ni ne modifie les données existantes. Il crée deux comptes coachs, trois équipes, une proposition à venir, une équipe candidate déjà proposée avec des réponses de joueurs et une autre en collecte de disponibilités. Le lien partagé à toute une équipe est sécurisé et imprimé dans la sortie de la commande. Le seed ne s’exécute pas automatiquement avec `db:setup`.
+
+Comptes de démonstration (mot de passe pour les deux : `friendly-demo-2026`) :
+
+- Organisateur : `friendly-organizer@benchmaster.test`
+- Coach candidat : `friendly-candidate@benchmaster.test`
+
+Le seed refuse par défaut d’écrire dans une base distante. Pour l’autoriser explicitement, définissez `FRIENDLY_DEMO_SEED_ALLOW_REMOTE=true`. Il ne réinitialise jamais une proposition existante. Si le lien de l’équipe de démonstration est absent, expiré ou révoqué, il en crée un nouveau et l’affiche ; le secret d’un lien actif ne peut pas être relu, il faut alors le renouveler depuis la vue du coach.

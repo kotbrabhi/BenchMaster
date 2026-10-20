@@ -4,6 +4,9 @@ import { HomePageComponent } from './pages/home/home.page';
 import { LiveMatchPageComponent } from './pages/live-match/live-match.page';
 import { NewGameSetupPageComponent } from './pages/new-game-setup/new-game-setup.page';
 import { TeamRosterPageComponent } from './pages/team-roster/team-roster.page';
+import { FriendliesPageComponent } from './pages/friendlies/friendlies.page';
+import { FriendlyApplicationPageComponent } from './pages/friendlies/friendly-application.page';
+import { FriendlyInvitePageComponent } from './pages/friendlies/friendly-invite.page';
 
 export const routes: Routes = [
   {
@@ -22,6 +25,36 @@ export const routes: Routes = [
     component: NewGameSetupPageComponent,
     canActivate: [modeAuthGuard],
     title: 'document.title.newGame'
+  },
+  {
+    path: 'friendlies/respond/:token',
+    component: FriendlyInvitePageComponent,
+    title: 'document.title.friendlies'
+  },
+  {
+    path: 'friendlies/applications/:applicationId',
+    component: FriendlyApplicationPageComponent,
+    title: 'document.title.friendlies'
+  },
+  {
+    path: 'friendlies',
+    component: FriendliesPageComponent,
+    title: 'document.title.friendlies'
+  },
+  {
+    path: 'friendlies/new',
+    component: FriendliesPageComponent,
+    title: 'document.title.friendlies'
+  },
+  {
+    path: 'friendlies/:proposalId/edit',
+    component: FriendliesPageComponent,
+    title: 'document.title.friendlies'
+  },
+  {
+    path: 'friendlies/:proposalId',
+    component: FriendliesPageComponent,
+    title: 'document.title.friendlies'
   },
   {
     path: 'games/:gameId/live',

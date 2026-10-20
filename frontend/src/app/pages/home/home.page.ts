@@ -5,10 +5,11 @@ import { Router, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
 import { AppModeService } from '../../core/app-mode.service';
 import { I18nService } from '../../core/i18n.service';
-import { GameListItem, Team, TeamGender } from '../../core/models';
+import { FriendlyConfirmedMatch, GameListItem, Team, TeamGender } from '../../core/models';
 import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
+import { FriendlyMatchService } from '../../services/friendly-match.service';
 import { TeamService } from '../../services/team.service';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -35,12 +36,15 @@ export class HomePageComponent implements OnInit {
   private readonly appModeService = inject(AppModeService);
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
+  private readonly friendlyMatchService = inject(FriendlyMatchService);
 
   readonly appMode = this.appModeService.mode;
   readonly teams = this.teamService.teams;
   readonly games = this.gameService.games;
+  readonly friendlyMatches = signal<FriendlyConfirmedMatch[]>([]);
   readonly errorMessage = signal('');
   readonly isSubmittingTeam = signal(false);
+  readonly isCreatingTeam = signal(false);
   readonly deletingTeamId = signal<number | null>(null);
   readonly pendingTeamDeletion = signal<PendingTeamDeletion | null>(null);
   readonly openTeamMenuId = signal<number | null>(null);
@@ -88,6 +92,7 @@ export class HomePageComponent implements OnInit {
 
   editTeam(team: Team) {
     this.closeTeamMenu();
+    this.isCreatingTeam.set(false);
     this.editingTeamId = team.id;
     this.teamName = team.name;
     this.teamGender = team.gender;
@@ -139,6 +144,12 @@ export class HomePageComponent implements OnInit {
     this.teamGender = 'MIXED';
     this.teamPlayerNames = '';
     this.editingTeamId = null;
+    this.isCreatingTeam.set(false);
+  }
+
+  startCreatingTeam() {
+    this.resetTeamForm();
+    this.isCreatingTeam.set(true);
   }
 
   showGuestTeamLimitHint() {
@@ -146,7 +157,7 @@ export class HomePageComponent implements OnInit {
   }
 
   shouldShowTeamEditor() {
-    return this.appMode() !== 'guest' || !this.teams().length || this.editingTeamId !== null;
+    return !this.teams().length || this.editingTeamId !== null || this.isCreatingTeam();
   }
 
   shouldShowOnboarding() {
@@ -261,9 +272,26 @@ export class HomePageComponent implements OnInit {
     };
   }
 
+  upcomingFriendlyMatches() {
+    const now = Date.now();
+    return this.friendlyMatches().filter((match) =>
+      match.status === 'CANCELLED' || new Date(match.startsAt).getTime() >= now
+    );
+  }
+
+  friendlyLineupNames(match: FriendlyConfirmedMatch) {
+    return match.application.proposedPlayers.map((player) => player.playerNameSnapshot).join(', ');
+  }
+
   private async refresh() {
     try {
       await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
+      if (this.appModeService.isGuestMode()) {
+        this.friendlyMatches.set([]);
+      } else {
+        const matches = await this.friendlyMatchService.listMyConfirmedMatches();
+        this.friendlyMatches.set(matches);
+      }
       this.errorMessage.set('');
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error, this.t));

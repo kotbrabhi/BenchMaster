@@ -1,0 +1,51 @@
+<section class="page friendly-invite-page">
+  <header class="friendly-invite-brand">
+    <img src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
+    <span>{{ 'friendlies.playerInviteEyebrow' | t }}</span>
+  </header>
+
+  @if (loading()) {
+    <section class="surface-card friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true"><span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span></section>
+  } @else if (invite(); as current) {
+    <section class="surface-card friendly-invite-card">
+      <span class="toolbar__eyebrow">{{ 'friendlies.playerInviteEyebrow' | t }}</span>
+      <h1>{{ 'friendlies.playerInviteTitle' | t }}</h1>
+      <p class="friendly-invite-card__intro">{{ 'friendlies.playerInviteIntro' | t }}</p>
+
+      <dl class="friendly-invite-facts">
+        <div><dt>{{ 'friendlies.field.category' | t }}</dt><dd>{{ current.proposal.category }}</dd></div>
+        <div><dt>{{ 'friendlies.field.date' | t }}</dt><dd>{{ current.proposal.startsAt | date:'EEEE d MMMM y, HH:mm' }}</dd></div>
+        <div><dt>{{ 'friendlies.field.area' | t }}</dt><dd>{{ current.proposal.area }}</dd></div>
+        <div><dt>{{ 'friendlies.field.format' | t }}</dt><dd>{{ current.proposal.format }}</dd></div>
+        @if (current.proposal.durationMinutes) { <div><dt>{{ 'friendlies.field.duration' | t }}</dt><dd>{{ current.proposal.durationMinutes }} {{ 'friendlies.minutes' | t }}</dd></div> }
+      </dl>
+
+      @if (error()) { <div class="error-banner" role="alert">{{ error() }}</div> }
+      @if (saved()) { <div class="info-banner" role="status">{{ 'friendlies.responseSaved' | t }}</div> }
+
+      <div class="friendly-invite-choice" aria-labelledby="friendly-invite-choice-title">
+        <label class="form-field">
+          <span>{{ 'friendlies.playerNameLabel' | t }}</span>
+          <input name="playerName" autocomplete="name" maxlength="80" required [(ngModel)]="playerName" [placeholder]="'friendlies.playerNamePlaceholder' | t" />
+        </label>
+        <h2 id="friendly-invite-choice-title">{{ 'friendlies.availabilityQuestion' | t }}</h2>
+        <div class="action-flow action-flow--mobile-stack">
+          <button class="button" type="button" [disabled]="saving() || !playerName.trim()" (click)="respond('AVAILABLE')">
+            {{ (saving() ? 'friendlies.saving' : 'friendlies.availabilityAction.available') | t }}
+          </button>
+          <button class="button button--secondary" type="button" [disabled]="saving() || !playerName.trim()" (click)="respond('UNAVAILABLE')">
+            {{ (saving() ? 'friendlies.saving' : 'friendlies.availabilityAction.unavailable') | t }}
+          </button>
+        </div>
+      </div>
+      @if (current.proposal.responseDeadline) {
+        <p class="friendly-invite-deadline">{{ 'friendlies.respondBefore' | t }} {{ current.proposal.responseDeadline | date:'d MMM y, HH:mm' }}</p>
+      }
+    </section>
+  } @else {
+    <section class="surface-card status-panel status-panel--empty">
+      <span class="status-panel__eyebrow">{{ 'friendlies.inviteUnavailableTitle' | t }}</span>
+      <p class="status-panel__text">{{ error() || ('friendlies.inviteUnavailableBody' | t) }}</p>
+    </section>
+  }
+</section>

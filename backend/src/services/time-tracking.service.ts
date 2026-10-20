@@ -1,4 +1,4 @@
-import { GameStatus, PeriodStatus, Prisma, RotationEventType } from '@prisma/client';
+import { GameStatus, PeriodStatus, Prisma, RotationEventType } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma';
 import { serializeGame } from '../utils/game-serializer';
 import { HttpError } from '../utils/http-error';

@@ -1,4 +1,4 @@
-import { TeamGender } from '@prisma/client';
+import { TeamGender } from '../generated/prisma/client.js';
 
 interface TeamLabelSet {
   playerSingular: string;

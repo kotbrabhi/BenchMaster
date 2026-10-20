@@ -1,12 +1,15 @@
 import { DOCUMENT, CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, TitleStrategy } from '@angular/router';
+import { Subscription, interval } from 'rxjs';
 import { AppModeService } from './core/app-mode.service';
 import { AuthService } from './core/auth.service';
 import { getErrorMessage } from './core/api';
 import { I18nService } from './core/i18n.service';
 import { Locale, TranslationKey } from './core/translations';
+import { FriendlyNotification } from './core/models';
+import { FriendlyMatchService } from './services/friendly-match.service';
 import { GameService } from './services/game.service';
 import { TeamService } from './services/team.service';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
@@ -17,7 +20,7 @@ import { TranslatePipe } from './shared/pipes/translate.pipe';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly titleStrategy = inject(TitleStrategy);
   private readonly document = inject(DOCUMENT);
@@ -26,6 +29,7 @@ export class AppComponent implements OnInit {
   private readonly i18nService = inject(I18nService);
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
+  private readonly friendlyMatchService = inject(FriendlyMatchService);
 
   isSidebarCollapsed = false;
   readonly isDarkTheme = signal(false);
@@ -38,6 +42,8 @@ export class AppComponent implements OnInit {
   authPassword = '';
   private authPanelElement: HTMLElement | null = null;
   private authTrigger: HTMLElement | null = null;
+  private notificationsSubscription?: Subscription;
+  private notificationMenuElement: HTMLElement | null = null;
 
   @ViewChild('authPanel')
   set authPanelRef(element: ElementRef<HTMLElement> | undefined) {
@@ -59,10 +65,19 @@ export class AppComponent implements OnInit {
   readonly isRestoringSession = this.authService.isRestoring;
   readonly isAuthenticated = computed(() => !!this.currentUser());
   readonly locale = this.i18nService.locale;
+  readonly notifications = signal<FriendlyNotification[]>([]);
+  readonly notificationsOpen = signal(false);
+  readonly unreadNotificationCount = computed(() => this.notifications().filter((item) => !item.readAt).length);
+
+  @ViewChild('notificationMenu')
+  set notificationMenuRef(element: ElementRef<HTMLElement> | undefined) {
+    this.notificationMenuElement = element?.nativeElement ?? null;
+  }
 
   readonly navigationItems = [
     { labelKey: 'app.nav.home' as const, link: '/', icon: 'home' as const },
-    { labelKey: 'app.nav.newGame' as const, link: '/games/new', icon: 'plus' as const }
+    { labelKey: 'app.nav.newGame' as const, link: '/games/new', icon: 'plus' as const },
+    { labelKey: 'app.nav.friendlies' as const, link: '/friendlies', icon: 'calendar' as const }
   ];
 
   constructor() {
@@ -83,6 +98,14 @@ export class AppComponent implements OnInit {
     }
 
     await this.refreshNavigationData();
+    if (this.isAuthenticated()) {
+      await this.refreshNotifications();
+      this.notificationsSubscription = interval(20000).subscribe(() => void this.refreshNotifications());
+    }
+  }
+
+  ngOnDestroy() {
+    this.notificationsSubscription?.unsubscribe();
   }
 
   get isLiveMatchRoute(): boolean {
@@ -95,6 +118,59 @@ export class AppComponent implements OnInit {
 
   toggleTheme() {
     this.setTheme(this.isDarkTheme() ? 'light' : 'dark');
+  }
+
+  toggleNotifications() {
+    this.notificationsOpen.update((open) => !open);
+    if (this.notificationsOpen()) void this.refreshNotifications();
+  }
+
+  async openNotification(notification: FriendlyNotification) {
+    this.notificationsOpen.set(false);
+    if (notification.readAt) return;
+    try {
+      await this.friendlyMatchService.markNotificationRead(notification.id);
+      this.notifications.update((items) => items.map((item) => item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item));
+    } catch {
+      // Opening the linked item should still work if marking it read fails.
+    }
+  }
+
+  notificationLabel(notification: FriendlyNotification) {
+    const team = notification.type === 'INTEREST_RECEIVED' || notification.type === 'TEAM_SUBMITTED'
+      ? notification.application?.team.name ?? ''
+      : notification.perspective === 'CANDIDATE'
+        ? notification.proposal?.organizerTeam.name ?? ''
+        : notification.application?.team.name ?? '';
+    return this.i18nService.t(`friendlies.notification.${notification.type}` as TranslationKey, { team });
+  }
+
+  notificationLink(notification: FriendlyNotification) {
+    if (notification.type === 'APPLICATION_REJECTED' && notification.applicationId) {
+      return ['/friendlies/applications', notification.applicationId];
+    }
+    return notification.proposalId ? ['/friendlies', notification.proposalId] : ['/friendlies'];
+  }
+
+  async refreshNotifications() {
+    if (!this.isAuthenticated()) return;
+    try {
+      this.notifications.set(await this.friendlyMatchService.listNotifications());
+    } catch {
+      // Keep the header quiet when notifications are temporarily unavailable.
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeNotificationsOnOutsideClick(event: MouseEvent) {
+    if (this.notificationsOpen() && !this.notificationMenuElement?.contains(event.target as Node)) {
+      this.notificationsOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeNotificationsOnEscape() {
+    if (this.notificationsOpen()) this.notificationsOpen.set(false);
   }
 
   themeToggleLabel() {
@@ -176,6 +252,7 @@ export class AppComponent implements OnInit {
       }
 
       this.appModeService.setMode('authenticated');
+      await this.refreshNotifications();
       await this.refreshNavigationData();
       this.closeAuthPanel();
       await this.router.navigate(['/']);
@@ -188,6 +265,8 @@ export class AppComponent implements OnInit {
 
   async logout() {
     this.authService.logout();
+    this.notifications.set([]);
+    this.notificationsOpen.set(false);
     this.appModeService.setMode('guest');
     await this.refreshNavigationData();
     this.closeAuthPanel();

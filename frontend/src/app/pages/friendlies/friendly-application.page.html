@@ -1,0 +1,130 @@
+<section class="page friendlies-page">
+  <header class="toolbar">
+    <div>
+      <span class="toolbar__eyebrow">{{ 'friendlies.eyebrow' | t }}</span>
+      <h1 class="toolbar__title">{{ 'friendlies.availabilityTitle' | t }}</h1>
+    </div>
+    <a class="button button--secondary" routerLink="/friendlies">{{ 'friendlies.backToList' | t }}</a>
+  </header>
+
+  @if (!auth.isAuthenticated()) {
+    <div class="surface-card status-panel status-panel--empty">
+      <span class="status-panel__eyebrow">{{ 'friendlies.authRequiredTitle' | t }}</span>
+      <p class="status-panel__text">{{ 'friendlies.authRequiredBody' | t }}</p>
+    </div>
+  } @else {
+    @if (error()) { <div class="error-banner" role="alert">{{ error() }}</div> }
+    @if (info()) { <div class="info-banner" role="status">{{ info() }}</div> }
+    @if (loading()) {
+      <section class="surface-card friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true"><span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span></section>
+    } @else if (application(); as item) {
+      @if (item.proposal.status === 'CANCELLED') { <div class="error-banner" role="status">{{ 'friendlies.matchCancelledForBoth' | t }}</div> }
+      @if (item.proposal.status === 'CONFIRMED' && item.status === 'ACCEPTED') { <div class="info-banner" role="status">{{ 'friendlies.matchConfirmedForBoth' | t }}</div> }
+      <section class="surface-card friendlies-detail">
+        <div class="friendlies-detail__heading">
+          <div>
+            <span class="state-chip">{{ statusLabel(item.status) | t }}</span>
+            <h2>{{ item.team.name }}</h2>
+            <p>{{ 'friendlies.candidateFor' | t }} {{ item.proposal.organizerTeam.name }} · {{ item.proposal.category }}</p>
+          </div>
+          <div class="friendlies-detail__match-time">{{ item.proposal.startsAt | date:'EEE d MMM y, HH:mm' }} · {{ item.proposal.area }}</div>
+        </div>
+
+        <div class="friendlies-response-summary" aria-live="polite">
+          <div><strong>{{ item.playerResponses.length }}</strong><span>{{ 'friendlies.playersInRoster' | t }}</span></div>
+          <div class="friendlies-response-summary__available"><strong>{{ count(item, 'AVAILABLE') }}</strong><span>{{ 'friendlies.availableCount' | t }}</span></div>
+          <div><strong>{{ count(item, 'UNAVAILABLE') }}</strong><span>{{ 'friendlies.unavailableCount' | t }}</span></div>
+          <div><strong>{{ count(item, null) }}</strong><span>{{ 'friendlies.noResponseCount' | t }}</span></div>
+        </div>
+
+        <p class="friendlies-interest-note">{{ 'friendlies.interestVsAvailability' | t }}</p>
+
+        @if (item.status === 'NEEDS_RECONFIRMATION') {
+          <div class="error-banner" role="alert">{{ 'friendlies.needsReconfirmation' | t }}</div>
+        } @else if (item.status === 'SUBMITTED') {
+          <div class="info-banner" role="status">{{ 'friendlies.teamOfficiallySubmitted' | t }}</div>
+        }
+
+        @if (item.status === 'INTERESTED' || item.status === 'COLLECTING' || item.status === 'NEEDS_RECONFIRMATION') {
+          <div class="friendlies-invite-actions">
+            <p>{{ 'friendlies.inviteExplanation' | t }}</p>
+            @if (generatedLink(); as link) {
+              <code class="friendlies-team-invite-url">{{ inviteUrl(link) }}</code>
+              <button class="button button--secondary" type="button" (click)="copyLink()">{{ 'friendlies.copyInvite' | t }}</button>
+            } @else if (hasActiveTeamInvite(item)) {
+              <p>{{ 'friendlies.linkNeedsRegeneration' | t }}</p>
+            }
+            <button class="button" type="button" [disabled]="submitting()" (click)="generateLinks()">
+              {{ (submitting() ? 'friendlies.saving' : (item.status === 'INTERESTED' ? 'friendlies.createLinks' : 'friendlies.renewLinks')) | t }}
+            </button>
+            @if (hasActiveTeamInvite(item)) {
+              <button class="button button--danger" type="button" [disabled]="submitting()" (click)="revokeTeamLink()">{{ 'friendlies.revokeInvite' | t }}</button>
+            }
+          </div>
+        }
+        @if (item.status === 'SUBMITTED' && hasActiveTeamInvite(item)) {
+          <div class="friendlies-invite-actions">
+            <p>{{ 'friendlies.submittedLinkActive' | t }}</p>
+            <button class="button button--danger" type="button" [disabled]="submitting()" (click)="revokeTeamLink()">{{ 'friendlies.revokeInvite' | t }}</button>
+          </div>
+        }
+
+        @if (item.playerResponses.length) {
+          @if (item.status !== 'SUBMITTED' && item.status !== 'ACCEPTED') {
+            <section class="friendlies-team-selection" aria-labelledby="friendlies-selection-title">
+              <div>
+                <h3 id="friendlies-selection-title">{{ 'friendlies.selectOfficialTeam' | t }}</h3>
+                <p>{{ 'friendlies.minimumAvailablePlayers' | t : { count: minPlayers(item) } }}</p>
+              </div>
+              <strong>{{ selectedPlayerIds().length }} / {{ minPlayers(item) }} {{ 'friendlies.selectedPlayers' | t }}</strong>
+            </section>
+          } @else {
+            <section class="friendlies-team-selection friendlies-team-selection--submitted">
+              <h3>{{ 'friendlies.officialTeam' | t }}</h3>
+              <strong>{{ item.proposedPlayers.length }} {{ 'friendlies.selectedPlayers' | t }}</strong>
+            </section>
+          }
+          <div class="friendlies-player-responses">
+            @for (response of item.playerResponses; track response.id) {
+              <article class="friendlies-player-response">
+                <div class="friendlies-player-response__identity">
+                  @if (item.status !== 'SUBMITTED' && item.status !== 'ACCEPTED') {
+                <input type="checkbox" [attr.aria-label]="('friendlies.includePlayer' | t : { player: response.playerNameSnapshot })" [checked]="isSelected(response)" [disabled]="response.availability !== 'AVAILABLE' && !isSelected(response)" (change)="togglePlayer(response, $any($event.target).checked)" />
+                  }
+                  <strong>@if (response.jerseyNumberSnapshot) { #{{ response.jerseyNumberSnapshot }} } {{ response.playerNameSnapshot }}</strong>
+                  <span class="state-chip" [class.state-chip--selected]="response.availability === 'AVAILABLE'">{{ availabilityLabel(response.availability) | t }}</span>
+                  @if (item.proposedPlayers.some((player) => player.playerNameSnapshot === response.playerNameSnapshot)) { <span class="friendlies-official-player-chip">{{ 'friendlies.inOfficialTeam' | t }}</span> }
+                  @if (response.respondedAt) { <small>{{ 'friendlies.respondedAt' | t }} {{ response.respondedAt | date:'d MMM, HH:mm' }}</small> }
+                  @if (response.availabilityHistory.length) {
+                    <details class="friendlies-response-history">
+                      <summary>{{ 'friendlies.responseHistory' | t }}</summary>
+                      @for (entry of response.availabilityHistory; track entry.changedAt) {
+                        <small>{{ availabilityLabel(entry.availability) | t }} · {{ entry.changedAt | date:'d MMM y, HH:mm' }}</small>
+                      }
+                    </details>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="status-panel status-panel--empty"><p class="status-panel__text">{{ 'friendlies.noPlayers' | t }}</p></div>
+        }
+        @if (item.status === 'INTERESTED' || item.status === 'COLLECTING' || item.status === 'NEEDS_RECONFIRMATION') {
+          <div class="friendlies-submit-actions">
+            <p>{{ 'friendlies.submitConditions' | t : { count: minPlayers(item) } }}</p>
+            <button class="button" type="button" [disabled]="submitting() || !canSubmit(item)" (click)="submitTeam()">
+              {{ (submitting() ? 'friendlies.saving' : 'friendlies.submitTeam') | t }}
+            </button>
+          </div>
+        }
+        @if (canWithdraw(item)) {
+          <div class="friendlies-submit-actions">
+            <button class="button button--danger" type="button" [disabled]="submitting()" (click)="withdrawTeam()">{{ 'friendlies.withdrawApplication' | t }}</button>
+          </div>
+        }
+        <p class="friendlies-live-note">{{ 'friendlies.autoRefreshNote' | t }}</p>
+      </section>
+    }
+  }
+</section>

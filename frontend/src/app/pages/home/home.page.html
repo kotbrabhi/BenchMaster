@@ -32,6 +32,11 @@
         <h2>{{ 'home.teams.title' | t }}</h2>
         <p>{{ 'home.teams.subtitle' | t }}</p>
       </div>
+      @if (appMode() !== 'guest' && teams().length && !shouldShowTeamEditor()) {
+        <button class="button button--secondary" type="button" (click)="startCreatingTeam()">
+          {{ 'home.teamForm.createAction' | t }}
+        </button>
+      }
     </div>
 
     <div class="teams-strip">
@@ -113,19 +118,19 @@
               </button>
             }
 
-            @if (editingTeamId) {
+            @if (editingTeamId || isCreatingTeam()) {
               <button
                 class="button button--secondary button--icon"
                 type="button"
-                [attr.aria-label]="'home.teamForm.cancelAction' | t"
-                [attr.title]="'home.teamForm.cancelAction' | t"
+                [attr.aria-label]="(editingTeamId ? 'home.teamForm.cancelAction' : 'common.actions.cancel') | t"
+                [attr.title]="(editingTeamId ? 'home.teamForm.cancelAction' : 'common.actions.cancel') | t"
                 (click)="resetTeamForm()">
                 <span class="button__icon" aria-hidden="true">
                   <svg class="icon icon--stroke" viewBox="0 0 24 24">
                     <path d="M6 6l12 12M18 6 6 18" />
                   </svg>
                 </span>
-                <span class="button__label">{{ 'home.teamForm.cancelAction' | t }}</span>
+                <span class="button__label">{{ (editingTeamId ? 'home.teamForm.cancelAction' : 'common.actions.cancel') | t }}</span>
               </button>
             }
           </div>
@@ -223,6 +228,18 @@
       </div>
     }
   </section>
+
+  @if (upcomingFriendlyMatches().length) {
+    <section class="surface-card home-friendly-matches" aria-labelledby="home-friendly-matches-title">
+      <div class="section-heading"><div><h2 id="home-friendly-matches-title">{{ 'friendlies.confirmedMatchesTitle' | t }}</h2><p>{{ 'friendlies.confirmedMatchesSubtitle' | t }}</p></div><a class="button button--secondary" routerLink="/friendlies">{{ 'friendlies.viewConfirmation' | t }}</a></div>
+      @for (match of upcomingFriendlyMatches().slice(0, 4); track match.id) {
+        <a class="home-friendly-match" [class.home-friendly-match--cancelled]="match.status === 'CANCELLED'" [routerLink]="['/friendlies', match.proposalId]">
+          <div><strong>{{ match.organizerTeam.name }} <span aria-hidden="true">×</span> {{ match.candidateTeam.name }}</strong><small>{{ match.proposal.category }} · {{ match.format }} · {{ match.area }}</small><small>{{ 'friendlies.acceptedLineup' | t }} {{ friendlyLineupNames(match) }}</small></div>
+          <div class="home-friendly-match__status"><span>{{ (match.status === 'CONFIRMED' ? 'friendlies.matchLifecycle.CONFIRMED' : 'friendlies.matchLifecycle.CANCELLED') | t }}</span><time>{{ match.startsAt | date:'EEE d MMM y, HH:mm' }}</time></div>
+        </a>
+      }
+    </section>
+  }
 
   <section class="surface-card">
     <div class="section-heading">

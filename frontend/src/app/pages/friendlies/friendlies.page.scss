@@ -1,0 +1,406 @@
+.friendlies-page {
+  display: grid;
+  gap: 20px;
+}
+
+.friendlies-toolbar {
+  align-items: flex-start;
+}
+
+.friendlies-list-card,
+.friendlies-form-card,
+.friendlies-detail {
+  min-width: 0;
+}
+
+.friendlies-list-heading,
+.friendlies-detail__heading {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.friendlies-list-controls,
+.friendlies-toolbar .toolbar__actions,
+.friendlies-detail__heading .toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.friendlies-list-controls,
+.segmented-control {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.friendlies-list-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.segmented-control {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-glass);
+}
+
+.segmented-control button {
+  min-width: 0;
+  min-height: var(--tap-target-min);
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.segmented-control button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .segmented-control button:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+.segmented-control .segmented-control__item--active {
+  background: var(--color-surface-glass-strong);
+  color: var(--color-text);
+  box-shadow: 0 1px 4px var(--color-shadow);
+}
+
+.friendlies-filter {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 520px;
+  margin: 16px 0;
+}
+
+.friendlies-filter .form-field {
+  flex: 1 1 auto;
+}
+
+.friendlies-proposal-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.friendlies-proposal-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-player-surface);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: border-color var(--transition-standard), transform var(--transition-standard), box-shadow var(--transition-standard);
+}
+
+.friendlies-proposal-card:hover,
+.friendlies-proposal-card:focus-visible {
+  border-color: var(--color-accent-strong-soft);
+  box-shadow: 0 10px 26px var(--color-shadow);
+  transform: translateY(-1px);
+}
+
+.friendlies-proposal-card__main {
+  min-width: 0;
+}
+
+.friendlies-proposal-card h3 {
+  margin: 10px 0 4px;
+}
+
+.friendlies-proposal-card p,
+.friendlies-proposal-card__meta {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.friendlies-proposal-card__meta {
+  display: grid;
+  gap: 6px;
+  flex: 0 0 auto;
+  text-align: right;
+  font-size: 0.88rem;
+}
+
+.friendlies-form {
+  display: grid;
+  gap: 20px;
+}
+
+.friendlies-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.friendlies-form__grid .form-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.friendlies-form__grid input,
+.friendlies-form__grid select,
+.friendlies-form__grid textarea,
+.friendlies-filter input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-glass);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.friendlies-form__grid textarea {
+  resize: vertical;
+}
+
+.friendlies-form__wide {
+  grid-column: 1 / -1;
+}
+
+.friendlies-detail__heading h2 {
+  margin: 12px 0 4px;
+}
+
+.friendlies-detail__heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.friendlies-detail__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.friendlies-detail__facts div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-detail__facts dt {
+  margin-bottom: 5px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.friendlies-detail__facts dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.friendlies-detail__notes {
+  margin: 0 0 22px;
+  white-space: pre-wrap;
+}
+
+.friendlies-interest-box {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-interest-box .form-field {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 380px);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.friendlies-interest-box select {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-glass);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.friendlies-interest-box p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.friendlies-existing-application {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.friendlies-loading {
+  display: grid;
+  gap: 16px;
+}
+
+.friendlies-loading__line {
+  display: block;
+  height: 22px;
+  border-radius: 8px;
+  background: var(--color-ink-soft);
+  animation: friendly-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.friendlies-loading__line:nth-child(2) { width: 72%; }
+.friendlies-loading__line:nth-child(3) { width: 48%; }
+
+@keyframes friendly-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 0.9; }
+}
+
+@media (max-width: 700px) {
+  .friendlies-list-controls {
+    width: 100%;
+  }
+
+  .segmented-control {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .segmented-control button {
+    padding-inline: 8px;
+  }
+
+  .friendlies-form__grid,
+  .friendlies-detail__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .friendlies-proposal-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .friendlies-proposal-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    text-align: left;
+  }
+
+  .friendlies-filter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.friendlies-confirmed-list,
+.friendlies-candidates {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.friendlies-confirmed-card,
+.friendlies-candidate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-confirmed-card__facts,
+.friendlies-candidate-card > div:first-child {
+  display: grid;
+  gap: 6px;
+}
+
+.friendlies-confirmed-card__facts > span:not(.state-chip),
+.friendlies-confirmed-card__facts small,
+.friendlies-candidate-card p,
+.friendlies-candidate-card ul {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.friendlies-confirmed-card__actions,
+.friendlies-candidate-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.friendlies-confirmed-card--cancelled {
+  opacity: 0.72;
+}
+
+.friendlies-confirmed-card__facts > strong {
+  font-size: 1.08rem;
+}
+
+.friendlies-confirmed-card__facts > strong span {
+  padding: 0 4px;
+  color: var(--color-accent-strong);
+}
+
+.friendlies-candidates {
+  margin: 24px 0;
+}
+
+.friendlies-candidate-card h4,
+.friendlies-candidate-card p {
+  margin: 0;
+}
+
+.friendlies-candidate-card ul {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+@media (max-width: 760px) {
+  .friendlies-confirmed-card,
+  .friendlies-candidate-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

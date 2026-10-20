@@ -1,4 +1,4 @@
-import { TeamGender } from '@prisma/client';
+import { TeamGender } from '../generated/prisma/client.js';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../utils/http-error';
 import { normalizeJerseyNumber } from '../utils/jersey-number';

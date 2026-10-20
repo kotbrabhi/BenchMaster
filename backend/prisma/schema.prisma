@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -32,6 +33,45 @@ enum TeamGender {
   MASCULINE
 }
 
+enum FriendlyProposalStatus {
+  DRAFT
+  OPEN
+  IN_DISCUSSION
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum FriendlyApplicationStatus {
+  INTERESTED
+  COLLECTING
+  SUBMITTED
+  NEEDS_RECONFIRMATION
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  EXPIRED
+}
+
+enum FriendlyAvailability {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum FriendlyMatchLifecycle {
+  CONFIRMED
+  CANCELLED
+}
+
+enum FriendlyNotificationType {
+  INTEREST_RECEIVED
+  TEAM_SUBMITTED
+  MATCH_CONFIRMED
+  APPLICATION_REJECTED
+  MATCH_CANCELLED
+}
+
 model Team {
   id        Int      @id @default(autoincrement())
   userId    Int?
@@ -42,8 +82,40 @@ model Team {
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   players   Player[]
   games     Game[]
+  friendlyProposals FriendlyMatchProposal[]
+  friendlyApplications FriendlyMatchApplication[]
+  organizerFriendlyMatches FriendlyConfirmedMatch[] @relation("OrganizerFriendlyMatches")
+  candidateFriendlyMatches FriendlyConfirmedMatch[] @relation("CandidateFriendlyMatches")
 
   @@index([userId])
+}
+
+model FriendlyMatchProposal {
+  id                   Int                    @id @default(autoincrement())
+  organizerTeamId      Int
+  createdByUserId      Int
+  status               FriendlyProposalStatus @default(OPEN)
+  category             String
+  startsAt             DateTime               @db.Timestamptz(3)
+  durationMinutes      Int?
+  area                 String
+  venueName            String?
+  format               String
+  requestedPlayerCount Int?
+  level                String?
+  notes                String?
+  responseDeadline     DateTime?              @db.Timestamptz(3)
+  createdAt            DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime               @updatedAt @db.Timestamptz(3)
+  cancelledAt          DateTime?              @db.Timestamptz(3)
+  organizerTeam        Team                   @relation(fields: [organizerTeamId], references: [id], onDelete: Restrict)
+  createdBy            User                   @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  applications         FriendlyMatchApplication[]
+  confirmation         FriendlyConfirmedMatch?
+  notifications        FriendlyNotification[]
+
+  @@index([status, startsAt])
+  @@index([organizerTeamId, createdAt])
 }
 
 model Player {
@@ -56,8 +128,136 @@ model Player {
   updatedAt    DateTime   @updatedAt
   team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   gamePlayers  GamePlayer[]
+  friendlyResponses FriendlyPlayerResponse[]
+  friendlyApplications FriendlyApplicationPlayer[]
 
   @@unique([teamId, jerseyNumber])
+}
+
+model FriendlyMatchApplication {
+  id          Int                        @id @default(autoincrement())
+  proposalId  Int
+  teamId      Int
+  coachUserId Int
+  status      FriendlyApplicationStatus @default(INTERESTED)
+  submittedAt DateTime?                 @db.Timestamptz(3)
+  acceptedAt  DateTime?                 @db.Timestamptz(3)
+  createdAt   DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime                   @updatedAt @db.Timestamptz(3)
+  proposal    FriendlyMatchProposal      @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  team        Team                       @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  coach       User                       @relation(fields: [coachUserId], references: [id], onDelete: Restrict)
+  playerResponses FriendlyPlayerResponse[]
+  proposedPlayers FriendlyApplicationPlayer[]
+  teamInvite     FriendlyInvite?             @relation("ApplicationInvite")
+  confirmation FriendlyConfirmedMatch?
+  notifications FriendlyNotification[]
+
+  @@unique([proposalId, teamId])
+  @@index([coachUserId, status])
+  @@index([proposalId, status])
+}
+
+model FriendlyPlayerResponse {
+  id                   Int                  @id @default(autoincrement())
+  applicationId        Int
+  playerId             Int?
+  playerNameSnapshot   String
+  jerseyNumberSnapshot String
+  availability         FriendlyAvailability?
+  respondedAt          DateTime?             @db.Timestamptz(3)
+  revision             Int                   @default(0)
+  normalizedName       String                @default("")
+  createdAt            DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @db.Timestamptz(3)
+  application          FriendlyMatchApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  player               Player?               @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  invite               FriendlyInvite?       @relation("ResponseInvite")
+  availabilityHistory FriendlyPlayerAvailabilityHistory[]
+
+  @@unique([applicationId, playerId])
+  @@unique([applicationId, normalizedName])
+  @@index([applicationId, availability])
+}
+
+model FriendlyPlayerAvailabilityHistory {
+  id           Int                  @id @default(autoincrement())
+  responseId   Int
+  availability FriendlyAvailability
+  respondedAt  DateTime?            @db.Timestamptz(3)
+  changedAt    DateTime             @default(now()) @db.Timestamptz(3)
+  response     FriendlyPlayerResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@index([responseId, changedAt])
+}
+
+model FriendlyApplicationPlayer {
+  id                   Int                     @id @default(autoincrement())
+  applicationId        Int
+  playerId             Int?
+  playerNameSnapshot   String
+  jerseyNumberSnapshot String
+  createdAt            DateTime                @default(now()) @db.Timestamptz(3)
+  application          FriendlyMatchApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  player               Player?                 @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@unique([applicationId, playerId])
+  @@index([applicationId])
+}
+
+model FriendlyInvite {
+  id         Int                   @id @default(autoincrement())
+  responseId Int?                  @unique
+  applicationId Int?               @unique
+  tokenHash  String                @unique
+  expiresAt  DateTime              @db.Timestamptz(3)
+  revokedAt  DateTime?             @db.Timestamptz(3)
+  lastUsedAt DateTime?             @db.Timestamptz(3)
+  createdAt  DateTime              @default(now()) @db.Timestamptz(3)
+  response   FriendlyPlayerResponse? @relation("ResponseInvite", fields: [responseId], references: [id], onDelete: Cascade)
+  application FriendlyMatchApplication? @relation("ApplicationInvite", fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt, revokedAt])
+}
+
+model FriendlyConfirmedMatch {
+  id                    Int                     @id @default(autoincrement())
+  proposalId            Int                     @unique
+  applicationId         Int                     @unique
+  organizerTeamId       Int
+  candidateTeamId       Int
+  startsAt              DateTime                @db.Timestamptz(3)
+  durationMinutes       Int?
+  area                  String
+  format                String
+  status                FriendlyMatchLifecycle @default(CONFIRMED)
+  confirmedAt           DateTime                @default(now()) @db.Timestamptz(3)
+  cancelledAt           DateTime?               @db.Timestamptz(3)
+  cancelledByUserId     Int?
+  cancellationReason    String?
+  proposal              FriendlyMatchProposal   @relation(fields: [proposalId], references: [id], onDelete: Restrict)
+  application           FriendlyMatchApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  organizerTeam         Team                    @relation("OrganizerFriendlyMatches", fields: [organizerTeamId], references: [id], onDelete: Restrict)
+  candidateTeam         Team                    @relation("CandidateFriendlyMatches", fields: [candidateTeamId], references: [id], onDelete: Restrict)
+
+  @@index([organizerTeamId, startsAt])
+  @@index([candidateTeamId, startsAt])
+  @@index([status, startsAt])
+}
+
+model FriendlyNotification {
+  id            Int                      @id @default(autoincrement())
+  userId        Int
+  type          FriendlyNotificationType
+  proposalId    Int?
+  applicationId Int?
+  createdAt     DateTime                 @default(now()) @db.Timestamptz(3)
+  readAt        DateTime?                @db.Timestamptz(3)
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposal      FriendlyMatchProposal?   @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+  application   FriendlyMatchApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, createdAt])
 }
 
 model Game {
@@ -95,6 +295,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   teams        Team[]
+  friendlyProposals FriendlyMatchProposal[]
+  friendlyApplications FriendlyMatchApplication[]
+  friendlyNotifications FriendlyNotification[]
 }
 
 model GamePlayer {

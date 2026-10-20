@@ -1,0 +1,325 @@
+<section class="page friendlies-page">
+  <header class="toolbar friendlies-toolbar">
+    <div>
+      <span class="toolbar__eyebrow">{{ 'friendlies.eyebrow' | t }}</span>
+      <h1 class="toolbar__title">{{ 'friendlies.title' | t }}</h1>
+      <p class="toolbar__subtitle">{{ 'friendlies.subtitle' | t }}</p>
+    </div>
+  </header>
+
+  @if (!auth.isAuthenticated()) {
+    <section class="surface-card status-panel status-panel--empty">
+      <span class="status-panel__eyebrow">{{ 'friendlies.authRequiredTitle' | t }}</span>
+      <p class="status-panel__text">{{ 'friendlies.authRequiredBody' | t }}</p>
+    </section>
+  } @else {
+    <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ success() || error() }}</p>
+    @if (error() && !listLoadError()) { <div class="error-banner" role="alert">{{ error() }}</div> }
+    @if (success()) { <div class="info-banner" role="status">{{ success() }}</div> }
+
+    @if (loading()) {
+      <section class="surface-card friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true">
+        <span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span>
+      </section>
+    } @else if (isForm()) {
+      <section class="surface-card friendlies-form-card">
+        <div class="section-heading">
+          <div>
+            <h2>{{ (isEdit() ? 'friendlies.editTitle' : 'friendlies.createTitle') | t }}</h2>
+            <p>{{ 'friendlies.formSubtitle' | t }}</p>
+          </div>
+        </div>
+
+        @if (teams().length) {
+          <form class="friendlies-form" (ngSubmit)="submit()">
+            <div class="friendlies-form__grid">
+              <label class="form-field">
+                <span>{{ 'friendlies.field.team' | t }}</span>
+                <select name="teamId" [(ngModel)]="teamId" required>
+                  @for (team of teams(); track team.id) { <option [ngValue]="team.id">{{ team.name }}</option> }
+                </select>
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.category' | t }}</span>
+                <input name="category" [(ngModel)]="category" maxlength="80" required [placeholder]="'friendlies.placeholder.category' | t" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.date' | t }}</span>
+                <input name="startsAt" type="datetime-local" [(ngModel)]="startsAt" required />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.duration' | t }}</span>
+                <input name="durationMinutes" type="number" min="1" max="240" [(ngModel)]="durationMinutes" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.area' | t }}</span>
+                <input name="area" [(ngModel)]="area" maxlength="160" required [placeholder]="'friendlies.placeholder.area' | t" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.venue' | t }}</span>
+                <input name="venueName" [(ngModel)]="venueName" maxlength="160" [placeholder]="'friendlies.placeholder.venue' | t" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.format' | t }}</span>
+                <input name="format" [(ngModel)]="format" maxlength="80" required />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.playerCount' | t }}</span>
+                <input name="requestedPlayerCount" type="number" min="1" max="30" [(ngModel)]="requestedPlayerCount" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.level' | t }}</span>
+                <input name="level" [(ngModel)]="level" maxlength="80" [placeholder]="'friendlies.placeholder.level' | t" />
+              </label>
+              <label class="form-field">
+                <span>{{ 'friendlies.field.deadline' | t }}</span>
+                <input name="responseDeadline" type="datetime-local" [(ngModel)]="responseDeadline" />
+              </label>
+              <label class="form-field friendlies-form__wide">
+                <span>{{ 'friendlies.field.notes' | t }}</span>
+                <textarea name="notes" rows="4" maxlength="2000" [(ngModel)]="notes"></textarea>
+              </label>
+            </div>
+            <div class="action-flow action-flow--mobile-stack">
+              <button class="button" type="submit" [disabled]="submitting()">
+                {{ (submitting() ? 'friendlies.saving' : (isEdit() ? 'friendlies.saveChanges' : 'friendlies.publish')) | t }}
+              </button>
+              <a class="button button--secondary" [routerLink]="isEdit() && proposalId() ? ['/friendlies', proposalId()] : ['/friendlies']">{{ 'common.actions.cancel' | t }}</a>
+            </div>
+          </form>
+        } @else {
+          <div class="status-panel status-panel--empty">
+            <span class="status-panel__eyebrow">{{ 'friendlies.noTeamTitle' | t }}</span>
+            <p class="status-panel__text">{{ 'friendlies.noTeamBody' | t }}</p>
+            <a class="button" routerLink="/">{{ 'friendlies.goToTeams' | t }}</a>
+          </div>
+        }
+      </section>
+    } @else if (proposal(); as item) {
+      <section class="surface-card friendlies-detail">
+        <div class="friendlies-detail__heading">
+          <div>
+            <span class="state-chip" [class.state-chip--selected]="item.status === 'OPEN'">{{ statusLabel(item.status) | t }}</span>
+            <h2>{{ item.organizerTeam.name }}</h2>
+            <p>{{ item.category }} · {{ item.organizerTeam.gender }}</p>
+          </div>
+          @if (canManage(item) && (item.status === 'OPEN' || item.status === 'IN_DISCUSSION')) {
+            <div class="toolbar__actions">
+              <a class="button button--secondary" [routerLink]="['/friendlies', item.id, 'edit']">{{ 'common.actions.edit' | t }}</a>
+              <button class="button button--danger" type="button" [disabled]="submitting()" (click)="cancelProposal()">{{ 'friendlies.cancelProposal' | t }}</button>
+            </div>
+          }
+          @if (item.status === 'CONFIRMED' && (canManage(item) || selectedApplication()?.status === 'ACCEPTED')) {
+            <button class="button button--danger" type="button" [disabled]="submitting()" (click)="cancelProposal()">{{ 'friendlies.cancelConfirmedMatch' | t }}</button>
+          }
+        </div>
+        <dl class="friendlies-detail__facts">
+          <div><dt>{{ 'friendlies.field.date' | t }}</dt><dd>{{ item.startsAt | date:'EEE d MMM y, HH:mm' }}</dd></div>
+          <div><dt>{{ 'friendlies.field.area' | t }}</dt><dd>{{ item.area }}</dd></div>
+          @if (item.venueName) { <div><dt>{{ 'friendlies.field.venue' | t }}</dt><dd>{{ item.venueName }}</dd></div> }
+          <div><dt>{{ 'friendlies.field.format' | t }}</dt><dd>{{ item.format }}</dd></div>
+          @if (item.durationMinutes) { <div><dt>{{ 'friendlies.field.duration' | t }}</dt><dd>{{ item.durationMinutes }} {{ 'friendlies.minutes' | t }}</dd></div> }
+          @if (item.requestedPlayerCount) { <div><dt>{{ 'friendlies.field.playerCount' | t }}</dt><dd>{{ item.requestedPlayerCount }}</dd></div> }
+          @if (item.level) { <div><dt>{{ 'friendlies.field.level' | t }}</dt><dd>{{ item.level }}</dd></div> }
+          @if (item.responseDeadline) { <div><dt>{{ 'friendlies.field.deadline' | t }}</dt><dd>{{ item.responseDeadline | date:'d MMM y, HH:mm' }}</dd></div> }
+        </dl>
+        @if (item.notes) { <p class="friendlies-detail__notes">{{ item.notes }}</p> }
+        @if (item.status === 'CONFIRMED') { <div class="info-banner" role="status">{{ 'friendlies.matchConfirmedForBoth' | t }}</div> }
+        @if (item.status === 'CANCELLED') { <div class="error-banner" role="status">{{ 'friendlies.matchCancelledForBoth' | t }}</div> }
+        @if (canManage(item) && (item.status === 'OPEN' || item.status === 'IN_DISCUSSION')) {
+          <section class="friendlies-candidates" aria-labelledby="friendlies-candidates-title">
+            <div class="section-heading"><div><h3 id="friendlies-candidates-title">{{ 'friendlies.candidateTeamsTitle' | t }}</h3><p>{{ 'friendlies.candidateTeamsSubtitle' | t }}</p></div></div>
+            @if (candidateApplications().length) {
+              @for (candidate of candidateApplications(); track candidate.id) {
+                <article class="friendlies-candidate-card">
+                  <div><span class="state-chip">{{ applicationStatusLabel(candidate.status) | t }}</span><h4>{{ candidate.team.name }}</h4>
+                    @if (candidate.status === 'SUBMITTED' || candidate.status === 'ACCEPTED') {
+                      <ul>@for (player of candidate.proposedPlayers; track player.id) { <li>@if (player.jerseyNumberSnapshot) { #{{ player.jerseyNumberSnapshot }} } {{ player.playerNameSnapshot }}</li> }</ul>
+                    } @else if (candidate.status === 'NEEDS_RECONFIRMATION') {
+                      <p>{{ 'friendlies.candidateNeedsReconfirmation' | t }}</p>
+                    }
+                  </div>
+                  @if (candidate.status === 'SUBMITTED') {
+                    <div class="friendlies-candidate-card__actions">
+                      <button class="button" type="button" [disabled]="decisionBusyId() !== null" (click)="acceptCandidate(candidate)">{{ (decisionBusyId() === candidate.id ? 'friendlies.saving' : 'friendlies.acceptTeam') | t }}</button>
+                      <button class="button button--danger" type="button" [disabled]="decisionBusyId() !== null" (click)="rejectCandidate(candidate)">{{ 'friendlies.rejectTeam' | t }}</button>
+                    </div>
+                  }
+                </article>
+              }
+            } @else {
+              <div class="status-panel status-panel--empty"><p class="status-panel__text">{{ 'friendlies.noCandidateTeams' | t }}</p></div>
+            }
+          </section>
+        }
+        @if (!canManage(item) && (item.status === 'OPEN' || item.status === 'IN_DISCUSSION')) {
+          @if (selectedApplication(); as application) {
+            <div class="info-banner friendlies-existing-application">
+              <span>{{ 'friendlies.alreadyInterested' | t : { team: application.team.name } }}</span>
+              <a class="button button--secondary" [routerLink]="['/friendlies/applications', application.id]">{{ 'friendlies.trackAvailability' | t }}</a>
+            </div>
+          } @else if (teams().length) {
+            <section class="friendlies-interest-box">
+              <label class="form-field">
+                <span>{{ 'friendlies.chooseTeamForInterest' | t }}</span>
+                <select name="interestTeam" [(ngModel)]="selectedTeamForInterest">
+                  @for (team of teams(); track team.id) { <option [ngValue]="team.id">{{ team.name }}</option> }
+                </select>
+              </label>
+              <p>{{ 'friendlies.interestDisclaimer' | t }}</p>
+              <button class="button" type="button" [disabled]="creatingInterest()" (click)="expressInterest()">
+                {{ (creatingInterest() ? 'friendlies.saving' : 'friendlies.expressInterest') | t }}
+              </button>
+            </section>
+          } @else {
+            <div class="status-panel status-panel--empty">
+              <p class="status-panel__text">{{ 'friendlies.noTeamForInterest' | t }}</p>
+              <a class="button" routerLink="/">{{ 'friendlies.goToTeams' | t }}</a>
+            </div>
+          }
+        }
+        <a class="button button--secondary" routerLink="/friendlies">{{ 'friendlies.backToList' | t }}</a>
+      </section>
+    } @else {
+      <section class="surface-card friendlies-list-card">
+        <div class="section-heading friendlies-list-heading">
+          <div>
+            <h2>{{ 'friendlies.listTitle' | t }}</h2>
+            <p>{{ 'friendlies.listSubtitle' | t }}</p>
+          </div>
+          <div class="friendlies-list-controls">
+            <div class="segmented-control" role="group" [attr.aria-label]="'friendlies.listTabs' | t">
+              <button type="button" [attr.aria-pressed]="view() === 'network'" [class.segmented-control__item--active]="view() === 'network'" (click)="setView('network')">{{ 'friendlies.network' | t }}</button>
+              <button type="button" [attr.aria-pressed]="view() === 'mine'" [class.segmented-control__item--active]="view() === 'mine'" (click)="setView('mine')">{{ 'friendlies.mine' | t }}</button>
+              <button type="button" [attr.aria-pressed]="view() === 'applications'" [class.segmented-control__item--active]="view() === 'applications'" (click)="setView('applications')">{{ 'friendlies.myApplications' | t }}</button>
+              <button type="button" [attr.aria-pressed]="view() === 'confirmed'" [class.segmented-control__item--active]="view() === 'confirmed'" (click)="setView('confirmed')">{{ 'friendlies.confirmedTab' | t }}</button>
+            </div>
+          </div>
+        </div>
+        @if (view() === 'network') {
+          <form class="friendlies-filter" (ngSubmit)="loadList()">
+            <label class="form-field"><span>{{ 'friendlies.filterCategory' | t }}</span><input name="filterCategory" [(ngModel)]="filterCategory" /></label>
+            <button class="button button--secondary" type="submit">{{ 'friendlies.applyFilter' | t }}</button>
+          </form>
+        }
+        @if (view() === 'confirmed') {
+          <div class="section-heading friendlies-confirmed-heading">
+            <div><h2>{{ 'friendlies.confirmedMatchesTitle' | t }}</h2><p>{{ 'friendlies.confirmedMatchesSubtitle' | t }}</p></div>
+          </div>
+          @if (confirmedLoading()) {
+            <section class="friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true">
+              <span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span>
+            </section>
+          } @else if (confirmedLoadError() && !confirmedMatchesLoaded()) {
+            <div class="status-panel" role="alert">
+              <span class="status-panel__eyebrow">{{ 'friendlies.listLoadErrorTitle' | t }}</span>
+              <p class="status-panel__text">{{ 'friendlies.listLoadErrorBody' | t }}</p>
+              <button class="button button--secondary" type="button" [attr.aria-busy]="refreshingConfirmed()" (click)="loadAuxiliaryData()">{{ (refreshingConfirmed() ? 'friendlies.loading' : 'friendlies.retryLoading') | t }}</button>
+            </div>
+          } @else {
+            @if (confirmedLoadError()) {
+              <div class="status-panel" role="alert" [attr.aria-busy]="refreshingConfirmed()">
+                <span class="status-panel__eyebrow">{{ 'friendlies.listLoadErrorTitle' | t }}</span>
+                <p class="status-panel__text">{{ 'friendlies.listLoadErrorBody' | t }}</p>
+                <button class="button button--secondary" type="button" [attr.aria-busy]="refreshingConfirmed()" (click)="loadAuxiliaryData()">{{ (refreshingConfirmed() ? 'friendlies.loading' : 'friendlies.retryLoading') | t }}</button>
+              </div>
+            }
+            @if (confirmedMatches().length) {
+              <div class="friendlies-confirmed-list">
+                @for (match of confirmedMatches(); track match.id) {
+                  <article class="friendlies-confirmed-card" [class.friendlies-confirmed-card--cancelled]="match.status === 'CANCELLED'">
+                    <div class="friendlies-confirmed-card__facts">
+                      <span class="state-chip" [class.state-chip--selected]="match.status === 'CONFIRMED'">{{ (match.status === 'CONFIRMED' ? 'friendlies.matchLifecycle.CONFIRMED' : 'friendlies.matchLifecycle.CANCELLED') | t }}</span>
+                      <strong>{{ match.organizerTeam.name }} <span aria-hidden="true">×</span> {{ match.candidateTeam.name }}</strong>
+                      <span>{{ match.proposal.category }} · {{ match.format }}</span>
+                      <span>{{ match.startsAt | date:'EEE d MMM y, HH:mm' }} · {{ match.area }}</span>
+                      <small>{{ 'friendlies.acceptedLineup' | t }} {{ acceptedLineupNames(match) }}</small>
+                      @if (match.cancellationReason) { <small>{{ 'friendlies.cancellationReason' | t }} {{ match.cancellationReason }}</small> }
+                    </div>
+                    <div class="friendlies-confirmed-card__actions">
+                      <a class="button button--secondary" [routerLink]="['/friendlies', match.proposalId]">{{ 'friendlies.viewConfirmation' | t }}</a>
+                      @if (match.status === 'CONFIRMED') { <button class="button button--danger" type="button" (click)="cancelConfirmedMatch(match)">{{ 'friendlies.cancelConfirmedMatch' | t }}</button> }
+                    </div>
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="status-panel status-panel--empty">
+                <span class="status-panel__eyebrow">{{ 'friendlies.emptyConfirmedTitle' | t }}</span>
+                <p class="status-panel__text">{{ 'friendlies.emptyConfirmedBody' | t }}</p>
+              </div>
+            }
+          }
+        }
+        @if (view() === 'applications') {
+          @if (listLoadError()) {
+            <div class="status-panel" role="alert" [attr.aria-busy]="refreshingList()">
+              <span class="status-panel__eyebrow">{{ 'friendlies.listLoadErrorTitle' | t }}</span>
+              <p class="status-panel__text">{{ 'friendlies.listLoadErrorBody' | t }}</p>
+              <button class="button button--secondary" type="button" [attr.aria-busy]="refreshingList()" (click)="loadList()">{{ (refreshingList() ? 'friendlies.loading' : 'friendlies.retryLoading') | t }}</button>
+            </div>
+          } @else if (refreshingList()) {
+            <section class="friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true">
+              <span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span>
+            </section>
+          } @else if (applications().length) {
+            <div class="friendlies-proposal-list">
+              @for (application of applications(); track application.id) {
+                <a class="friendlies-proposal-card" [routerLink]="['/friendlies/applications', application.id]">
+                  <div class="friendlies-proposal-card__main">
+                    <span class="state-chip">{{ applicationStatusLabel(application.status) | t }}</span>
+                    <h3>{{ application.team.name }} <span aria-hidden="true">·</span> {{ application.proposal.category }}</h3>
+                    <p>{{ application.proposal.organizerTeam.name }} · {{ application.proposal.startsAt | date:'EEE d MMM y, HH:mm' }}</p>
+                  </div>
+                  <div class="friendlies-proposal-card__meta"><span>{{ application.proposal.area }}</span></div>
+                </a>
+              }
+            </div>
+          } @else {
+            <div class="status-panel status-panel--empty">
+              <span class="status-panel__eyebrow">{{ 'friendlies.emptyApplicationsTitle' | t }}</span>
+              <p class="status-panel__text">{{ 'friendlies.emptyApplicationsBody' | t }}</p>
+              <button class="button" type="button" (click)="setView('network')">{{ 'friendlies.browseNetwork' | t }}</button>
+            </div>
+          }
+        } @else if (listLoadError()) {
+          <div class="status-panel" role="alert" [attr.aria-busy]="refreshingList()">
+            <span class="status-panel__eyebrow">{{ 'friendlies.listLoadErrorTitle' | t }}</span>
+            <p class="status-panel__text">{{ 'friendlies.listLoadErrorBody' | t }}</p>
+            <button class="button button--secondary" type="button" [attr.aria-busy]="refreshingList()" (click)="loadList()">{{ (refreshingList() ? 'friendlies.loading' : 'friendlies.retryLoading') | t }}</button>
+          </div>
+        } @else if (refreshingList()) {
+          <section class="friendlies-loading" [attr.aria-label]="'friendlies.loading' | t" role="status" aria-live="polite" aria-busy="true">
+            <span class="friendlies-loading__line"></span><span class="friendlies-loading__line"></span>
+          </section>
+        } @else if (view() !== 'confirmed' && proposals().length) {
+          <div class="friendlies-proposal-list">
+            @for (match of proposals(); track match.id) {
+              <a class="friendlies-proposal-card" [routerLink]="['/friendlies', match.id]">
+                <div class="friendlies-proposal-card__main">
+                  <span class="state-chip" [class.state-chip--selected]="match.status === 'OPEN'">{{ statusLabel(match.status) | t }}</span>
+                  <h3>{{ match.organizerTeam.name }} <span aria-hidden="true">·</span> {{ match.category }}</h3>
+                  <p>{{ match.startsAt | date:'EEE d MMM y, HH:mm' }} · {{ match.area }}</p>
+                </div>
+                <div class="friendlies-proposal-card__meta">
+                  <span>{{ match.format }}</span>
+                  @if (match.level) { <span>{{ match.level }}</span> }
+                </div>
+              </a>
+            }
+          </div>
+        } @else if (view() !== 'confirmed') {
+          <div class="status-panel status-panel--empty">
+            <span class="status-panel__eyebrow">{{ (view() === 'mine' ? 'friendlies.emptyMineTitle' : 'friendlies.emptyNetworkTitle') | t }}</span>
+            <p class="status-panel__text">{{ (view() === 'mine' ? 'friendlies.emptyMineBody' : 'friendlies.emptyNetworkBody') | t }}</p>
+          </div>
+        }
+        @if (view() === 'mine') {
+          <div class="friendlies-list-footer">
+            <a class="button" routerLink="/friendlies/new">{{ 'friendlies.create' | t }}</a>
+          </div>
+        }
+      </section>
+    }
+  }
+</section>

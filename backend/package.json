@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/src/services/*.test.js",
     "start": "node dist/src/index.js",
     "prisma:generate": "npm run prisma7:generate",
     "prisma7:generate": "prisma7 generate --config prisma7.config.ts",
@@ -16,6 +17,7 @@
     "prisma8:emit": "prisma contract emit",
     "db:setup": "prisma7 migrate deploy --config prisma7.config.ts && npm run db:seed",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:friendlies": "tsx prisma/seed-friendlies.ts",
     "db:bootstrap": "tsx prisma/bootstrap.ts"
   },
   "dependencies": {

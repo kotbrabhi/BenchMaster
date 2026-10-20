@@ -1,0 +1,165 @@
+.friendlies-response-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.friendlies-response-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-response-summary strong {
+  font-size: 1.35rem;
+}
+
+.friendlies-response-summary__available {
+  border-color: var(--color-status-success-border);
+  background: var(--color-status-success-bg);
+}
+
+.friendlies-response-summary__available strong {
+  color: var(--color-status-success);
+  font-size: 1.8rem;
+}
+
+.friendlies-interest-note {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.friendlies-team-selection,
+.friendlies-submit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-team-selection h3,
+.friendlies-team-selection p,
+.friendlies-submit-actions p {
+  margin: 0;
+}
+
+.friendlies-team-selection p,
+.friendlies-submit-actions p {
+  margin-top: 5px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.friendlies-team-selection--submitted {
+  background: color-mix(in srgb, var(--color-accent) 9%, var(--color-surface-glass));
+}
+
+.friendlies-official-player-chip {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.friendlies-player-response__identity input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+.friendlies-response-summary span,
+.friendlies-invite-actions p,
+.friendlies-live-note,
+.friendlies-player-response small,
+.friendlies-expired-label {
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.friendlies-invite-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface-glass);
+}
+
+.friendlies-team-invite-url {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.friendlies-invite-actions p {
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.friendlies-player-responses {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.friendlies-player-response {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-player-surface);
+}
+
+.friendlies-player-response__identity,
+.friendlies-player-response__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.friendlies-player-response__identity small {
+  flex-basis: 100%;
+}
+
+.friendlies-live-note {
+  margin: 16px 0 0;
+}
+
+.friendlies-detail__match-time {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .friendlies-response-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .friendlies-invite-actions,
+  .friendlies-player-response,
+  .friendlies-team-selection,
+  .friendlies-submit-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
