@@ -24,6 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly titleStrategy = inject(TitleStrategy);
   private readonly document = inject(DOCUMENT);
+  private readonly window = this.document.defaultView;
   private readonly appModeService = inject(AppModeService);
   private readonly authService = inject(AuthService);
   private readonly i18nService = inject(I18nService);
@@ -44,6 +45,20 @@ export class AppComponent implements OnInit, OnDestroy {
   private authTrigger: HTMLElement | null = null;
   private notificationsSubscription?: Subscription;
   private notificationMenuElement: HTMLElement | null = null;
+  private installPromptEvent: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }) | null = null;
+  readonly installBannerVisible = signal(false);
+  readonly installHelpVisible = signal(false);
+  readonly installIsIos = signal(false);
+  private readonly onBeforeInstallPrompt = (event: Event) => {
+    event.preventDefault();
+    this.installPromptEvent = event as typeof this.installPromptEvent;
+    this.installBannerVisible.set(!this.isStandalone());
+  };
+  private readonly onAppInstalled = () => {
+    this.installPromptEvent = null;
+    this.installBannerVisible.set(false);
+    this.installHelpVisible.set(false);
+  };
 
   @ViewChild('authPanel')
   set authPanelRef(element: ElementRef<HTMLElement> | undefined) {
@@ -67,6 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly locale = this.i18nService.locale;
   readonly notifications = signal<FriendlyNotification[]>([]);
   readonly notificationsOpen = signal(false);
+  readonly pushNotificationStatus = signal<'checking' | 'enabled' | 'disabled' | 'unsupported' | 'blocked' | 'error'>('checking');
   readonly unreadNotificationCount = computed(() => this.notifications().filter((item) => !item.readAt).length);
 
   @ViewChild('notificationMenu')
@@ -88,11 +104,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.initializeInstallExperience();
     this.initializeTheme();
     await this.authService.restoreSession();
 
     if (this.currentUser()) {
       this.appModeService.setMode('authenticated');
+      await this.refreshPushNotificationState();
     } else {
       this.appModeService.setMode('guest');
     }
@@ -106,6 +124,30 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.notificationsSubscription?.unsubscribe();
+    this.window?.removeEventListener('beforeinstallprompt', this.onBeforeInstallPrompt);
+    this.window?.removeEventListener('appinstalled', this.onAppInstalled);
+  }
+
+  async installApp() {
+    if (this.installPromptEvent) {
+      const promptEvent = this.installPromptEvent;
+      this.installPromptEvent = null;
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice.outcome === 'accepted') this.installBannerVisible.set(false);
+      } catch {
+        this.installHelpVisible.set(true);
+      }
+      return;
+    }
+
+    this.installHelpVisible.update((visible) => !visible);
+  }
+
+  dismissInstallBanner() {
+    this.installBannerVisible.set(false);
+    this.installHelpVisible.set(false);
   }
 
   get isLiveMatchRoute(): boolean {
@@ -158,6 +200,57 @@ export class AppComponent implements OnInit, OnDestroy {
       this.notifications.set(await this.friendlyMatchService.listNotifications());
     } catch {
       // Keep the header quiet when notifications are temporarily unavailable.
+    }
+  }
+
+  pushNotificationActionLabel(): TranslationKey {
+    return this.pushNotificationStatus() === 'enabled' ? 'app.push.disable' : 'app.push.enable';
+  }
+
+  pushNotificationStatusLabel(): TranslationKey {
+    switch (this.pushNotificationStatus()) {
+      case 'blocked': return 'app.push.blocked';
+      case 'unsupported': return 'app.push.unsupported';
+      default: return 'app.push.error';
+    }
+  }
+
+  async togglePushNotifications() {
+    const browserWindow = this.window;
+    if (!browserWindow || !('serviceWorker' in browserWindow.navigator) || !('PushManager' in browserWindow) || !('Notification' in browserWindow)) {
+      this.pushNotificationStatus.set('unsupported');
+      return;
+    }
+
+    try {
+      const registration = await browserWindow.navigator.serviceWorker.ready;
+      const existing = await registration.pushManager.getSubscription();
+      if (this.pushNotificationStatus() === 'enabled' && existing) {
+        await this.friendlyMatchService.removePushSubscription(existing.endpoint);
+        await existing.unsubscribe();
+        this.pushNotificationStatus.set('disabled');
+        return;
+      }
+
+      let permission = browserWindow.Notification.permission;
+      if (permission === 'default') permission = await browserWindow.Notification.requestPermission();
+      if (permission !== 'granted') {
+        this.pushNotificationStatus.set(permission === 'denied' ? 'blocked' : 'disabled');
+        return;
+      }
+
+      let subscription = existing;
+      if (!subscription) {
+        const { publicKey } = await this.friendlyMatchService.getPushPublicKey();
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: this.base64UrlToBytes(publicKey) as BufferSource
+        });
+      }
+      await this.friendlyMatchService.savePushSubscription(subscription.toJSON());
+      this.pushNotificationStatus.set('enabled');
+    } catch {
+      this.pushNotificationStatus.set('error');
     }
   }
 
@@ -252,6 +345,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
 
       this.appModeService.setMode('authenticated');
+      await this.refreshPushNotificationState();
       await this.refreshNotifications();
       await this.refreshNavigationData();
       this.closeAuthPanel();
@@ -264,6 +358,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async logout() {
+    await this.detachCurrentPushSubscription();
     this.authService.logout();
     this.notifications.set([]);
     this.notificationsOpen.set(false);
@@ -310,6 +405,73 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.setTheme(theme, false);
+  }
+
+  private initializeInstallExperience() {
+    const browserWindow = this.window;
+    if (!browserWindow) return;
+
+    const isMobile = browserWindow.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+      || /Android|iPhone|iPad|iPod/i.test(browserWindow.navigator.userAgent);
+    const isIos = /iPhone|iPad|iPod/i.test(browserWindow.navigator.userAgent)
+      || (browserWindow.navigator.platform === 'MacIntel' && browserWindow.navigator.maxTouchPoints > 1);
+    this.installIsIos.set(isIos);
+    this.installBannerVisible.set(isMobile && !this.isStandalone());
+
+    if ('serviceWorker' in browserWindow.navigator && (browserWindow.location.protocol === 'https:' || browserWindow.location.hostname === 'localhost')) {
+      void browserWindow.navigator.serviceWorker.register('/service-worker.js').catch(() => {
+        // The application remains usable if offline support is unavailable.
+      });
+    }
+
+    browserWindow.addEventListener('beforeinstallprompt', this.onBeforeInstallPrompt);
+    browserWindow.addEventListener('appinstalled', this.onAppInstalled);
+  }
+
+  private async refreshPushNotificationState() {
+    const browserWindow = this.window;
+    if (!browserWindow || !('serviceWorker' in browserWindow.navigator) || !('PushManager' in browserWindow) || !('Notification' in browserWindow)) {
+      this.pushNotificationStatus.set('unsupported');
+      return;
+    }
+    if (browserWindow.Notification.permission === 'denied') {
+      this.pushNotificationStatus.set('blocked');
+      return;
+    }
+    try {
+      const registration = await browserWindow.navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription && browserWindow.Notification.permission === 'granted') {
+        await this.friendlyMatchService.savePushSubscription(subscription.toJSON());
+        this.pushNotificationStatus.set('enabled');
+      } else {
+        this.pushNotificationStatus.set('disabled');
+      }
+    } catch {
+      this.pushNotificationStatus.set('error');
+    }
+  }
+
+  private async detachCurrentPushSubscription() {
+    if (!this.isAuthenticated() || !this.window || !('serviceWorker' in this.window.navigator)) return;
+    try {
+      const registration = await this.window.navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) await this.friendlyMatchService.removePushSubscription(subscription.endpoint);
+    } catch {
+      // A logout must continue even when the push endpoint cannot be reached.
+    }
+  }
+
+  private base64UrlToBytes(value: string) {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+    const decoded = this.window?.atob(padded) ?? '';
+    return Uint8Array.from(decoded, (character) => character.charCodeAt(0));
+  }
+
+  private isStandalone() {
+    return !!this.window && (this.window.matchMedia('(display-mode: standalone)').matches
+      || (this.window.navigator as Navigator & { standalone?: boolean }).standalone === true);
   }
 
   private setTheme(theme: 'light' | 'dark', persist = true) {

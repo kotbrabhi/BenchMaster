@@ -34,6 +34,12 @@
               <strong>{{ 'friendlies.notificationsTitle' | t }}</strong>
               <span>{{ unreadNotificationCount() }}</span>
             </div>
+          <button class="shell-push-action" type="button" (click)="togglePushNotifications()" [disabled]="pushNotificationStatus() === 'checking' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'blocked'">
+            {{ pushNotificationActionLabel() | t }}
+          </button>
+          @if (pushNotificationStatus() === 'blocked' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'error') {
+            <p class="shell-push-action__message" role="status">{{ pushNotificationStatusLabel() | t }}</p>
+          }
             @if (notifications().length) {
               <div class="shell-notifications-popover__list">
                 @for (notification of notifications().slice(0, 6); track notification.id) {
@@ -174,6 +180,24 @@
 
     </nav>
   </header>
+
+  @if (installBannerVisible()) {
+    <aside class="install-banner" aria-labelledby="install-banner-title" role="status" aria-live="polite">
+      <div class="install-banner__copy">
+        <strong id="install-banner-title">{{ 'app.install.title' | t }}</strong>
+        <span>{{ 'app.install.description' | t }}</span>
+        @if (installHelpVisible()) {
+          <span class="install-banner__help">{{ (installIsIos() ? 'app.install.iosHelp' : 'app.install.androidHelp') | t }}</span>
+        }
+      </div>
+      <button class="button install-banner__action" type="button" (click)="installApp()">
+        {{ (installHelpVisible() ? 'app.install.understood' : 'app.install.action') | t }}
+      </button>
+      <button class="install-banner__close" type="button" [attr.aria-label]="'app.install.dismiss' | t" (click)="dismissInstallBanner()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+    </aside>
+  }
 
   <main class="shell__content">
     <div class="shell__content-inner" [class.shell__content-inner--wide]="isLiveMatchRoute">

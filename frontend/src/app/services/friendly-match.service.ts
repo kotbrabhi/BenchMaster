@@ -69,6 +69,18 @@ export class FriendlyMatchService {
     return firstValueFrom(this.http.post<{ read: boolean }>(`${API_BASE_URL}/my/friendly-notifications/${notificationId}/read`, {}));
   }
 
+  getPushPublicKey() {
+    return firstValueFrom(this.http.get<{ publicKey: string }>(`${API_BASE_URL}/push/public-key`));
+  }
+
+  savePushSubscription(subscription: unknown) {
+    return firstValueFrom(this.http.post<{ saved: boolean }>(`${API_BASE_URL}/push/subscriptions`, subscription));
+  }
+
+  removePushSubscription(endpoint: string) {
+    return firstValueFrom(this.http.delete<{ removed: boolean }>(`${API_BASE_URL}/push/subscriptions`, { body: { endpoint } }));
+  }
+
   createOrRotateInvites(applicationId: number) {
     return firstValueFrom(this.http.post<FriendlyInviteLink>(`${API_BASE_URL}/friendly-match-applications/${applicationId}/invites`, {}));
   }

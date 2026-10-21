@@ -32,6 +32,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "service-worker.js",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": [
@@ -91,6 +96,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "service-worker.js",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": [

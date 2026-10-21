@@ -6,6 +6,7 @@ import * as gameController from '../controllers/game.controller';
 import * as friendlyMatchController from '../controllers/friendly-match.controller';
 import * as liveMatchController from '../controllers/live-match.controller';
 import * as playerController from '../controllers/player.controller';
+import * as pushController from '../controllers/push.controller';
 import * as teamController from '../controllers/team.controller';
 
 const router = Router();
@@ -23,6 +24,10 @@ router.get('/public/friendly-match-invites/:token', asyncHandler(friendlyMatchCo
 router.put('/public/friendly-match-invites/:token/response', asyncHandler(friendlyMatchController.setPublicAvailability));
 
 router.use(asyncHandler(requireAuth));
+
+router.get('/push/public-key', asyncHandler(pushController.publicKey));
+router.post('/push/subscriptions', asyncHandler(pushController.subscribe));
+router.delete('/push/subscriptions', asyncHandler(pushController.unsubscribe));
 
 router.get('/teams', asyncHandler(teamController.listTeams));
 router.post('/teams', asyncHandler(teamController.createTeam));

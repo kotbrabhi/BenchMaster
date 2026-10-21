@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "BenchMaster",
+  "short_name": "BenchMaster",
+  "description": "Organisez vos matchs de basket et retrouvez vos équipes.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101c20",
+  "theme_color": "#101c20",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

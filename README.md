@@ -25,6 +25,11 @@ BenchMaster already goes beyond the initial MVP scope.
 - Rotation timeline: period starts, substitutions, period ends, and game end events
 - Game summary: total playing time, starter/bench split, and usage insights
 - Bilingual UI: French and English
+- Optional Web Push alerts for newly published friendly-match proposals
+
+## Web Push Notifications
+
+Users can enable proposal alerts from the in-app notifications menu. Push delivery requires VAPID keys on the backend. Generate a key pair with `node backend/scripts/generate-vapid-keys.mjs`, then set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and a real contact address in `VAPID_SUBJECT` on the backend deployment. Keep the private key secret. The included database migration creates the per-device subscription table.
 
 ## Stack
 

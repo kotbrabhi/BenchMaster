@@ -298,6 +298,20 @@ model User {
   friendlyProposals FriendlyMatchProposal[]
   friendlyApplications FriendlyMatchApplication[]
   friendlyNotifications FriendlyNotification[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model GamePlayer {

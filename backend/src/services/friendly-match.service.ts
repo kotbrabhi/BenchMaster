@@ -2,6 +2,7 @@ import { FriendlyApplicationStatus, FriendlyMatchLifecycle, FriendlyNotification
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../utils/http-error';
 import { createFriendlyNotifications } from './friendly-notification.service';
+import { notifyUsersOfProposal } from './push-notification.service';
 
 const proposalSelect = {
   id: true,
@@ -174,10 +175,18 @@ export async function createProposal(userId: number, input: ProposalInput) {
   assertDeadlineBeforeStart(data as Record<string, unknown>);
   const team = await prisma.team.findFirst({ where: { id: data.organizerTeamId, userId }, select: { id: true } });
   if (!team) throw new HttpError(404, 'Équipe introuvable.');
-  return prisma.friendlyMatchProposal.create({
+  const proposal = await prisma.friendlyMatchProposal.create({
     data: { ...data, createdByUserId: userId, status: FriendlyProposalStatus.OPEN },
     select: proposalSelect
   });
+  void notifyUsersOfProposal(userId, {
+    id: proposal.id,
+    category: proposal.category,
+    startsAt: proposal.startsAt,
+    area: proposal.area,
+    teamName: proposal.organizerTeam.name
+  });
+  return proposal;
 }
 
 export async function getProposal(userId: number, proposalId: number) {
