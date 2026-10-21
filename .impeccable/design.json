@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T12:00:00+02:00",
+  "title": "Design System: BenchMaster",
+  "extensions": {
+    "colorMeta": {
+      "light-bg": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "canonical": "#edf3f8",
+        "tonalRamp": [
+          "#14283b",
+          "#32485a",
+          "#4f6476",
+          "#8192a0",
+          "#aab7c1",
+          "#c4ced5",
+          "#d8e2e9",
+          "#edf3f8"
+        ]
+      },
+      "light-surface": {
+        "role": "neutral",
+        "displayName": "White Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#14283b",
+          "#32485a",
+          "#4f6476",
+          "#8192a0",
+          "#aab7c1",
+          "#c4ced5",
+          "#d8e2e9",
+          "#ffffff"
+        ]
+      },
+      "light-ink": {
+        "role": "neutral",
+        "displayName": "Deep Slate Ink",
+        "canonical": "#14283b",
+        "tonalRamp": [
+          "#07121d",
+          "#0d1d2c",
+          "#14283b",
+          "#304354",
+          "#4f6476",
+          "#8293a1",
+          "#b8c3cc",
+          "#edf3f8"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Blue Gray",
+        "canonical": "#4f6476",
+        "tonalRamp": [
+          "#14283b",
+          "#32485a",
+          "#4f6476",
+          "#8192a0",
+          "#aab7c1",
+          "#c4ced5",
+          "#d8e2e9",
+          "#edf3f8"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Mist Border",
+        "canonical": "#d6e0e8",
+        "tonalRamp": [
+          "#14283b",
+          "#32485a",
+          "#4f6476",
+          "#8192a0",
+          "#aab7c1",
+          "#c4ced5",
+          "#d6e0e8",
+          "#edf3f8"
+        ]
+      },
+      "light-accent": {
+        "role": "primary",
+        "displayName": "Court Blue",
+        "canonical": "#1d4ed8",
+        "tonalRamp": [
+          "#101b3b",
+          "#172b68",
+          "#1d4ed8",
+          "#3869eb",
+          "#6f92f2",
+          "#9cb3f7",
+          "#c5d2fb",
+          "#edf2ff"
+        ]
+      },
+      "light-accent-strong": {
+        "role": "primary",
+        "displayName": "Deep Court Blue",
+        "canonical": "#1e40af",
+        "tonalRamp": [
+          "#0b1636",
+          "#142867",
+          "#1e40af",
+          "#385fc8",
+          "#6a85d8",
+          "#9baee5",
+          "#c5d0ef",
+          "#edf1fb"
+        ]
+      },
+      "light-court": {
+        "role": "secondary",
+        "displayName": "Hardwood Amber",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "#321707",
+          "#672f0b",
+          "#b45309",
+          "#cb6818",
+          "#df8d4e",
+          "#eab58c",
+          "#f4d8c3",
+          "#fff4e5"
+        ]
+      },
+      "light-danger": {
+        "role": "tertiary",
+        "displayName": "Scoreboard Red",
+        "canonical": "#b42318",
+        "tonalRamp": [
+          "#32110f",
+          "#671915",
+          "#b42318",
+          "#ca4237",
+          "#db756e",
+          "#e9a39e",
+          "#f4cfcc",
+          "#fff2f0"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Deep Teal Night",
+        "canonical": "#101c20",
+        "tonalRamp": [
+          "#090f11",
+          "#101c20",
+          "#203438",
+          "#36494d",
+          "#617174",
+          "#8c999b",
+          "#b8c1c2",
+          "#e5e9e9"
+        ]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Deep Teal Surface",
+        "canonical": "#18282c",
+        "tonalRamp": [
+          "#090f11",
+          "#18282c",
+          "#263b3e",
+          "#405255",
+          "#697779",
+          "#939d9e",
+          "#bec5c6",
+          "#e5e9e9"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Soft Chalk",
+        "canonical": "#f4f7f5",
+        "tonalRamp": [
+          "#101c20",
+          "#1c2d31",
+          "#344448",
+          "#566467",
+          "#7f8a8b",
+          "#a6afaf",
+          "#cdd2d1",
+          "#f4f7f5"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Cool Sage Gray",
+        "canonical": "#c0d0cc",
+        "tonalRamp": [
+          "#18282c",
+          "#263b3e",
+          "#405255",
+          "#637476",
+          "#879594",
+          "#a7b7b3",
+          "#c0d0cc",
+          "#e5ece9"
+        ]
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Night Mint",
+        "canonical": "#4ed0a5",
+        "tonalRamp": [
+          "#10251f",
+          "#174434",
+          "#247858",
+          "#36a27a",
+          "#4ed0a5",
+          "#7bdfbe",
+          "#b2eed8",
+          "#e5fbf1"
+        ]
+      },
+      "dark-accent-strong": {
+        "role": "primary",
+        "displayName": "Bright Mint",
+        "canonical": "#72e0ba",
+        "tonalRamp": [
+          "#10251f",
+          "#174434",
+          "#247858",
+          "#36a27a",
+          "#59c99f",
+          "#72e0ba",
+          "#b5f0dc",
+          "#e5fbf1"
+        ]
+      },
+      "dark-court": {
+        "role": "secondary",
+        "displayName": "Night Hardwood",
+        "canonical": "#f5a65b",
+        "tonalRamp": [
+          "#321707",
+          "#672f0b",
+          "#a45d24",
+          "#ca7d38",
+          "#e6954c",
+          "#f5a65b",
+          "#facb9d",
+          "#fff2e5"
+        ]
+      },
+      "dark-danger": {
+        "role": "tertiary",
+        "displayName": "Night Scoreboard Red",
+        "canonical": "#ff7b72",
+        "tonalRamp": [
+          "#32110f",
+          "#671915",
+          "#a52e29",
+          "#ce504a",
+          "#e96c65",
+          "#ff9189",
+          "#ffc3be",
+          "#fff2f0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Page Title",
+        "purpose": "Page-level headings and primary screen identity."
+      },
+      "body": {
+        "displayName": "Interface Body",
+        "purpose": "General copy, player names, and readable supporting text."
+      },
+      "label": {
+        "displayName": "Operational Label",
+        "purpose": "Compact status, stat, and metadata labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-light",
+        "value": "0 18px 40px rgba(20, 40, 59, 0.14)",
+        "purpose": "Ambient separation for cards in light mode."
+      },
+      {
+        "name": "card-dark",
+        "value": "0 18px 40px rgba(0, 0, 0, 0.32)",
+        "purpose": "Ambient separation for cards in dark mode."
+      },
+      {
+        "name": "dialog",
+        "value": "0 28px 64px var(--color-shadow)",
+        "purpose": "Structural elevation for confirmation dialogs."
+      }
+    ],
+    "motion": [
+      {
+        "name": "standard",
+        "value": "180ms ease",
+        "purpose": "Short transitions for common control and surface state changes."
+      },
+      {
+        "name": "dialog-enter",
+        "value": "180ms ease",
+        "purpose": "Brief confirmation panel entrance; disabled when reduced motion is requested."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small-phone",
+        "value": "360px"
+      },
+      {
+        "name": "mobile-tablet",
+        "value": "640px"
+      },
+      {
+        "name": "desktop-layout",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action, with a theme-specific blue or mint gradient and clear touch sizing.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Start game</button>",
+      "css": ".ds-button-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; min-width: 44px; padding: 0 18px; border: 1px solid transparent; border-radius: 18px; background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong)); color: var(--color-on-accent); font: 800 1rem/1.15 'Avenir Next', 'Segoe UI', sans-serif; transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease; } .ds-button-primary:hover { transform: translateY(-1px); } .ds-button-primary:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 3px; } .ds-button-primary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting action with a quiet ink wash, border, and high-contrast label.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Pause</button>",
+      "css": ".ds-button-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; min-width: 44px; padding: 0 18px; border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-ink-soft); color: var(--color-ink); font: 800 1rem/1.15 'Avenir Next', 'Segoe UI', sans-serif; transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease; } .ds-button-secondary:hover { transform: translateY(-1px); background: var(--color-toggle-hover); } .ds-button-secondary:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 3px; } .ds-button-secondary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "form-field",
+      "description": "A touch-sized field with a soft fill and tonal outline.",
+      "html": "<label class=\"ds-field\"><span>Team name</span><input type=\"text\" placeholder=\"Enter a name\"></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; color: var(--color-ink); font: 700 0.875rem/1.3 'Avenir Next', 'Segoe UI', sans-serif; } .ds-field input { min-height: 48px; padding: 0 14px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-control-bg); color: var(--color-ink); font: 400 1rem/1.4 'Avenir Next', 'Segoe UI', sans-serif; } .ds-field input:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 2px; }"
+    },
+    {
+      "name": "State Chip",
+      "kind": "chip",
+      "refersTo": "state-chip",
+      "description": "Compact uppercase status or selection label with a full pill silhouette.",
+      "html": "<span class=\"ds-state-chip ds-state-chip--selected\">On court</span>",
+      "css": ".ds-state-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-pill-bg); color: var(--color-ink); font: 800 0.75rem/1.2 'Avenir Next', 'Segoe UI', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; } .ds-state-chip--selected { border-color: var(--color-accent-strong-soft); background: var(--color-accent-soft); color: var(--color-accent-strong); }"
+    },
+    {
+      "name": "Player Card",
+      "kind": "card",
+      "refersTo": "player-card",
+      "description": "A compact roster unit that gives jersey number and player identity first, with selection and playing-time detail below.",
+      "html": "<article class=\"ds-player-card\"><div class=\"ds-player-number\">#12</div><div><strong class=\"ds-player-name\">Alex Morgan</strong><div class=\"ds-player-meta\">Guard · 18 min</div></div><span class=\"ds-state-chip ds-state-chip--selected\">Starter</span></article>",
+      "css": ".ds-player-card { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-surface-glass); color: var(--color-ink); box-shadow: var(--shadow-card); } .ds-player-number { display: grid; place-items: center; flex: 0 0 56px; width: 56px; height: 56px; border-radius: 18px; background: var(--color-ink-soft); font: 800 1rem/1 'Avenir Next', 'Segoe UI', sans-serif; } .ds-player-name { display: block; font: 600 1rem/1.3 'Avenir Next', 'Segoe UI', sans-serif; } .ds-player-meta { margin-top: 4px; color: var(--color-text-muted); font: 400 0.875rem/1.4 'Avenir Next', 'Segoe UI', sans-serif; } .ds-state-chip { margin-left: auto; display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border: 1px solid var(--color-accent-strong-soft); border-radius: 999px; background: var(--color-accent-soft); color: var(--color-accent-strong); font: 800 0.75rem/1.2 'Avenir Next', 'Segoe UI', sans-serif; text-transform: uppercase; } .ds-player-card:hover { transform: translateY(-1px); } .ds-player-card:focus-within { outline: 3px solid var(--color-accent-strong); outline-offset: 2px; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "surface-card",
+      "description": "A general grouped content surface with soft elevation and a fine theme border.",
+      "html": "<section class=\"ds-surface-card\"><strong>Game setup</strong><p>Choose a roster and starting five.</p></section>",
+      "css": ".ds-surface-card { padding: 16px; border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-surface-glass); color: var(--color-ink); box-shadow: var(--shadow-card); transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; } .ds-surface-card strong { font: 700 1rem/1.2 'Avenir Next', 'Segoe UI', sans-serif; } .ds-surface-card p { margin: 8px 0 0; color: var(--color-text-muted); font: 400 0.92rem/1.45 'Avenir Next', 'Segoe UI', sans-serif; } .ds-surface-card:hover { transform: translateY(-1px); } .ds-surface-card:focus-within { outline: 3px solid var(--color-accent-strong); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Coach’s Clipboard",
+    "overview": "BenchMaster’s visual language pairs the clarity of a coach’s working board with a subtle basketball-court setting. A restrained court-line and wood-grain backdrop gives the app its sport context; foreground surfaces remain calm and high contrast so a coach can read a clock, find a player, and act quickly during a game. The interface favors practical grouping, explicit status, and direct touch controls over decorative display. Controls feel tactile and fast, with clear feedback and direct labels.\n\nThe system supports a cool court-side palette: a cool blue light theme and a deep green-blue dark theme. Court-orange accents mark basketball-specific context and starter/bench distinctions; the primary action color changes to mint in dark mode. Use the supplied BenchMaster logo as the brand mark and preserve French and English interface support.",
+    "keyCharacteristics": [
+      "A quiet court-side atmosphere behind operational surfaces.",
+      "Large, direct controls suited to one-handed touch use.",
+      "Player identity, live status, and game data are grouped into compact cards.",
+      "Light and dark themes each use their own semantic accent palette."
+    ],
+    "rules": [
+      {
+        "name": "The Theme-Paired Accent Rule",
+        "body": "Use the blue action palette in light mode and the mint action palette in dark mode; keep court amber reserved for basketball context and game data.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scan-First Type Rule",
+        "body": "Reserve uppercase, tracked type for short labels and statuses; keep instructions and longer copy in sentence case with comfortable line height.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do preserve both the light blue and dark mint theme palettes.",
+      "Do reserve warm court colors for basketball context, starter/bench data, and related highlights.",
+      "Do keep touch controls at least 44px tall and primary calls to action 48px tall.",
+      "Do use the provided logo asset and keep the French and English interface supported.",
+      "Do retain the low-contrast court setting behind high-contrast operational surfaces.",
+      "Do allow player names, labels, and action text to wrap on small screens."
+    ],
+    "donts": [
+      "Don’t use the court texture or grain as a high-contrast foreground pattern.",
+      "Don’t mix the light-theme blue action color into dark-theme primary controls; use the dark-theme mint tokens.",
+      "Don’t use court amber as the default action color.",
+      "Don’t shrink live-game or player controls below their established touch-target sizing.",
+      "Don’t make live status, errors, selection, or disabled states depend on color alone; pair color with labels, borders, or shape."
+    ]
+  }
+}

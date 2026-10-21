@@ -136,11 +136,12 @@ export class NewGameSetupPageComponent implements OnInit {
   async ngOnInit() {
     try {
       const [teams] = await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
-      const preselectedTeamId = Number(this.route.snapshot.queryParamMap.get('teamId'));
-      const firstTeamId = teams[0]?.id ?? null;
+      const requestedTeamId = Number(this.route.snapshot.queryParamMap.get('teamId'));
+      const requestedTeam = teams.find((team) => team.id === requestedTeamId);
+      const initialTeamId = teams.length === 1 ? teams[0].id : requestedTeam?.id ?? teams[0]?.id ?? null;
 
-      if (preselectedTeamId || firstTeamId) {
-        await this.selectTeam(preselectedTeamId || firstTeamId);
+      if (initialTeamId) {
+        await this.selectTeam(initialTeamId);
       }
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error, this.t));
@@ -293,8 +294,22 @@ export class NewGameSetupPageComponent implements OnInit {
     return this.availablePlayerIds().includes(player.id);
   }
 
+  availableActionLabel(player: Player) {
+    return this.t(
+      this.isAvailable(player) ? 'newGame.available.action.removeAccessible' : 'newGame.available.action.addAccessible',
+      { name: player.name }
+    );
+  }
+
   isStarter(player: Player) {
     return this.starterPlayerIds().includes(player.id);
+  }
+
+  starterActionLabel(player: Player) {
+    return this.t(
+      this.isStarter(player) ? 'newGame.startingFive.action.removeAccessible' : 'newGame.startingFive.action.addAccessible',
+      { name: player.name }
+    );
   }
 
   hasStarterSelectionError(player: Player) {

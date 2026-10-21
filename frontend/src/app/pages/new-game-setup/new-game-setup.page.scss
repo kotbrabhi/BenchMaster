@@ -39,10 +39,12 @@
 
 .setup-progress__bar-fill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: inherit;
+  transform-origin: left center;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
-  transition: width var(--transition-standard);
+  transition: transform var(--transition-standard);
 }
 
 .setup-progress__steps {
@@ -54,6 +56,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 56px;
   padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: 18px;
@@ -81,6 +84,14 @@
 .progress-step:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.progress-step:focus-visible,
+.wizard-player-card .button:focus-visible,
+.setup-footer__actions .button:focus-visible {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: 3px;
+  z-index: 1;
 }
 
 .progress-step__number {
@@ -186,7 +197,6 @@
   gap: 14px;
 }
 
-.wizard-player-card,
 .wizard-summary-group {
   display: flex;
   flex-direction: column;
@@ -197,6 +207,19 @@
   background: var(--color-player-surface);
 }
 
+.wizard-player-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-player-surface);
+  transition: background-color var(--transition-standard), border-color var(--transition-standard), box-shadow var(--transition-standard);
+}
+
 .wizard-player-card--selected,
 .wizard-summary-group--starter {
   border-color: var(--color-accent-strong-soft);
@@ -204,6 +227,8 @@
 }
 
 .wizard-player-card--starter {
+  border-color: var(--color-selection-border);
+  background: linear-gradient(180deg, var(--color-court-soft), var(--color-selected-card-end));
   box-shadow: inset 0 0 0 1px var(--color-selection-shadow);
 }
 
@@ -220,13 +245,35 @@
 
 .wizard-player-card__copy {
   min-width: 0;
-  flex: 1 1 180px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.wizard-player-card__copy strong,
+.wizard-player-card__number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--color-ink-soft);
+  color: var(--color-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.wizard-player-card__copy strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.35;
+  font-size: var(--player-name-size);
+  font-weight: var(--player-name-weight);
+}
+
 .wizard-summary-player strong {
   min-width: 0;
   line-height: 1.35;
@@ -234,13 +281,57 @@
   font-weight: var(--player-name-weight);
 }
 
+.wizard-player-card__copy strong {
+  color: var(--color-ink);
+}
+
 .wizard-player-card__copy p {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--player-meta-size);
 }
 
-.wizard-player-card__states,
+.wizard-player-card__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: var(--state-label-size);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.wizard-player-card__status--available {
+  border-color: var(--color-accent-strong-soft);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.wizard-player-card__status--unavailable {
+  border-color: var(--color-disabled-border);
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-ink);
+}
+
+.wizard-player-card__status--starter {
+  border-color: var(--color-selection-border);
+  background: var(--color-court-soft);
+  color: var(--color-selection-text);
+}
+
+.wizard-player-card__status--rotation {
+  border-color: var(--color-info-border);
+  background: var(--color-status-finished-surface);
+  color: var(--color-chart-bench);
+}
+
 .wizard-summary__chips,
 .wizard-summary-group__list {
   display: flex;
@@ -248,15 +339,56 @@
   gap: 8px;
 }
 
-.wizard-player-card__states {
-  align-items: flex-start;
+.wizard-player-card .button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  touch-action: manipulation;
+  transition: transform var(--transition-standard), box-shadow var(--transition-standard);
 }
 
-.wizard-player-card .button {
-  width: 100%;
+.wizard-player-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.wizard-player-card .button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wizard-player-card .button--selection-marked {
+  border-color: var(--color-accent-strong-soft);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.wizard-player-card--starter .button--selection-marked {
+  border-color: var(--color-selection-border);
+  background: var(--color-court-soft);
+  color: var(--color-selection-text);
+}
+
+.wizard-player-card .button:active,
+.progress-step:active {
+  transform: scale(0.985);
 }
 
 .wizard-player-card__error-message {
+  grid-column: 1 / -1;
   margin: 0;
   color: var(--color-danger);
   font-size: var(--player-meta-size);
@@ -329,7 +461,54 @@
 }
 
 .setup-footer__actions .button {
-  flex: 1 1 180px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+}
+
+@media (max-width: 767px) {
+  .setup-progress__steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .progress-step {
+    min-width: 0;
+    min-height: 84px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 5px;
+    text-align: center;
+  }
+
+  .progress-step__number {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  .progress-step__copy {
+    align-items: center;
+  }
+
+  .progress-step__copy strong {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .progress-step__copy p {
+    display: none;
+  }
+
+  .setup-footer {
+    bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .setup-footer__card {
+    padding: 12px;
+  }
 }
 
 @media (min-width: 768px) {

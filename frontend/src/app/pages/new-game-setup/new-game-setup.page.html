@@ -11,31 +11,36 @@
   }
 
   <section class="surface-card step-card" [class.step-card--complete]="selectedTeamId()">
-    <div class="step-card__header">
-      <div>
-        <span class="step-card__eyebrow">{{ 'newGame.chooseTeam.eyebrow' | t }}</span>
-        <h2>{{ 'newGame.chooseTeam.title' | t }}</h2>
-        <p>{{ 'newGame.chooseTeam.subtitle' | t }}</p>
+    @if (teams().length !== 1) {
+      <div class="step-card__header">
+        <div>
+          <span class="step-card__eyebrow">{{ 'newGame.chooseTeam.eyebrow' | t }}</span>
+          <h2>{{ 'newGame.chooseTeam.title' | t }}</h2>
+          <p>{{ 'newGame.chooseTeam.subtitle' | t }}</p>
+        </div>
+
+        <span class="state-chip" [class.state-chip--selected]="selectedTeamId()">
+          {{ (selectedTeamId() ? 'newGame.progress.complete' : 'newGame.progress.pending') | t }}
+        </span>
       </div>
+    }
 
-      <span class="state-chip" [class.state-chip--selected]="selectedTeamId()">
-        {{ (selectedTeamId() ? 'newGame.progress.complete' : 'newGame.progress.pending') | t }}
-      </span>
-    </div>
-
-    @if (teams().length) {
+    @if (teams().length > 1) {
       <div class="cluster">
         @for (team of teams(); track team.id) {
           <button
             class="pill"
             type="button"
             [class.pill--active]="selectedTeamId() === team.id"
+            [attr.aria-pressed]="selectedTeamId() === team.id"
             (click)="selectTeam(team.id)">
             {{ team.name }}
           </button>
         }
       </div>
+    }
 
+    @if (teams().length) {
       <div class="form-field step-card__field">
         <label for="gameLabel">{{ 'newGame.details.label' | t }}</label>
         <input id="gameLabel" name="gameLabel" [(ngModel)]="gameLabel" [placeholder]="'newGame.details.placeholder' | t" />
@@ -60,7 +65,7 @@
       </div>
 
       <div class="setup-progress__bar" aria-hidden="true">
-        <span class="setup-progress__bar-fill" [style.width.%]="setupProgressPercent()"></span>
+        <span class="setup-progress__bar-fill" [style.transform]="'scaleX(' + (setupProgressPercent() / 100) + ')' "></span>
       </div>
 
       <p class="visually-hidden" aria-live="polite" aria-atomic="true">{{ activeSetupStepAnnouncement() }}</p>
@@ -120,22 +125,20 @@
                 <article
                   class="wizard-player-card"
                   role="listitem"
-                  [class.wizard-player-card--selected]="isAvailable(player)"
-                  [class.wizard-player-card--starter]="isStarter(player)">
+                  [class.wizard-player-card--selected]="isAvailable(player)">
                   <div class="wizard-player-card__top">
+                    <span class="wizard-player-card__number" aria-hidden="true">{{ player.jerseyNumber }}</span>
                     <div class="wizard-player-card__copy">
-                      <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
-                      <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
-                    </div>
-
-                    <div class="wizard-player-card__states">
-                      <span class="state-chip" [class.state-chip--selected]="isAvailable(player)">
-                        {{ (isAvailable(player) ? 'newGame.available.state.available' : 'newGame.available.state.unavailable') | t }}
-                      </span>
-
-                      @if (isStarter(player)) {
-                        <span class="state-chip state-chip--selected">{{ 'newGame.startingFive.state.starter' | t }}</span>
-                      }
+                      <strong>{{ player.name }}</strong>
+                      <p>
+                        <span>{{ player.position || ('common.position.flexibleRole' | t) }}</span>
+                        <span
+                          class="wizard-player-card__status"
+                          [class.wizard-player-card__status--available]="isAvailable(player)"
+                          [class.wizard-player-card__status--unavailable]="!isAvailable(player)">
+                          {{ (isAvailable(player) ? 'newGame.available.state.available' : 'newGame.available.state.unavailable') | t }}
+                        </span>
+                      </p>
                     </div>
                   </div>
 
@@ -143,14 +146,26 @@
                     class="button"
                     type="button"
                     [class.button--secondary]="isAvailable(player)"
+                    [class.button--selection-marked]="isAvailable(player)"
+                    [attr.aria-pressed]="isAvailable(player)"
+                    [attr.aria-label]="availableActionLabel(player)"
                     (click)="toggleAvailability(player.id)">
-                    {{
-                      (
-                        isAvailable(player)
-                          ? 'newGame.available.action.removePlayer'
-                          : 'newGame.available.action.addPlayer'
-                      ) | t : labelParams()
-                    }}
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      @if (isAvailable(player)) {
+                        <path d="m5 12 4 4L19 6" />
+                      } @else {
+                        <path d="M12 5v14M5 12h14" />
+                      }
+                    </svg>
+                    <span class="visually-hidden">
+                      {{
+                        (
+                          isAvailable(player)
+                            ? 'newGame.available.action.removePlayer'
+                            : 'newGame.available.action.addPlayer'
+                        ) | t
+                      }}
+                    </span>
                   </button>
                 </article>
               }
@@ -190,22 +205,18 @@
                   [class.wizard-player-card--starter]="isStarter(player)"
                   [class.wizard-player-card--error]="playerCardHasError(player)">
                   <div class="wizard-player-card__top">
+                    <span class="wizard-player-card__number" aria-hidden="true">{{ player.jerseyNumber }}</span>
                     <div class="wizard-player-card__copy">
-                      <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
-                      <p>{{ player.position || ('common.position.flexibleRole' | t) }}</p>
-                    </div>
-
-                    <div class="wizard-player-card__states">
-                      <span class="state-chip state-chip--selected">{{ 'newGame.available.state.available' | t }}</span>
-                      <span class="state-chip" [class.state-chip--selected]="isStarter(player)">
-                        {{
-                          (
-                            isStarter(player)
-                              ? 'newGame.startingFive.state.starter'
-                              : 'newGame.startingFive.state.bench'
-                          ) | t
-                        }}
-                      </span>
+                      <strong>{{ player.name }}</strong>
+                      <p>
+                        <span>{{ player.position || ('common.position.flexibleRole' | t) }}</span>
+                        <span
+                          class="wizard-player-card__status"
+                          [class.wizard-player-card__status--starter]="isStarter(player)"
+                          [class.wizard-player-card__status--rotation]="!isStarter(player)">
+                          {{ (isStarter(player) ? 'newGame.startingFive.state.starter' : 'newGame.startingFive.state.bench') | t }}
+                        </span>
+                      </p>
                     </div>
                   </div>
 
@@ -213,19 +224,34 @@
                     class="button"
                     type="button"
                     [class.button--secondary]="isStarter(player)"
+                    [class.button--selection-marked]="isStarter(player)"
                     [class.button--danger]="playerCardHasError(player)"
+                    [attr.aria-pressed]="isStarter(player)"
+                    [attr.aria-label]="starterActionLabel(player)"
+                    [attr.aria-describedby]="hasInlinePlayerError(player) ? 'player-setup-error-' + player.id : null"
                     (click)="toggleStarter(player.id)">
-                    {{
-                      (
-                        isStarter(player)
-                          ? 'newGame.startingFive.action.removeStarter'
-                          : 'newGame.startingFive.action.markStarter'
-                      ) | t
-                    }}
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      @if (isStarter(player)) {
+                        <path d="m5 12 4 4L19 6" />
+                      } @else {
+                        <path d="M12 5v14M5 12h14" />
+                      }
+                    </svg>
+                    <span class="visually-hidden">
+                      {{
+                        (
+                          isStarter(player)
+                            ? 'newGame.startingFive.action.removeStarter'
+                            : 'newGame.startingFive.action.markStarter'
+                        ) | t
+                      }}
+                    </span>
                   </button>
 
                   @if (hasInlinePlayerError(player)) {
-                    <p class="wizard-player-card__error-message">{{ inlinePlayerErrorMessage(player) }}</p>
+                    <p class="wizard-player-card__error-message" [id]="'player-setup-error-' + player.id">
+                      {{ inlinePlayerErrorMessage(player) }}
+                    </p>
                   }
                 </article>
               }
