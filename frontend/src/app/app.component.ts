@@ -49,6 +49,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly installBannerVisible = signal(false);
   readonly installHelpVisible = signal(false);
   readonly installIsIos = signal(false);
+  readonly isMobileExperience = signal(false);
+  readonly isStandaloneExperience = signal(false);
   private readonly onBeforeInstallPrompt = (event: Event) => {
     event.preventDefault();
     this.installPromptEvent = event as typeof this.installPromptEvent;
@@ -83,6 +85,13 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly notifications = signal<FriendlyNotification[]>([]);
   readonly notificationsOpen = signal(false);
   readonly pushNotificationStatus = signal<'checking' | 'enabled' | 'disabled' | 'unsupported' | 'blocked' | 'error'>('checking');
+  readonly pushBannerDismissed = signal(false);
+  readonly pushBannerVisible = computed(() => this.isAuthenticated()
+    && this.isMobileExperience()
+    && this.isStandaloneExperience()
+    && this.pushNotificationStatus() !== 'checking'
+    && this.pushNotificationStatus() !== 'enabled'
+    && !this.pushBannerDismissed());
   readonly unreadNotificationCount = computed(() => this.notifications().filter((item) => !item.readAt).length);
 
   @ViewChild('notificationMenu')
@@ -150,6 +159,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.installHelpVisible.set(false);
   }
 
+  dismissPushBanner() {
+    this.pushBannerDismissed.set(true);
+  }
+
   get isLiveMatchRoute(): boolean {
     return this.router.url.includes('/live');
   }
@@ -215,6 +228,11 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  pushBannerMessage(): string {
+    const key = this.pushNotificationStatus() === 'error' ? this.pushNotificationStatusLabel() : 'app.push.bannerDescription';
+    return this.i18nService.t(key);
+  }
+
   async togglePushNotifications() {
     const browserWindow = this.window;
     if (!browserWindow || !('serviceWorker' in browserWindow.navigator) || !('PushManager' in browserWindow) || !('Notification' in browserWindow)) {
@@ -223,19 +241,22 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     try {
+      let permission = browserWindow.Notification.permission;
+      if (this.pushNotificationStatus() !== 'enabled' && permission === 'default') {
+        // On iOS this permission request must happen directly in the button's user gesture.
+        permission = await browserWindow.Notification.requestPermission();
+      }
+      if (permission !== 'granted') {
+        this.pushNotificationStatus.set(permission === 'denied' ? 'blocked' : 'disabled');
+        return;
+      }
+
       const registration = await browserWindow.navigator.serviceWorker.ready;
       const existing = await registration.pushManager.getSubscription();
       if (this.pushNotificationStatus() === 'enabled' && existing) {
         await this.friendlyMatchService.removePushSubscription(existing.endpoint);
         await existing.unsubscribe();
         this.pushNotificationStatus.set('disabled');
-        return;
-      }
-
-      let permission = browserWindow.Notification.permission;
-      if (permission === 'default') permission = await browserWindow.Notification.requestPermission();
-      if (permission !== 'granted') {
-        this.pushNotificationStatus.set(permission === 'denied' ? 'blocked' : 'disabled');
         return;
       }
 
@@ -415,6 +436,8 @@ export class AppComponent implements OnInit, OnDestroy {
       || /Android|iPhone|iPad|iPod/i.test(browserWindow.navigator.userAgent);
     const isIos = /iPhone|iPad|iPod/i.test(browserWindow.navigator.userAgent)
       || (browserWindow.navigator.platform === 'MacIntel' && browserWindow.navigator.maxTouchPoints > 1);
+    this.isMobileExperience.set(isMobile);
+    this.isStandaloneExperience.set(this.isStandalone());
     this.installIsIos.set(isIos);
     this.installBannerVisible.set(isMobile && !this.isStandalone());
 
