@@ -35,7 +35,7 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
   readonly submitting = signal(false);
   readonly error = signal('');
   readonly success = signal('');
-  readonly view = signal<'network' | 'mine' | 'applications' | 'confirmed'>('network');
+  readonly view = signal<'network' | 'applications' | 'confirmed'>('network');
   readonly applications = signal<FriendlyMatchApplication[]>([]);
   readonly selectedApplication = signal<FriendlyMatchApplication | null>(null);
   readonly candidateApplications = signal<FriendlyCandidateApplication[]>([]);
@@ -61,7 +61,6 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
   area = '';
   venueName = '';
   format = '5x5';
-  requestedPlayerCount: number | null = 12;
   level = '';
   notes = '';
   responseDeadline = '';
@@ -147,16 +146,25 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
     else this.refreshingList.set(true);
     this.error.set('');
     try {
-      if (this.view() === 'mine') {
-        this.proposals.set(await this.matches.listMine());
-      } else if (this.view() === 'applications') {
+      if (this.view() === 'applications') {
         this.applications.set(await this.matches.listMyApplications());
+      } else if (this.view() === 'network') {
+        const [network, mine] = await Promise.all([
+          this.matches.list(this.filterCategory.trim() || undefined),
+          this.matches.listMine()
+        ]);
+        const combined = new Map<number, FriendlyMatchProposal>();
+        for (const proposal of [...network, ...mine]) combined.set(proposal.id, proposal);
+        this.proposals.set([...combined.values()].sort((a, b) => {
+          const ownershipOrder = Number(this.canManage(b)) - Number(this.canManage(a));
+          return ownershipOrder || new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+        }));
       } else {
-        this.proposals.set(await this.matches.list(this.filterCategory.trim() || undefined));
+        this.proposals.set([]);
       }
       this.listLoadError.set(false);
     } catch (error) {
-      if (this.view() === 'network' || this.view() === 'mine' || this.view() === 'applications') {
+      if (this.view() === 'network' || this.view() === 'applications') {
         this.listLoadError.set(true);
         this.error.set('');
       } else {
@@ -169,7 +177,7 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  async setView(view: 'network' | 'mine' | 'applications' | 'confirmed') {
+  async setView(view: 'network' | 'applications' | 'confirmed') {
     if (this.view() === view) return;
     this.view.set(view);
     this.listLoadError.set(false);
@@ -203,7 +211,7 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
       area: this.area,
       venueName: this.venueName || null,
       format: this.format,
-      requestedPlayerCount: this.requestedPlayerCount,
+      requestedPlayerCount: null,
       level: this.level || null,
       notes: this.notes || null,
       responseDeadline: this.responseDeadline ? new Date(this.responseDeadline).toISOString() : null
@@ -301,7 +309,6 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
     this.area = proposal.area;
     this.venueName = proposal.venueName ?? '';
     this.format = proposal.format;
-    this.requestedPlayerCount = proposal.requestedPlayerCount;
     this.level = proposal.level ?? '';
     this.notes = proposal.notes ?? '';
     this.responseDeadline = proposal.responseDeadline ? this.toLocalInput(proposal.responseDeadline) : '';

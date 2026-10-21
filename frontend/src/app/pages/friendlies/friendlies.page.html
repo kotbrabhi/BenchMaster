@@ -4,6 +4,12 @@
       <span class="toolbar__eyebrow">{{ 'friendlies.eyebrow' | t }}</span>
       <h1 class="toolbar__title">{{ 'friendlies.title' | t }}</h1>
       <p class="toolbar__subtitle">{{ 'friendlies.subtitle' | t }}</p>
+      @if (auth.isAuthenticated() && !isForm() && !proposalId()) {
+        <a class="button friendlies-create-button" routerLink="/friendlies/new">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          {{ 'friendlies.create' | t }}
+        </a>
+      }
     </div>
   </header>
 
@@ -64,10 +70,6 @@
                 <input name="format" [(ngModel)]="format" maxlength="80" required />
               </label>
               <label class="form-field">
-                <span>{{ 'friendlies.field.playerCount' | t }}</span>
-                <input name="requestedPlayerCount" type="number" min="1" max="30" [(ngModel)]="requestedPlayerCount" />
-              </label>
-              <label class="form-field">
                 <span>{{ 'friendlies.field.level' | t }}</span>
                 <input name="level" [(ngModel)]="level" maxlength="80" [placeholder]="'friendlies.placeholder.level' | t" />
               </label>
@@ -119,7 +121,6 @@
           @if (item.venueName) { <div><dt>{{ 'friendlies.field.venue' | t }}</dt><dd>{{ item.venueName }}</dd></div> }
           <div><dt>{{ 'friendlies.field.format' | t }}</dt><dd>{{ item.format }}</dd></div>
           @if (item.durationMinutes) { <div><dt>{{ 'friendlies.field.duration' | t }}</dt><dd>{{ item.durationMinutes }} {{ 'friendlies.minutes' | t }}</dd></div> }
-          @if (item.requestedPlayerCount) { <div><dt>{{ 'friendlies.field.playerCount' | t }}</dt><dd>{{ item.requestedPlayerCount }}</dd></div> }
           @if (item.level) { <div><dt>{{ 'friendlies.field.level' | t }}</dt><dd>{{ item.level }}</dd></div> }
           @if (item.responseDeadline) { <div><dt>{{ 'friendlies.field.deadline' | t }}</dt><dd>{{ item.responseDeadline | date:'d MMM y, HH:mm' }}</dd></div> }
         </dl>
@@ -189,8 +190,7 @@
           </div>
           <div class="friendlies-list-controls">
             <div class="segmented-control" role="group" [attr.aria-label]="'friendlies.listTabs' | t">
-              <button type="button" [attr.aria-pressed]="view() === 'network'" [class.segmented-control__item--active]="view() === 'network'" (click)="setView('network')">{{ 'friendlies.network' | t }}</button>
-              <button type="button" [attr.aria-pressed]="view() === 'mine'" [class.segmented-control__item--active]="view() === 'mine'" (click)="setView('mine')">{{ 'friendlies.mine' | t }}</button>
+              <button type="button" [attr.aria-pressed]="view() === 'network'" [class.segmented-control__item--active]="view() === 'network'" (click)="setView('network')">{{ 'friendlies.allProposals' | t }}</button>
               <button type="button" [attr.aria-pressed]="view() === 'applications'" [class.segmented-control__item--active]="view() === 'applications'" (click)="setView('applications')">{{ 'friendlies.myApplications' | t }}</button>
               <button type="button" [attr.aria-pressed]="view() === 'confirmed'" [class.segmented-control__item--active]="view() === 'confirmed'" (click)="setView('confirmed')">{{ 'friendlies.confirmedTab' | t }}</button>
             </div>
@@ -295,8 +295,9 @@
         } @else if (view() !== 'confirmed' && proposals().length) {
           <div class="friendlies-proposal-list">
             @for (match of proposals(); track match.id) {
-              <a class="friendlies-proposal-card" [routerLink]="['/friendlies', match.id]">
+              <a class="friendlies-proposal-card" [class.friendlies-proposal-card--mine]="canManage(match)" [routerLink]="['/friendlies', match.id]">
                 <div class="friendlies-proposal-card__main">
+                  @if (canManage(match)) { <span class="friendlies-own-badge">{{ 'friendlies.yourProposal' | t }}</span> }
                   <span class="state-chip" [class.state-chip--selected]="match.status === 'OPEN'">{{ statusLabel(match.status) | t }}</span>
                   <h3>{{ match.organizerTeam.name }} <span aria-hidden="true">·</span> {{ match.category }}</h3>
                   <p>{{ match.startsAt | date:'EEE d MMM y, HH:mm' }} · {{ match.area }}</p>
@@ -310,13 +311,8 @@
           </div>
         } @else if (view() !== 'confirmed') {
           <div class="status-panel status-panel--empty">
-            <span class="status-panel__eyebrow">{{ (view() === 'mine' ? 'friendlies.emptyMineTitle' : 'friendlies.emptyNetworkTitle') | t }}</span>
-            <p class="status-panel__text">{{ (view() === 'mine' ? 'friendlies.emptyMineBody' : 'friendlies.emptyNetworkBody') | t }}</p>
-          </div>
-        }
-        @if (view() === 'mine') {
-          <div class="friendlies-list-footer">
-            <a class="button" routerLink="/friendlies/new">{{ 'friendlies.create' | t }}</a>
+            <span class="status-panel__eyebrow">{{ 'friendlies.emptyNetworkTitle' | t }}</span>
+            <p class="status-panel__text">{{ 'friendlies.emptyNetworkBody' | t }}</p>
           </div>
         }
       </section>

@@ -9,6 +9,21 @@
   align-items: flex-start;
 }
 
+.friendlies-create-button {
+  align-self: flex-start;
+  min-height: 48px;
+  box-shadow: 0 8px 20px var(--color-shadow);
+}
+
+.friendlies-create-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
 .friendlies-list-card,
 .friendlies-form-card,
 .friendlies-detail {
@@ -100,6 +115,22 @@
   display: grid;
   gap: 12px;
   margin-top: 16px;
+}
+
+.friendlies-proposal-card--mine {
+  border-color: var(--color-accent-strong);
+  background: linear-gradient(120deg, var(--color-panel-accent-start), var(--color-surface-glass-strong));
+}
+
+.friendlies-own-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 .friendlies-proposal-card {

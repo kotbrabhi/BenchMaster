@@ -184,6 +184,23 @@ export class FriendlyApplicationPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  async shareLink() {
+    const link = this.generatedLink();
+    if (!link) return;
+    const url = this.inviteUrl(link);
+    if (typeof navigator.share !== 'function') {
+      await this.copyLink();
+      return;
+    }
+    try {
+      await navigator.share({ title: this.i18n.t('friendlies.shareInviteTitle'), url });
+      this.info.set(this.i18n.t('friendlies.shareInviteReady'));
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      this.error.set(this.i18n.t('friendlies.shareInviteFailed'));
+    }
+  }
+
   inviteUrl(link: FriendlyInviteLink) {
     return new URL(link.path, window.location.origin).toString();
   }
@@ -207,10 +224,8 @@ export class FriendlyApplicationPageComponent implements OnInit, OnDestroy {
   count(application: FriendlyMatchApplication, value: FriendlyPlayerResponse['availability']) {
     return application.playerResponses.filter((response) => response.availability === value).length;
   }
-  minPlayers(application: FriendlyMatchApplication) { return application.proposal.requestedPlayerCount ?? 1; }
   canSubmit(application: FriendlyMatchApplication) {
     return ['INTERESTED', 'COLLECTING', 'NEEDS_RECONFIRMATION'].includes(application.status)
-      && this.selectedPlayerIds().length >= this.minPlayers(application)
       && this.selectedPlayerIds().every((id) => application.playerResponses.some((response) => response.id === id && response.availability === 'AVAILABLE'));
   }
   canWithdraw(application: FriendlyMatchApplication) {

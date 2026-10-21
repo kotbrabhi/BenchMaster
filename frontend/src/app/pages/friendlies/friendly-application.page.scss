@@ -106,6 +106,18 @@
   user-select: all;
 }
 
+.friendlies-share-button { display: none; }
+
+.friendlies-share-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .friendlies-invite-actions p {
   margin: 0;
   max-width: 600px;
@@ -150,7 +162,7 @@
   font-weight: 700;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .friendlies-response-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -162,4 +174,6 @@
     align-items: stretch;
     flex-direction: column;
   }
+
+  .friendlies-share-button { display: inline-flex; }
 }

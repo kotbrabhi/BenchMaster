@@ -397,7 +397,6 @@ export async function submitApplication(userId: number, applicationId: number, i
     throw new HttpError(400, 'Sélectionnez une composition valide.');
   }
   const selectedIds = input.responseIds;
-    if (!selectedIds.length) throw new HttpError(400, 'Sélectionnez au moins un joueur disponible.');
   const initial = await prisma.friendlyMatchApplication.findFirst({ where: { id: applicationId, coachUserId: userId }, select: { proposalId: true } });
   if (!initial) throw new HttpError(404, 'Candidature introuvable.');
   await expireProposalIfDue(initial.proposalId);
@@ -405,15 +404,13 @@ export async function submitApplication(userId: number, applicationId: number, i
     await lockProposal(tx, initial.proposalId);
     const application = await tx.friendlyMatchApplication.findFirst({
       where: { id: applicationId, coachUserId: userId },
-      select: { id: true, teamId: true, status: true, proposalId: true, proposal: { select: { status: true, startsAt: true, responseDeadline: true, requestedPlayerCount: true, createdByUserId: true } } }
+      select: { id: true, teamId: true, status: true, proposalId: true, proposal: { select: { status: true, startsAt: true, responseDeadline: true, createdByUserId: true } } }
     });
     if (!application) throw new HttpError(404, 'Candidature introuvable.');
     if (!new Set<FriendlyApplicationStatus>([FriendlyApplicationStatus.INTERESTED, FriendlyApplicationStatus.COLLECTING, FriendlyApplicationStatus.NEEDS_RECONFIRMATION]).has(application.status)) {
       throw new HttpError(409, 'Cette candidature ne peut pas être soumise dans son état actuel.');
     }
     ensureOpenForResponses(application.proposal);
-    const minimum = application.proposal.requestedPlayerCount ?? 1;
-    if (selectedIds.length < minimum) throw new HttpError(400, `Au moins ${minimum} joueurs disponibles sont nécessaires.`);
     const now = new Date();
     const updated = await tx.friendlyMatchApplication.updateMany({
       where: { id: applicationId, coachUserId: userId, status: application.status },
@@ -428,9 +425,11 @@ export async function submitApplication(userId: number, applicationId: number, i
       throw new HttpError(409, 'La disponibilité a changé. Actualisez le tableau avant de soumettre.');
     }
     await tx.friendlyApplicationPlayer.deleteMany({ where: { applicationId } });
-    await tx.friendlyApplicationPlayer.createMany({
-      data: selected.map((response) => ({ applicationId, playerId: response.playerId, playerNameSnapshot: response.playerNameSnapshot, jerseyNumberSnapshot: response.jerseyNumberSnapshot }))
-    });
+    if (selected.length) {
+      await tx.friendlyApplicationPlayer.createMany({
+        data: selected.map((response) => ({ applicationId, playerId: response.playerId, playerNameSnapshot: response.playerNameSnapshot, jerseyNumberSnapshot: response.jerseyNumberSnapshot }))
+      });
+    }
     await createFriendlyNotifications(tx, [{
       userId: application.proposal.createdByUserId,
       type: FriendlyNotificationType.TEAM_SUBMITTED,
@@ -506,16 +505,13 @@ export async function acceptApplication(userId: number, applicationId: number) {
       where: { id: applicationId },
       select: {
         id: true, proposalId: true, teamId: true, coachUserId: true, status: true,
-        proposal: { select: { id: true, createdByUserId: true, organizerTeamId: true, status: true, startsAt: true, durationMinutes: true, area: true, format: true, responseDeadline: true, requestedPlayerCount: true } },
+        proposal: { select: { id: true, createdByUserId: true, organizerTeamId: true, status: true, startsAt: true, durationMinutes: true, area: true, format: true, responseDeadline: true } },
         proposedPlayers: { select: { playerId: true } }
       }
     });
     if (!candidate || candidate.proposal.createdByUserId !== userId) throw new HttpError(404, 'Candidature introuvable.');
     if (candidate.status !== FriendlyApplicationStatus.SUBMITTED) throw new HttpError(409, 'Seule une équipe officiellement proposée peut être acceptée.');
     ensureOpenForResponses(candidate.proposal);
-    const minimum = candidate.proposal.requestedPlayerCount ?? 1;
-    if (candidate.proposedPlayers.length < minimum) throw new HttpError(409, 'Cette équipe ne satisfait plus le minimum demandé.');
-
     const now = new Date();
     const proposalClaim = await tx.friendlyMatchProposal.updateMany({
       where: {

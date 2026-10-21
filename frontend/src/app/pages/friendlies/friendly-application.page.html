@@ -51,6 +51,10 @@
             @if (generatedLink(); as link) {
               <code class="friendlies-team-invite-url">{{ inviteUrl(link) }}</code>
               <button class="button button--secondary" type="button" (click)="copyLink()">{{ 'friendlies.copyInvite' | t }}</button>
+              <button class="button friendlies-share-button" type="button" (click)="shareLink()">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+                {{ 'friendlies.shareInvite' | t }}
+              </button>
             } @else if (hasActiveTeamInvite(item)) {
               <p>{{ 'friendlies.linkNeedsRegeneration' | t }}</p>
             }
@@ -74,9 +78,9 @@
             <section class="friendlies-team-selection" aria-labelledby="friendlies-selection-title">
               <div>
                 <h3 id="friendlies-selection-title">{{ 'friendlies.selectOfficialTeam' | t }}</h3>
-                <p>{{ 'friendlies.minimumAvailablePlayers' | t : { count: minPlayers(item) } }}</p>
+                <p>{{ 'friendlies.officialTeamOptionalPlayers' | t }}</p>
               </div>
-              <strong>{{ selectedPlayerIds().length }} / {{ minPlayers(item) }} {{ 'friendlies.selectedPlayers' | t }}</strong>
+              <strong>{{ selectedPlayerIds().length }} {{ 'friendlies.selectedPlayers' | t }}</strong>
             </section>
           } @else {
             <section class="friendlies-team-selection friendlies-team-selection--submitted">
@@ -112,7 +116,7 @@
         }
         @if (item.status === 'INTERESTED' || item.status === 'COLLECTING' || item.status === 'NEEDS_RECONFIRMATION') {
           <div class="friendlies-submit-actions">
-            <p>{{ 'friendlies.submitConditions' | t : { count: minPlayers(item) } }}</p>
+            <p>{{ 'friendlies.submitConditions' | t }}</p>
             <button class="button" type="button" [disabled]="submitting() || !canSubmit(item)" (click)="submitTeam()">
               {{ (submitting() ? 'friendlies.saving' : 'friendlies.submitTeam') | t }}
             </button>
