@@ -143,8 +143,8 @@ export async function notifyUsersOfProposal(authorUserId: number, proposal: { id
     if (!subscriptions.length) return;
     const date = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Paris' }).format(proposal.startsAt);
     const payload = JSON.stringify({
-      title: 'Nouveau match proposé',
-      body: `${proposal.teamName} · ${proposal.category} · ${date} · ${proposal.area}`,
+      title: `${proposal.teamName} propose un match`,
+      body: `Le ${date} · ${proposal.category} · ${proposal.area}. Touchez pour voir les détails.`,
       url: `/friendlies/${proposal.id}`
     });
     const results = await Promise.allSettled(subscriptions.map((subscription) => sendPush(subscription, payload)));

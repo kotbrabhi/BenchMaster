@@ -220,6 +220,10 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.pushNotificationStatus() === 'enabled' ? 'app.push.disable' : 'app.push.enable';
   }
 
+  pushNotificationShortActionLabel(): TranslationKey {
+    return this.pushNotificationStatus() === 'enabled' ? 'app.push.disableShort' : 'app.push.enableShort';
+  }
+
   pushNotificationStatusLabel(): TranslationKey {
     switch (this.pushNotificationStatus()) {
       case 'blocked': return 'app.push.blocked';

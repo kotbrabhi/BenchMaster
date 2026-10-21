@@ -34,12 +34,17 @@
               <strong>{{ 'friendlies.notificationsTitle' | t }}</strong>
               <span>{{ unreadNotificationCount() }}</span>
             </div>
-          <button class="shell-push-action" type="button" (click)="togglePushNotifications()" [disabled]="pushNotificationStatus() === 'checking' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'blocked'">
-            {{ pushNotificationActionLabel() | t }}
-          </button>
-          @if (pushNotificationStatus() === 'blocked' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'error') {
-            <p class="shell-push-action__message" role="status">{{ pushNotificationStatusLabel() | t }}</p>
-          }
+          <div class="shell-push-preference">
+            <div class="shell-push-preference__copy">
+              <strong>{{ 'app.push.bannerTitle' | t }}</strong>
+              @if (pushNotificationStatus() === 'blocked' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'error') {
+                <p class="shell-push-action__message" role="status">{{ pushNotificationStatusLabel() | t }}</p>
+              }
+            </div>
+            <button class="shell-push-action" type="button" (click)="togglePushNotifications()" [disabled]="pushNotificationStatus() === 'checking' || pushNotificationStatus() === 'unsupported' || pushNotificationStatus() === 'blocked'">
+              {{ pushNotificationShortActionLabel() | t }}
+            </button>
+          </div>
             @if (notifications().length) {
               <div class="shell-notifications-popover__list">
                 @for (notification of notifications().slice(0, 6); track notification.id) {
@@ -185,12 +190,14 @@
     <aside class="install-banner" aria-labelledby="install-banner-title" role="status" aria-live="polite">
       <div class="install-banner__copy">
         <strong id="install-banner-title">{{ 'app.install.title' | t }}</strong>
-        <span>{{ 'app.install.description' | t }}</span>
+        @if (!installHelpVisible()) {
+          <span>{{ 'app.install.description' | t }}</span>
+        }
         @if (installHelpVisible()) {
           <span class="install-banner__help">{{ (installIsIos() ? 'app.install.iosHelp' : 'app.install.androidHelp') | t }}</span>
         }
       </div>
-      <button class="button install-banner__action" type="button" (click)="installApp()">
+      <button class="install-banner__action" type="button" (click)="installApp()">
         {{ (installHelpVisible() ? 'app.install.understood' : 'app.install.action') | t }}
       </button>
       <button class="install-banner__close" type="button" [attr.aria-label]="'app.install.dismiss' | t" (click)="dismissInstallBanner()">
@@ -206,8 +213,8 @@
         <span>{{ pushBannerMessage() }}</span>
       </div>
       @if (pushNotificationStatus() === 'disabled' || pushNotificationStatus() === 'error') {
-        <button class="button install-banner__action" type="button" (click)="togglePushNotifications()">
-          {{ 'app.push.enable' | t }}
+        <button class="install-banner__action" type="button" (click)="togglePushNotifications()">
+          {{ 'app.push.enableShort' | t }}
         </button>
       }
       <button class="install-banner__close" type="button" [attr.aria-label]="'app.install.dismiss' | t" (click)="dismissPushBanner()">
