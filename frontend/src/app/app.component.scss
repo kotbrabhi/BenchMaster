@@ -173,10 +173,19 @@
     width: min(160px, calc(100vw - 144px));
   }
 
-  .shell__brand { padding-top: calc(60px + env(safe-area-inset-top)); }
+  .shell__brand { padding-top: calc(64px + env(safe-area-inset-top)); }
 
   .shell__account-toggle { display: grid; flex: 0 0 auto; }
   .shell__header-actions { right: 12px; gap: 6px; }
+
+  .shell__header-actions .shell__theme-toggle,
+  .shell__header-actions .shell__account-toggle,
+  .shell__header-actions .shell__notifications-toggle {
+    position: relative;
+    inset: auto;
+    width: 44px;
+    height: 44px;
+  }
 
   .tabbar {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -238,9 +247,7 @@
 }
 
 @media (max-width: 400px) {
-  .shell__brand {
-    padding-inline: 0;
-  }
+  .shell__brand { padding-inline: 0; }
 
   .shell__brand-logo {
     width: min(112px, calc(100vw - 144px));
@@ -250,9 +257,9 @@
 @media (max-width: 359px) {
   .shell__header-actions { right: 8px; gap: 4px; }
   .shell__header-actions .shell__theme-toggle,
-  .shell__account-toggle,
-  .shell__mobile-locale-toggle,
-  .shell__notifications-toggle { width: 40px; height: 40px; border-radius: 12px; }
+  .shell__header-actions .shell__account-toggle,
+  .shell__header-actions .shell__notifications-toggle,
+  .shell__mobile-locale-toggle { width: 40px; height: 40px; border-radius: 12px; }
   .shell__mobile-locale-toggle { left: 8px; }
   .tabbar__item { font-size: 0.68rem; }
 }
