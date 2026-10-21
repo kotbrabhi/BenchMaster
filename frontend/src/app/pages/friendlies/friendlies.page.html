@@ -197,10 +197,17 @@
           </div>
         </div>
         @if (view() === 'network') {
-          <form class="friendlies-filter" (ngSubmit)="loadList()">
-            <label class="form-field"><span>{{ 'friendlies.filterCategory' | t }}</span><input name="filterCategory" [(ngModel)]="filterCategory" /></label>
-            <button class="button button--secondary" type="submit">{{ 'friendlies.applyFilter' | t }}</button>
-          </form>
+          <div class="friendlies-filter">
+            <label class="form-field">
+              <span>{{ 'friendlies.filterCategory' | t }}</span>
+              <input
+                type="search"
+                name="filterCategory"
+                [(ngModel)]="filterCategory"
+                (ngModelChange)="onFilterCategoryChange($event)"
+                [attr.aria-busy]="refreshingList()" />
+            </label>
+          </div>
         }
         @if (view() === 'confirmed') {
           <div class="section-heading friendlies-confirmed-heading">

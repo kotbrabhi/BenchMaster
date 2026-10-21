@@ -49,7 +49,9 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
   readonly isForm = signal(false);
   readonly isEdit = signal(false);
   private notificationsSubscription?: Subscription;
+  private filterDebounce?: ReturnType<typeof setTimeout>;
   private listRequestInFlight = false;
+  private listReloadQueued = false;
   private confirmedRequestInFlight = false;
   private confirmedInitialLoadComplete = false;
   readonly confirmedMatchesLoaded = signal(false);
@@ -117,6 +119,7 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.notificationsSubscription?.unsubscribe();
+    if (this.filterDebounce != null) clearTimeout(this.filterDebounce);
   }
 
   async loadAuxiliaryData() {
@@ -140,7 +143,11 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
   }
 
   async loadList() {
-    if (this.view() === 'confirmed' || this.listRequestInFlight) return;
+    if (this.view() === 'confirmed') return;
+    if (this.listRequestInFlight) {
+      this.listReloadQueued = true;
+      return;
+    }
     this.listRequestInFlight = true;
     if (this.loading()) this.refreshingList.set(false);
     else this.refreshingList.set(true);
@@ -174,7 +181,20 @@ export class FriendliesPageComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       this.refreshingList.set(false);
       this.listRequestInFlight = false;
+      if (this.listReloadQueued) {
+        this.listReloadQueued = false;
+        void this.loadList();
+      }
     }
+  }
+
+  onFilterCategoryChange(value: string) {
+    this.filterCategory = value;
+    if (this.filterDebounce != null) clearTimeout(this.filterDebounce);
+    this.filterDebounce = setTimeout(() => {
+      this.filterDebounce = undefined;
+      if (this.view() === 'network') void this.loadList();
+    }, 300);
   }
 
   async setView(view: 'network' | 'applications' | 'confirmed') {
