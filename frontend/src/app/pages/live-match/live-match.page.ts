@@ -60,6 +60,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   readonly busyAction = signal<string | null>(null);
   readonly statUpdatePlayerIds = signal<number[]>([]);
   readonly correctionMode = signal(false);
+  readonly expandedPlayerId = signal<number | null>(null);
   readonly mobileRosterView = signal<LiveRosterView>('court');
   readonly isMobileViewport = signal(false);
   readonly pendingConfirmation = signal<PendingLiveConfirmation | null>(null);
@@ -130,6 +131,10 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
     this.syncMobileRosterFlow('bench', wasSelected);
     this.focusRosterAfterViewChange(previousView, selectionHadFocus);
+  }
+
+  togglePlayerExpanded(playerId: number) {
+    this.expandedPlayerId.update((currentPlayerId) => currentPlayerId === playerId ? null : playerId);
   }
 
   async toggleActivePlayer(playerId: number) {
@@ -883,7 +888,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.mobileMediaQuery = window.matchMedia('(max-width: 767px)');
+    this.mobileMediaQuery = window.matchMedia('(max-width: 900px)');
     this.isMobileViewport.set(this.mobileMediaQuery.matches);
     this.mobileMediaQuery.addEventListener('change', this.handleMobileViewportChange);
   }

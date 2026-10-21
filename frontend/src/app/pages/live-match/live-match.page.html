@@ -2,7 +2,6 @@
   <p class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true">{{ displayErrorMessage() }}</p>
   @if (game(); as currentGame) {
     <header class="toolbar">
-      <span class="toolbar__eyebrow">{{ 'live.hero.eyebrow' | t }}</span>
       <h1 class="toolbar__title">{{ 'live.hero.title' | t : { game: currentGame.label } }}</h1>
     </header>
 
@@ -35,7 +34,7 @@
           <div class="action-flow live-clock-card__actions">
             @if (canPause(currentGame)) {
               <button
-                class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                class="button button--secondary button--icon live-clock-card__control"
                 type="button"
                 data-live-control="pause"
                 [attr.aria-busy]="isActionBusy('pause')"
@@ -52,7 +51,7 @@
 
             @if (canResume(currentGame)) {
               <button
-                class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                class="button button--icon live-clock-card__control"
                 type="button"
                 data-live-control="resume"
                 [attr.aria-busy]="isActionBusy('resume')"
@@ -68,7 +67,7 @@
 
             @if (currentGame.status !== 'FINISHED' && currentGame.status !== 'DRAFT') {
               <button
-                class="button button--danger button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                class="button button--danger button--icon live-clock-card__control"
                 type="button"
                 data-live-control="end-game"
                 [attr.aria-busy]="isActionBusy('end-game')"
@@ -85,7 +84,7 @@
 
             @if (currentGame.status === 'FINISHED') {
               <a
-                class="button button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                class="button button--icon live-clock-card__control"
                 [routerLink]="['/games', currentGame.id, 'summary']"
                 [attr.aria-label]="'live.actions.viewSummary' | t"
                 [attr.title]="'live.actions.viewSummary' | t">
@@ -133,7 +132,7 @@
 
             @if (canCompletePeriod(currentGame)) {
               <button
-                class="button button--secondary button--icon live-clock-card__control live-clock-card__control--fixed-width"
+                class="button button--secondary button--icon live-clock-card__control"
                 type="button"
                 data-live-control="complete-period"
                 [attr.aria-busy]="isActionBusy('complete-period')"
@@ -237,7 +236,8 @@
         }
       </section>
 
-      <section class="surface-card substitution-banner" [class.substitution-banner--active]="hasPendingSelections()">
+      @if (hasPendingSelections()) {
+      <section class="surface-card substitution-banner substitution-banner--active">
         <div class="substitution-banner__copy">
           <strong>{{ pendingHeadline() }}</strong>
           <p>{{ pendingInstructionMessage() }}</p>
@@ -293,6 +293,7 @@
           </button>
         </div>
       </section>
+      }
 
       <div class="live-roster-switch-wrap">
         <div class="live-roster-switch" role="group" [attr.aria-label]="mobileRosterSwitchAriaLabel()">
@@ -353,6 +354,8 @@
                 [jerseyNumber]="player.jerseyNumber"
                 [position]="player.position"
                 [compact]="true"
+                [expandable]="true"
+                [expanded]="expandedPlayerId() === player.playerId"
                 [tone]="'active'"
                 [selected]="isActiveSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'court')"
@@ -365,6 +368,7 @@
                 [actionLabel]="activePlayerActionLabel(player.playerId)"
                 [actionDisabled]="isPlayerActionDisabled(player, 'court')"
                 (inlineStatPressed)="handleQuickAction(player.playerId, 'fouls')"
+                (expandPressed)="togglePlayerExpanded(player.playerId)"
                 (statPressed)="handleQuickAction(player.playerId, $event)"
                 (quickActionPressed)="handleQuickAction(player.playerId, $event)"
                 (actionPressed)="toggleActivePlayer(player.playerId)">
@@ -400,6 +404,8 @@
                 [jerseyNumber]="player.jerseyNumber"
                 [position]="player.position"
                 [compact]="true"
+                [expandable]="true"
+                [expanded]="expandedPlayerId() === player.playerId"
                 [tone]="'bench'"
                 [selected]="isBenchSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'bench')"
@@ -410,6 +416,7 @@
                 [actionLabel]="benchPlayerActionLabel(player.playerId)"
                 [actionDisabled]="isPlayerActionDisabled(player, 'bench')"
                 (inlineStatPressed)="handleQuickAction(player.playerId, 'fouls')"
+                (expandPressed)="togglePlayerExpanded(player.playerId)"
                 (actionPressed)="toggleBenchPlayer(player.playerId)">
               </app-player-card>
             }

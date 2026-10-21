@@ -60,8 +60,11 @@ export class PlayerCardComponent {
   @Input() tone: 'active' | 'bench' | 'summary' = 'bench';
   @Input() progress = 0;
   @Input() compact = false;
+  @Input() expandable = false;
+  @Input() expanded = false;
 
   @Output() actionPressed = new EventEmitter<void>();
+  @Output() expandPressed = new EventEmitter<void>();
   @Output() inlineStatPressed = new EventEmitter<void>();
   @Output() quickActionPressed = new EventEmitter<PlayerCardQuickActionValue>();
   @Output() statPressed = new EventEmitter<PlayerCardQuickActionValue>();
@@ -84,6 +87,10 @@ export class PlayerCardComponent {
   handleActionClick(event: MouseEvent) {
     event.stopPropagation();
     this.actionPressed.emit();
+  }
+
+  handleExpandClick() {
+    this.expandPressed.emit();
   }
 
   handleInlineStatClick(event: MouseEvent) {

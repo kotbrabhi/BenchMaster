@@ -2,7 +2,40 @@
   class="player-card"
   [class.player-card--active]="tone === 'active'"
   [class.player-card--compact]="compact"
-  [class.player-card--selected]="selected">
+  [class.player-card--selected]="selected"
+  [class.player-card--expandable]="expandable"
+  [class.player-card--expanded]="expanded">
+  @if (expandable) {
+    <button
+      class="player-card__summary-toggle"
+      type="button"
+      [attr.aria-expanded]="expanded"
+      [attr.aria-controls]="'player-card-details-' + playerId"
+      (click)="handleExpandClick()">
+      <span class="player-card__number">#{{ jerseyNumber }}</span>
+      <span class="player-card__summary-identity">
+        <span class="player-card__name">{{ playerName }}</span>
+      </span>
+      @if (inlineStat; as currentInlineStat) {
+        <span
+          class="player-card__summary-stat"
+          [class.player-card__summary-stat--danger]="currentInlineStat.tone === 'danger'"
+          [class.player-card__summary-stat--highlighted]="currentInlineStat.highlighted">
+          <span>{{ currentInlineStat.label }}</span>
+          <strong>{{ currentInlineStat.value }}</strong>
+        </span>
+      }
+      @if (timeLabel) {
+        <span class="player-card__meta-pill player-card__meta-pill--accent player-card__summary-time">{{ timeLabel }}</span>
+      }
+      @if (stateLabel) {
+        <span class="state-chip state-chip--selected player-card__summary-state">{{ stateLabel }}</span>
+      }
+      <svg class="player-card__disclosure-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m7 10 5 5 5-5" />
+      </svg>
+    </button>
+  } @else {
   <div class="player-card__header">
     <div class="player-card__summary">
       <div class="player-card__number">#{{ jerseyNumber }}</div>
@@ -82,17 +115,44 @@
       <span class="state-chip state-chip--selected">{{ stateLabel }}</span>
     }
   </div>
+  }
 
-  @if (note || timeLabel) {
+  <div
+    class="player-card__details"
+    [class.player-card__details--open]="!expandable || expanded"
+    [id]="expandable ? 'player-card-details-' + playerId : null"
+    [attr.inert]="expandable && !expanded ? '' : null"
+    [attr.aria-hidden]="expandable && !expanded ? 'true' : null">
+  @if (note || position || (timeLabel && !expandable)) {
     <div class="player-card__meta-strip">
       @if (note) {
         <span class="player-card__meta-pill">{{ note }}</span>
       }
 
-      @if (timeLabel) {
+      @if (expandable && position) {
+        <span class="player-card__meta-pill">{{ position }}</span>
+      }
+
+      @if (timeLabel && !expandable) {
         <span class="player-card__meta-pill player-card__meta-pill--accent">{{ timeLabel }}</span>
       }
     </div>
+  }
+
+  @if (expandable && expanded && inlineStat; as currentInlineStat) {
+    @if (currentInlineStat.clickable) {
+      <button
+        class="player-card__inline-stat player-card__expanded-foul"
+        [class.player-card__inline-stat--highlighted]="currentInlineStat.highlighted"
+        [class.player-card__inline-stat--danger]="currentInlineStat.tone === 'danger'"
+        type="button"
+        [disabled]="currentInlineStat.disabled"
+        [attr.aria-label]="accessibleActionLabel(currentInlineStat.title || currentInlineStat.label)"
+        (click)="handleInlineStatClick($event)">
+        <span class="player-card__inline-stat-label">{{ currentInlineStat.label }}</span>
+        <strong>{{ currentInlineStat.value }}</strong>
+      </button>
+    }
   }
 
   @if (stats.length) {
@@ -178,4 +238,5 @@
       <span [style.width.%]="progress"></span>
     </div>
   }
+  </div>
 </article>

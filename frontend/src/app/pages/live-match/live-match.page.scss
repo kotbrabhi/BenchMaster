@@ -2,14 +2,14 @@
   min-height: auto;
 }
 
+.toolbar__title {
+  margin-bottom: 0;
+}
+
 .live-control-panel {
   display: flex;
   flex-direction: column;
   gap: var(--mobile-card-gap);
-}
-
-.live-control-panel--clock {
-  background: linear-gradient(180deg, var(--color-panel-start), var(--color-surface-glass-strong));
 }
 
 .live-control-panel--players {
@@ -23,6 +23,10 @@
 
 .live-control-panel__heading {
   margin-bottom: 16px;
+}
+
+.live-control-panel--clock .live-control-panel__heading {
+  margin-bottom: 6px;
 }
 
 .live-control-panel__focus {
@@ -59,8 +63,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--mobile-card-gap);
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.live-clock-card__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .live-clock-card__metric {
@@ -79,8 +89,8 @@
 }
 
 .live-clock-card__actions {
-  flex-wrap: nowrap;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  flex-shrink: 1;
 }
 
 .live-clock-card__control,
@@ -112,9 +122,24 @@
 }
 
 .live-clock-card strong {
-  font-size: 2rem;
+  font-size: 1.65rem;
   line-height: 1;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-clock-card__control,
+.live-clock-card__control.button--icon {
+  min-height: 44px;
+  gap: 6px;
+  padding-inline: 10px;
+  border-radius: 13px;
+  font-size: 0.84rem;
+}
+
+.live-clock-card__control svg {
+  width: 16px;
+  height: 16px;
 }
 
 .substitution-banner {
@@ -129,6 +154,13 @@
 .substitution-banner--active {
   border-color: var(--color-accent-strong-soft);
   background: linear-gradient(180deg, var(--color-accent-soft), var(--color-surface-glass-strong));
+}
+
+.substitution-banner:not(.substitution-banner--active) {
+  padding-block: 8px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
 }
 
 .live-clock-card__control[aria-pressed='true'] {
@@ -308,7 +340,7 @@
   min-width: 0;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 900px) {
   .page--live {
     padding-bottom: calc(248px + env(safe-area-inset-bottom));
   }
@@ -323,7 +355,7 @@
   }
 
   .live-clock-card strong {
-    font-size: 1.55rem;
+    font-size: 1.4rem;
   }
 
   .live-clock-card__label {
@@ -481,14 +513,10 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 901px) {
   .page--live {
     gap: 12px;
     padding: 12px 0 16px;
-  }
-
-  .live-clock-card__row {
-    gap: 18px;
   }
 
   .live-match__roster-grid {
@@ -508,17 +536,56 @@
     gap: 10px;
   }
 
-  .live-clock-card__control,
-  .live-clock-card__control.button--icon {
-    gap: 10px;
-    padding: 0 16px;
+}
+
+@media (min-width: 901px) {
+  .page--live {
+    width: 100%;
+    max-width: 1440px;
+    gap: 14px;
   }
 
-  .live-clock-card__control--fixed-width {
-    width: 200px;
+  .live-clock-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 
-  .live-clock-card__control-label {
-    font-size: 0.9rem;
+  .live-clock-card__row {
+    min-width: 0;
+  }
+
+  .live-control-panel--players {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .live-control-panel--players .live-control-panel__heading {
+    align-items: center;
+    margin: 0;
+  }
+
+  .live-control-panel--players .section-heading p {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .live-clock-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-clock-card__row {
+    padding: 0 18px 0 0;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 0;
+  }
+
+  .live-clock-card__row:last-child {
+    padding: 0 0 0 18px;
+    border-right: 0;
   }
 }
