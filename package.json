@@ -26,6 +26,10 @@
     "db:seed": "npm run check:node && npm run db:seed --workspace backend"
   },
   "devDependencies": {
-    "prisma": "8.0.0-rc.23"
+    "prisma": "8.0.0-rc.33"
+  },
+  "overrides": {
+    "lmdb": "3.5.10",
+    "esbuild": "0.28.2"
   }
 }
