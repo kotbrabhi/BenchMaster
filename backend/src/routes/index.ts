@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { requireAuth } from '../auth/auth.middleware';
 import { asyncHandler } from '../utils/async-handler';
 import * as authController from '../controllers/auth.controller';
@@ -10,13 +11,19 @@ import * as pushController from '../controllers/push.controller';
 import * as teamController from '../controllers/team.controller';
 
 const router = Router();
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false
+});
 
 router.get('/health', (_request, response) => {
   response.json({ status: 'ok' });
 });
 
-router.post('/auth/register', asyncHandler(authController.register));
-router.post('/auth/login', asyncHandler(authController.login));
+router.post('/auth/register', authRateLimit, asyncHandler(authController.register));
+router.post('/auth/login', authRateLimit, asyncHandler(authController.login));
 router.get('/auth/me', asyncHandler(requireAuth), asyncHandler(authController.me));
 router.post('/public/game-shares', asyncHandler(gameController.createPublicShare));
 router.get('/public/game-shares/:shareId', asyncHandler(gameController.getPublicSharedSummary));

@@ -2,7 +2,7 @@
   "name": "benchmaster-frontend",
   "version": "0.0.0",
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.23.5"
   },
   "scripts": {
     "check:node": "node ../scripts/check-node.mjs",

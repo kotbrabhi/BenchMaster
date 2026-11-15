@@ -9,10 +9,15 @@ interface TokenPayload {
 }
 
 const TOKEN_LIFETIME_MS = 1000 * 60 * 60 * 24 * 7;
-const DEFAULT_DEV_SECRET = 'benchmaster-dev-secret';
-
 function getTokenSecret() {
-  return process.env.AUTH_TOKEN_SECRET?.trim() || DEFAULT_DEV_SECRET;
+  const secret = process.env.AUTH_TOKEN_SECRET?.trim();
+  if (!secret || secret === 'change-me-in-production') {
+    throw new Error('AUTH_TOKEN_SECRET must be configured with a unique secret.');
+  }
+  if (Buffer.byteLength(secret, 'utf8') < 32) {
+    throw new Error('AUTH_TOKEN_SECRET must contain at least 32 bytes.');
+  }
+  return secret;
 }
 
 function encodeBase64Url(value: string) {

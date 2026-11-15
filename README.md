@@ -42,7 +42,7 @@ Users can enable proposal alerts from the in-app notifications menu. Push delive
 
 ## Prisma ORM 8 migration
 
-The backend now includes the Prisma ORM 8 PostgreSQL release candidate and emits its typed contract from the existing Prisma schema with `npm run prisma8:emit`. Runtime queries and database migrations remain on Prisma ORM 7 during this staged migration; continue using `npm run db:migrate` and `npm run db:setup` until the application query layer and database migration history have been moved to Prisma ORM 8. Prisma ORM 8 requires Node.js 22.18.0 or newer.
+The backend now includes the Prisma ORM 8 PostgreSQL release candidate and emits its typed contract from the existing Prisma schema with `npm run prisma8:emit`. Runtime queries and database migrations remain on Prisma ORM 7 during this staged migration; continue using `npm run db:migrate` and `npm run db:setup` until the application query layer and database migration history have been moved to Prisma ORM 8. BenchMaster requires patched Node.js 22.23.5 or newer.
 
 ## Project Structure
 
@@ -77,7 +77,7 @@ BenchMaster/
 
 ## Requirements
 
-- Node.js `22.18.0` or newer (required by Prisma ORM 8)
+- Node.js `22.23.5` or newer (patched security release)
 - npm `10.8.2` or newer
 - PostgreSQL running locally
 

@@ -18,7 +18,7 @@ services:
         - package-lock.json
     envVars:
       - key: NODE_VERSION
-        value: 22.18.0
+        value: 22.23.5
       - key: DATABASE_URL
         sync: false
       - key: FRONTEND_ORIGIN
@@ -43,7 +43,7 @@ services:
         - package-lock.json
     envVars:
       - key: NODE_VERSION
-        value: 22.18.0
+        value: 22.23.5
       - key: API_BASE_URL
         sync: false
     routes:
