@@ -23,7 +23,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
-    "@prisma/orm-postgres": "8.0.0-rc.18",
+    "@prisma/orm-postgres": "8.0.0-rc.23",
     "@prisma/prisma7": "^7.10.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

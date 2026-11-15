@@ -3,11 +3,12 @@
 // To regenerate, run: prisma contract emit
 import type {
   CodecTypes as PgTypes,
-  TimestampString,
+  ParameterizedOutputTypesForTypeParams as PgParameterizedOutputTypes,
 } from '@prisma/orm-postgres/target/codec-types';
 import type { QueryOperationTypes as PgTargetQueryOps } from '@prisma/orm-postgres/target/operation-types';
 
 import type {
+  ColumnTypesFromStorage,
   ContractWithTypeMaps,
   RelationKeys,
   TypeMaps as TypeMapsType,
@@ -15,15 +16,16 @@ import type {
 import type {
   Contract as ContractType,
   ExecutionHashBase,
+  FieldTypesFromDomain,
   NamespaceId,
   ProfileHashBase,
   StorageHashBase,
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0c469ac0251d4f3c1f323e866532441eeff3b5eae7c99e002693800cd3961703'>;
+  StorageHashBase<'4dc97b9134652fb39fcc2a605ffd1ad53030c0f839d9dac8532ecdda8107b997'>;
 export type ExecutionHash =
-  ExecutionHashBase<'3d5f6c1c0596710a956b0fc36564483770d4250cc6ff27504393c318ea13a1af'>;
+  ExecutionHashBase<'f875fe0871ee9f465515c29e1e20500e139b597c44f477421065bcd8e28cbe95'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -41,6 +43,10 @@ export type AggregateTypes = {
       readonly 'pg/int4@1': { readonly output: 'pg/float8@1'; readonly nullable: true };
       readonly 'pg/int8@1': { readonly output: 'pg/float8@1'; readonly nullable: true };
       readonly 'pg/int8number@1': { readonly output: 'pg/float8@1'; readonly nullable: true };
+      readonly 'pg/interval-string@1': {
+        readonly output: 'pg/interval-string@1';
+        readonly nullable: true;
+      };
       readonly 'pg/interval@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
       readonly 'pg/numeric@1': { readonly output: 'pg/numeric@1'; readonly nullable: true };
       readonly 'pg/time-string@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
@@ -90,13 +96,27 @@ export type AggregateTypes = {
       readonly 'pg/int4@1': { readonly output: 'pg/int4@1'; readonly nullable: true };
       readonly 'pg/int8@1': { readonly output: 'pg/int8@1'; readonly nullable: true };
       readonly 'pg/int8number@1': { readonly output: 'pg/int8number@1'; readonly nullable: true };
+      readonly 'pg/interval-string@1': {
+        readonly output: 'pg/interval-string@1';
+        readonly nullable: true;
+      };
       readonly 'pg/interval@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
+      readonly 'pg/money@1': { readonly output: 'pg/money@1'; readonly nullable: true };
       readonly 'pg/numeric@1': { readonly output: 'pg/numeric@1'; readonly nullable: true };
+      readonly 'pg/oid@1': { readonly output: 'pg/oid@1'; readonly nullable: true };
       readonly 'pg/text-array@1': { readonly output: 'pg/text-array@1'; readonly nullable: true };
       readonly 'pg/text@1': { readonly output: 'pg/text@1'; readonly nullable: true };
       readonly 'pg/time-string@1': { readonly output: 'pg/time-string@1'; readonly nullable: true };
       readonly 'pg/time-temporal@1': {
         readonly output: 'pg/time-temporal@1';
+        readonly nullable: true;
+      };
+      readonly 'pg/timestamp-date@1': {
+        readonly output: 'pg/timestamp-date@1';
+        readonly nullable: true;
+      };
+      readonly 'pg/timestamp-instant@1': {
+        readonly output: 'pg/timestamp-instant@1';
         readonly nullable: true;
       };
       readonly 'pg/timestamp-string@1': {
@@ -150,13 +170,27 @@ export type AggregateTypes = {
       readonly 'pg/int4@1': { readonly output: 'pg/int4@1'; readonly nullable: true };
       readonly 'pg/int8@1': { readonly output: 'pg/int8@1'; readonly nullable: true };
       readonly 'pg/int8number@1': { readonly output: 'pg/int8number@1'; readonly nullable: true };
+      readonly 'pg/interval-string@1': {
+        readonly output: 'pg/interval-string@1';
+        readonly nullable: true;
+      };
       readonly 'pg/interval@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
+      readonly 'pg/money@1': { readonly output: 'pg/money@1'; readonly nullable: true };
       readonly 'pg/numeric@1': { readonly output: 'pg/numeric@1'; readonly nullable: true };
+      readonly 'pg/oid@1': { readonly output: 'pg/oid@1'; readonly nullable: true };
       readonly 'pg/text-array@1': { readonly output: 'pg/text-array@1'; readonly nullable: true };
       readonly 'pg/text@1': { readonly output: 'pg/text@1'; readonly nullable: true };
       readonly 'pg/time-string@1': { readonly output: 'pg/time-string@1'; readonly nullable: true };
       readonly 'pg/time-temporal@1': {
         readonly output: 'pg/time-temporal@1';
+        readonly nullable: true;
+      };
+      readonly 'pg/timestamp-date@1': {
+        readonly output: 'pg/timestamp-date@1';
+        readonly nullable: true;
+      };
+      readonly 'pg/timestamp-instant@1': {
+        readonly output: 'pg/timestamp-instant@1';
         readonly nullable: true;
       };
       readonly 'pg/timestamp-string@1': {
@@ -202,7 +236,12 @@ export type AggregateTypes = {
       readonly 'pg/int4@1': { readonly output: 'pg/int8number@1'; readonly nullable: true };
       readonly 'pg/int8@1': { readonly output: 'pg/int8number@1'; readonly nullable: true };
       readonly 'pg/int8number@1': { readonly output: 'pg/int8number@1'; readonly nullable: true };
+      readonly 'pg/interval-string@1': {
+        readonly output: 'pg/interval-string@1';
+        readonly nullable: true;
+      };
       readonly 'pg/interval@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
+      readonly 'pg/money@1': { readonly output: 'pg/money@1'; readonly nullable: true };
       readonly 'pg/numeric@1': { readonly output: 'pg/numeric@1'; readonly nullable: true };
       readonly 'pg/time-string@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
       readonly 'pg/time-temporal@1': { readonly output: 'pg/interval@1'; readonly nullable: true };
@@ -234,491 +273,533 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
     ? Encoded
     : CodecTypes[CodecId]['json']
   : Encoded;
+type ParameterizedOutputTypeFunctions = PgParameterizedOutputTypes;
 
-export type FieldOutputTypes = {
+type FieldTypeOverrides = {
   readonly public: {
-    readonly Game: {
-      readonly clockElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly currentPeriodNumber: CodecTypes['pg/int4@1']['output'];
-      readonly currentPeriodStatus: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-      readonly endedAt: TimestampString<3> | null;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly isClockRunning: CodecTypes['pg/bool@1']['output'];
-      readonly label: CodecTypes['pg/text@1']['output'];
-      readonly lastClockStartedAt: TimestampString<3> | null;
-      readonly lastPeriodStartedAt: TimestampString<3> | null;
-      readonly periodElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly shareToken: CodecTypes['pg/text@1']['output'] | null;
-      readonly startedAt: TimestampString<3> | null;
-      readonly status: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
-      readonly teamId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly GamePlayer: {
-      readonly createdAt: TimestampString<3>;
-      readonly gameId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly isAvailable: CodecTypes['pg/bool@1']['output'];
-      readonly isStarter: CodecTypes['pg/bool@1']['output'];
-      readonly playerId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly GameRotationEvent: {
-      readonly clockMarkSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly gameId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly kind: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
-      readonly payload: CodecTypes['pg/jsonb@1']['output'] | null;
-      readonly periodNumber: CodecTypes['pg/int4@1']['output'];
-    };
-    readonly Player: {
-      readonly createdAt: TimestampString<3>;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly jerseyNumber: CodecTypes['pg/text@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'];
-      readonly position: CodecTypes['pg/text@1']['output'] | null;
-      readonly teamId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly PlayerGameTime: {
-      readonly assists: CodecTypes['pg/int4@1']['output'];
-      readonly blocks: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly fouls: CodecTypes['pg/int4@1']['output'];
-      readonly gamePlayerId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly interceptions: CodecTypes['pg/int4@1']['output'];
-      readonly isOnCourt: CodecTypes['pg/bool@1']['output'];
-      readonly lastEnteredAt: TimestampString<3> | null;
-      readonly lastPeriodEnteredAt: TimestampString<3> | null;
-      readonly periodFouls: CodecTypes['pg/int4@1']['output'];
-      readonly periodSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly points: CodecTypes['pg/int4@1']['output'];
-      readonly rebounds: CodecTypes['pg/int4@1']['output'];
-      readonly totalSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly SharedGameSnapshot: {
-      readonly createdAt: TimestampString<3>;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly payload: CodecTypes['pg/jsonb@1']['output'];
-      readonly shareId: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly Team: {
-      readonly createdAt: TimestampString<3>;
-      readonly gender: 'MIXED' | 'FEMININE' | 'MASCULINE';
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-      readonly userId: CodecTypes['pg/int4@1']['output'] | null;
-    };
-    readonly User: {
-      readonly createdAt: TimestampString<3>;
-      readonly email: CodecTypes['pg/text@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['output'];
-      readonly passwordSalt: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
+    readonly models: {
+      readonly FriendlyConfirmedMatch: {
+        readonly status: {
+          readonly output: 'CONFIRMED' | 'CANCELLED';
+          readonly input: 'CONFIRMED' | 'CANCELLED';
+        };
+      };
+      readonly FriendlyMatchApplication: {
+        readonly status: {
+          readonly output:
+            | 'INTERESTED'
+            | 'COLLECTING'
+            | 'SUBMITTED'
+            | 'NEEDS_RECONFIRMATION'
+            | 'ACCEPTED'
+            | 'REJECTED'
+            | 'WITHDRAWN'
+            | 'EXPIRED';
+          readonly input:
+            | 'INTERESTED'
+            | 'COLLECTING'
+            | 'SUBMITTED'
+            | 'NEEDS_RECONFIRMATION'
+            | 'ACCEPTED'
+            | 'REJECTED'
+            | 'WITHDRAWN'
+            | 'EXPIRED';
+        };
+      };
+      readonly FriendlyMatchProposal: {
+        readonly status: {
+          readonly output:
+            | 'DRAFT'
+            | 'OPEN'
+            | 'IN_DISCUSSION'
+            | 'CONFIRMED'
+            | 'CANCELLED'
+            | 'COMPLETED'
+            | 'EXPIRED';
+          readonly input:
+            | 'DRAFT'
+            | 'OPEN'
+            | 'IN_DISCUSSION'
+            | 'CONFIRMED'
+            | 'CANCELLED'
+            | 'COMPLETED'
+            | 'EXPIRED';
+        };
+      };
+      readonly FriendlyNotification: {
+        readonly type: {
+          readonly output:
+            | 'INTEREST_RECEIVED'
+            | 'TEAM_SUBMITTED'
+            | 'MATCH_CONFIRMED'
+            | 'APPLICATION_REJECTED'
+            | 'MATCH_CANCELLED';
+          readonly input:
+            | 'INTEREST_RECEIVED'
+            | 'TEAM_SUBMITTED'
+            | 'MATCH_CONFIRMED'
+            | 'APPLICATION_REJECTED'
+            | 'MATCH_CANCELLED';
+        };
+      };
+      readonly FriendlyPlayerAvailabilityHistory: {
+        readonly availability: {
+          readonly output: 'AVAILABLE' | 'UNAVAILABLE';
+          readonly input: 'AVAILABLE' | 'UNAVAILABLE';
+        };
+      };
+      readonly FriendlyPlayerResponse: {
+        readonly availability: {
+          readonly output: 'AVAILABLE' | 'UNAVAILABLE';
+          readonly input: 'AVAILABLE' | 'UNAVAILABLE';
+        };
+      };
+      readonly Game: {
+        readonly currentPeriodStatus: {
+          readonly output: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
+          readonly input: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
+        };
+        readonly status: {
+          readonly output: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
+          readonly input: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
+        };
+      };
+      readonly GameRotationEvent: {
+        readonly kind: {
+          readonly output: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
+          readonly input: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
+        };
+      };
+      readonly Team: {
+        readonly gender: {
+          readonly output: 'MIXED' | 'FEMININE' | 'MASCULINE';
+          readonly input: 'MIXED' | 'FEMININE' | 'MASCULINE';
+        };
+      };
     };
   };
 };
-export type FieldInputTypes = {
+export type FieldOutputTypes = FieldTypesFromDomain<
+  ContractBase['domain']['namespaces'],
+  CodecTypes,
+  ParameterizedOutputTypeFunctions,
+  FieldTypeOverrides,
+  'output',
+  ContractBase['storage']['namespaces']
+>;
+export type FieldInputTypes = FieldTypesFromDomain<
+  ContractBase['domain']['namespaces'],
+  CodecTypes,
+  ParameterizedOutputTypeFunctions,
+  FieldTypeOverrides,
+  'input',
+  ContractBase['storage']['namespaces']
+>;
+type ColumnTypeOverrides = {
   readonly public: {
-    readonly Game: {
-      readonly clockElapsedSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly currentPeriodNumber: CodecTypes['pg/int4@1']['input'];
-      readonly currentPeriodStatus: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-      readonly endedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly isClockRunning: CodecTypes['pg/bool@1']['input'];
-      readonly label: CodecTypes['pg/text@1']['input'];
-      readonly lastClockStartedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly lastPeriodStartedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly periodElapsedSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly shareToken: CodecTypes['pg/text@1']['input'] | null;
-      readonly startedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly status: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
-      readonly teamId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
+    readonly FriendlyConfirmedMatch: {
+      readonly status: {
+        readonly output: 'CONFIRMED' | 'CANCELLED';
+        readonly input: 'CONFIRMED' | 'CANCELLED';
+      };
     };
-    readonly GamePlayer: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gameId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly isAvailable: CodecTypes['pg/bool@1']['input'];
-      readonly isStarter: CodecTypes['pg/bool@1']['input'];
-      readonly playerId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
+    readonly FriendlyMatchApplication: {
+      readonly status: {
+        readonly output:
+          | 'INTERESTED'
+          | 'COLLECTING'
+          | 'SUBMITTED'
+          | 'NEEDS_RECONFIRMATION'
+          | 'ACCEPTED'
+          | 'REJECTED'
+          | 'WITHDRAWN'
+          | 'EXPIRED';
+        readonly input:
+          | 'INTERESTED'
+          | 'COLLECTING'
+          | 'SUBMITTED'
+          | 'NEEDS_RECONFIRMATION'
+          | 'ACCEPTED'
+          | 'REJECTED'
+          | 'WITHDRAWN'
+          | 'EXPIRED';
+      };
+    };
+    readonly FriendlyMatchProposal: {
+      readonly status: {
+        readonly output:
+          'DRAFT' | 'OPEN' | 'IN_DISCUSSION' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'EXPIRED';
+        readonly input:
+          'DRAFT' | 'OPEN' | 'IN_DISCUSSION' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'EXPIRED';
+      };
+    };
+    readonly FriendlyNotification: {
+      readonly type: {
+        readonly output:
+          | 'INTEREST_RECEIVED'
+          | 'TEAM_SUBMITTED'
+          | 'MATCH_CONFIRMED'
+          | 'APPLICATION_REJECTED'
+          | 'MATCH_CANCELLED';
+        readonly input:
+          | 'INTEREST_RECEIVED'
+          | 'TEAM_SUBMITTED'
+          | 'MATCH_CONFIRMED'
+          | 'APPLICATION_REJECTED'
+          | 'MATCH_CANCELLED';
+      };
+    };
+    readonly FriendlyPlayerAvailabilityHistory: {
+      readonly availability: {
+        readonly output: 'AVAILABLE' | 'UNAVAILABLE';
+        readonly input: 'AVAILABLE' | 'UNAVAILABLE';
+      };
+    };
+    readonly FriendlyPlayerResponse: {
+      readonly availability: {
+        readonly output: 'AVAILABLE' | 'UNAVAILABLE';
+        readonly input: 'AVAILABLE' | 'UNAVAILABLE';
+      };
+    };
+    readonly Game: {
+      readonly currentPeriodStatus: {
+        readonly output: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
+        readonly input: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
+      };
+      readonly status: {
+        readonly output: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
+        readonly input: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
+      };
     };
     readonly GameRotationEvent: {
-      readonly clockMarkSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gameId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly kind: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
-      readonly payload: CodecTypes['pg/jsonb@1']['input'] | null;
-      readonly periodNumber: CodecTypes['pg/int4@1']['input'];
-    };
-    readonly Player: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly jerseyNumber: CodecTypes['pg/text@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'];
-      readonly position: CodecTypes['pg/text@1']['input'] | null;
-      readonly teamId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly PlayerGameTime: {
-      readonly assists: CodecTypes['pg/int4@1']['input'];
-      readonly blocks: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly fouls: CodecTypes['pg/int4@1']['input'];
-      readonly gamePlayerId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly interceptions: CodecTypes['pg/int4@1']['input'];
-      readonly isOnCourt: CodecTypes['pg/bool@1']['input'];
-      readonly lastEnteredAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly lastPeriodEnteredAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly periodFouls: CodecTypes['pg/int4@1']['input'];
-      readonly periodSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly points: CodecTypes['pg/int4@1']['input'];
-      readonly rebounds: CodecTypes['pg/int4@1']['input'];
-      readonly totalSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly SharedGameSnapshot: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly payload: CodecTypes['pg/jsonb@1']['input'];
-      readonly shareId: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
+      readonly kind: {
+        readonly output: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
+        readonly input: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
+      };
     };
     readonly Team: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gender: 'MIXED' | 'FEMININE' | 'MASCULINE';
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly userId: CodecTypes['pg/int4@1']['input'] | null;
-    };
-    readonly User: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly email: CodecTypes['pg/text@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['input'];
-      readonly passwordSalt: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
+      readonly gender: {
+        readonly output: 'MIXED' | 'FEMININE' | 'MASCULINE';
+        readonly input: 'MIXED' | 'FEMININE' | 'MASCULINE';
+      };
     };
   };
 };
-export type StorageColumnTypes = {
-  readonly public: {
-    readonly Game: {
-      readonly clockElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly currentPeriodNumber: CodecTypes['pg/int4@1']['output'];
-      readonly currentPeriodStatus: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-      readonly endedAt: TimestampString<3> | null;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly isClockRunning: CodecTypes['pg/bool@1']['output'];
-      readonly label: CodecTypes['pg/text@1']['output'];
-      readonly lastClockStartedAt: TimestampString<3> | null;
-      readonly lastPeriodStartedAt: TimestampString<3> | null;
-      readonly periodElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly shareToken: CodecTypes['pg/text@1']['output'] | null;
-      readonly startedAt: TimestampString<3> | null;
-      readonly status: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
-      readonly teamId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly GamePlayer: {
-      readonly createdAt: TimestampString<3>;
-      readonly gameId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly isAvailable: CodecTypes['pg/bool@1']['output'];
-      readonly isStarter: CodecTypes['pg/bool@1']['output'];
-      readonly playerId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly GameRotationEvent: {
-      readonly clockMarkSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly gameId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly kind: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
-      readonly payload: CodecTypes['pg/jsonb@1']['output'] | null;
-      readonly periodNumber: CodecTypes['pg/int4@1']['output'];
-    };
-    readonly Player: {
-      readonly createdAt: TimestampString<3>;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly jerseyNumber: CodecTypes['pg/text@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'];
-      readonly position: CodecTypes['pg/text@1']['output'] | null;
-      readonly teamId: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly PlayerGameTime: {
-      readonly assists: CodecTypes['pg/int4@1']['output'];
-      readonly blocks: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: TimestampString<3>;
-      readonly fouls: CodecTypes['pg/int4@1']['output'];
-      readonly gamePlayerId: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly interceptions: CodecTypes['pg/int4@1']['output'];
-      readonly isOnCourt: CodecTypes['pg/bool@1']['output'];
-      readonly lastEnteredAt: TimestampString<3> | null;
-      readonly lastPeriodEnteredAt: TimestampString<3> | null;
-      readonly periodFouls: CodecTypes['pg/int4@1']['output'];
-      readonly periodSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly points: CodecTypes['pg/int4@1']['output'];
-      readonly rebounds: CodecTypes['pg/int4@1']['output'];
-      readonly totalSeconds: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly SharedGameSnapshot: {
-      readonly createdAt: TimestampString<3>;
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly payload: CodecTypes['pg/jsonb@1']['output'];
-      readonly shareId: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-    readonly Team: {
-      readonly createdAt: TimestampString<3>;
-      readonly gender: 'MIXED' | 'FEMININE' | 'MASCULINE';
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-      readonly userId: CodecTypes['pg/int4@1']['output'] | null;
-    };
-    readonly User: {
-      readonly createdAt: TimestampString<3>;
-      readonly email: CodecTypes['pg/text@1']['output'];
-      readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly name: CodecTypes['pg/text@1']['output'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['output'];
-      readonly passwordSalt: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: TimestampString<3>;
-    };
-  };
-};
-export type StorageColumnInputTypes = {
-  readonly public: {
-    readonly Game: {
-      readonly clockElapsedSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly currentPeriodNumber: CodecTypes['pg/int4@1']['input'];
-      readonly currentPeriodStatus: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-      readonly endedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly isClockRunning: CodecTypes['pg/bool@1']['input'];
-      readonly label: CodecTypes['pg/text@1']['input'];
-      readonly lastClockStartedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly lastPeriodStartedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly periodElapsedSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly shareToken: CodecTypes['pg/text@1']['input'] | null;
-      readonly startedAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly status: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
-      readonly teamId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly GamePlayer: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gameId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly isAvailable: CodecTypes['pg/bool@1']['input'];
-      readonly isStarter: CodecTypes['pg/bool@1']['input'];
-      readonly playerId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly GameRotationEvent: {
-      readonly clockMarkSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gameId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly kind: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
-      readonly payload: CodecTypes['pg/jsonb@1']['input'] | null;
-      readonly periodNumber: CodecTypes['pg/int4@1']['input'];
-    };
-    readonly Player: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly jerseyNumber: CodecTypes['pg/text@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'];
-      readonly position: CodecTypes['pg/text@1']['input'] | null;
-      readonly teamId: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly PlayerGameTime: {
-      readonly assists: CodecTypes['pg/int4@1']['input'];
-      readonly blocks: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly fouls: CodecTypes['pg/int4@1']['input'];
-      readonly gamePlayerId: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly interceptions: CodecTypes['pg/int4@1']['input'];
-      readonly isOnCourt: CodecTypes['pg/bool@1']['input'];
-      readonly lastEnteredAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly lastPeriodEnteredAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
-      readonly periodFouls: CodecTypes['pg/int4@1']['input'];
-      readonly periodSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly points: CodecTypes['pg/int4@1']['input'];
-      readonly rebounds: CodecTypes['pg/int4@1']['input'];
-      readonly totalSeconds: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly SharedGameSnapshot: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly payload: CodecTypes['pg/jsonb@1']['input'];
-      readonly shareId: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-    readonly Team: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly gender: 'MIXED' | 'FEMININE' | 'MASCULINE';
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly userId: CodecTypes['pg/int4@1']['input'] | null;
-    };
-    readonly User: {
-      readonly createdAt: CodecTypes['pg/timestamp-string@1']['input'];
-      readonly email: CodecTypes['pg/text@1']['input'];
-      readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly name: CodecTypes['pg/text@1']['input'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['input'];
-      readonly passwordSalt: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamp-string@1']['input'];
-    };
-  };
-};
+export type StorageColumnTypes = ColumnTypesFromStorage<
+  ContractBase['storage'],
+  CodecTypes,
+  ParameterizedOutputTypeFunctions,
+  ColumnTypeOverrides,
+  'output'
+>;
+export type StorageColumnInputTypes = ColumnTypesFromStorage<
+  ContractBase['storage'],
+  CodecTypes,
+  ParameterizedOutputTypeFunctions,
+  ColumnTypeOverrides,
+  'input'
+>;
 
 export namespace Models {
+  export type public_FriendlyApplicationPlayer = {
+    applicationId: FieldOutputTypes['public']['FriendlyApplicationPlayer']['applicationId'];
+    createdAt: FieldOutputTypes['public']['FriendlyApplicationPlayer']['createdAt'];
+    id: FieldOutputTypes['public']['FriendlyApplicationPlayer']['id'];
+    jerseyNumberSnapshot: FieldOutputTypes['public']['FriendlyApplicationPlayer']['jerseyNumberSnapshot'];
+    playerId: FieldOutputTypes['public']['FriendlyApplicationPlayer']['playerId'];
+    playerNameSnapshot: FieldOutputTypes['public']['FriendlyApplicationPlayer']['playerNameSnapshot'];
+    application: public_FriendlyMatchApplication;
+    player: public_Player | null;
+    readonly [RelationKeys]?: 'application' | 'player';
+  };
+  export type public_FriendlyConfirmedMatch = {
+    applicationId: FieldOutputTypes['public']['FriendlyConfirmedMatch']['applicationId'];
+    area: FieldOutputTypes['public']['FriendlyConfirmedMatch']['area'];
+    cancellationReason: FieldOutputTypes['public']['FriendlyConfirmedMatch']['cancellationReason'];
+    cancelledAt: FieldOutputTypes['public']['FriendlyConfirmedMatch']['cancelledAt'];
+    cancelledByUserId: FieldOutputTypes['public']['FriendlyConfirmedMatch']['cancelledByUserId'];
+    candidateTeamId: FieldOutputTypes['public']['FriendlyConfirmedMatch']['candidateTeamId'];
+    confirmedAt: FieldOutputTypes['public']['FriendlyConfirmedMatch']['confirmedAt'];
+    durationMinutes: FieldOutputTypes['public']['FriendlyConfirmedMatch']['durationMinutes'];
+    format: FieldOutputTypes['public']['FriendlyConfirmedMatch']['format'];
+    id: FieldOutputTypes['public']['FriendlyConfirmedMatch']['id'];
+    organizerTeamId: FieldOutputTypes['public']['FriendlyConfirmedMatch']['organizerTeamId'];
+    proposalId: FieldOutputTypes['public']['FriendlyConfirmedMatch']['proposalId'];
+    startsAt: FieldOutputTypes['public']['FriendlyConfirmedMatch']['startsAt'];
+    status: FieldOutputTypes['public']['FriendlyConfirmedMatch']['status'];
+    application: public_FriendlyMatchApplication;
+    candidateTeam: public_Team;
+    organizerTeam: public_Team;
+    proposal: public_FriendlyMatchProposal;
+    readonly [RelationKeys]?: 'application' | 'candidateTeam' | 'organizerTeam' | 'proposal';
+  };
+  export type public_FriendlyInvite = {
+    applicationId: FieldOutputTypes['public']['FriendlyInvite']['applicationId'];
+    createdAt: FieldOutputTypes['public']['FriendlyInvite']['createdAt'];
+    expiresAt: FieldOutputTypes['public']['FriendlyInvite']['expiresAt'];
+    id: FieldOutputTypes['public']['FriendlyInvite']['id'];
+    lastUsedAt: FieldOutputTypes['public']['FriendlyInvite']['lastUsedAt'];
+    responseId: FieldOutputTypes['public']['FriendlyInvite']['responseId'];
+    revokedAt: FieldOutputTypes['public']['FriendlyInvite']['revokedAt'];
+    tokenHash: FieldOutputTypes['public']['FriendlyInvite']['tokenHash'];
+    application: public_FriendlyMatchApplication | null;
+    response: public_FriendlyPlayerResponse | null;
+    readonly [RelationKeys]?: 'application' | 'response';
+  };
+  export type public_FriendlyMatchApplication = {
+    acceptedAt: FieldOutputTypes['public']['FriendlyMatchApplication']['acceptedAt'];
+    coachUserId: FieldOutputTypes['public']['FriendlyMatchApplication']['coachUserId'];
+    createdAt: FieldOutputTypes['public']['FriendlyMatchApplication']['createdAt'];
+    id: FieldOutputTypes['public']['FriendlyMatchApplication']['id'];
+    proposalId: FieldOutputTypes['public']['FriendlyMatchApplication']['proposalId'];
+    status: FieldOutputTypes['public']['FriendlyMatchApplication']['status'];
+    submittedAt: FieldOutputTypes['public']['FriendlyMatchApplication']['submittedAt'];
+    teamId: FieldOutputTypes['public']['FriendlyMatchApplication']['teamId'];
+    updatedAt: FieldOutputTypes['public']['FriendlyMatchApplication']['updatedAt'];
+    coach: public_User;
+    confirmation: public_FriendlyConfirmedMatch | null;
+    notifications: public_FriendlyNotification[];
+    playerResponses: public_FriendlyPlayerResponse[];
+    proposal: public_FriendlyMatchProposal;
+    proposedPlayers: public_FriendlyApplicationPlayer[];
+    team: public_Team;
+    teamInvite: public_FriendlyInvite | null;
+    readonly [RelationKeys]?:
+      | 'coach'
+      | 'confirmation'
+      | 'notifications'
+      | 'playerResponses'
+      | 'proposal'
+      | 'proposedPlayers'
+      | 'team'
+      | 'teamInvite';
+  };
+  export type public_FriendlyMatchProposal = {
+    area: FieldOutputTypes['public']['FriendlyMatchProposal']['area'];
+    cancelledAt: FieldOutputTypes['public']['FriendlyMatchProposal']['cancelledAt'];
+    category: FieldOutputTypes['public']['FriendlyMatchProposal']['category'];
+    createdAt: FieldOutputTypes['public']['FriendlyMatchProposal']['createdAt'];
+    createdByUserId: FieldOutputTypes['public']['FriendlyMatchProposal']['createdByUserId'];
+    durationMinutes: FieldOutputTypes['public']['FriendlyMatchProposal']['durationMinutes'];
+    format: FieldOutputTypes['public']['FriendlyMatchProposal']['format'];
+    id: FieldOutputTypes['public']['FriendlyMatchProposal']['id'];
+    level: FieldOutputTypes['public']['FriendlyMatchProposal']['level'];
+    notes: FieldOutputTypes['public']['FriendlyMatchProposal']['notes'];
+    organizerTeamId: FieldOutputTypes['public']['FriendlyMatchProposal']['organizerTeamId'];
+    requestedPlayerCount: FieldOutputTypes['public']['FriendlyMatchProposal']['requestedPlayerCount'];
+    responseDeadline: FieldOutputTypes['public']['FriendlyMatchProposal']['responseDeadline'];
+    startsAt: FieldOutputTypes['public']['FriendlyMatchProposal']['startsAt'];
+    status: FieldOutputTypes['public']['FriendlyMatchProposal']['status'];
+    updatedAt: FieldOutputTypes['public']['FriendlyMatchProposal']['updatedAt'];
+    venueName: FieldOutputTypes['public']['FriendlyMatchProposal']['venueName'];
+    applications: public_FriendlyMatchApplication[];
+    confirmation: public_FriendlyConfirmedMatch | null;
+    createdBy: public_User;
+    notifications: public_FriendlyNotification[];
+    organizerTeam: public_Team;
+    readonly [RelationKeys]?:
+      'applications' | 'confirmation' | 'createdBy' | 'notifications' | 'organizerTeam';
+  };
+  export type public_FriendlyNotification = {
+    applicationId: FieldOutputTypes['public']['FriendlyNotification']['applicationId'];
+    createdAt: FieldOutputTypes['public']['FriendlyNotification']['createdAt'];
+    id: FieldOutputTypes['public']['FriendlyNotification']['id'];
+    proposalId: FieldOutputTypes['public']['FriendlyNotification']['proposalId'];
+    readAt: FieldOutputTypes['public']['FriendlyNotification']['readAt'];
+    type: FieldOutputTypes['public']['FriendlyNotification']['type'];
+    userId: FieldOutputTypes['public']['FriendlyNotification']['userId'];
+    application: public_FriendlyMatchApplication | null;
+    proposal: public_FriendlyMatchProposal | null;
+    user: public_User;
+    readonly [RelationKeys]?: 'application' | 'proposal' | 'user';
+  };
+  export type public_FriendlyPlayerAvailabilityHistory = {
+    availability: FieldOutputTypes['public']['FriendlyPlayerAvailabilityHistory']['availability'];
+    changedAt: FieldOutputTypes['public']['FriendlyPlayerAvailabilityHistory']['changedAt'];
+    id: FieldOutputTypes['public']['FriendlyPlayerAvailabilityHistory']['id'];
+    respondedAt: FieldOutputTypes['public']['FriendlyPlayerAvailabilityHistory']['respondedAt'];
+    responseId: FieldOutputTypes['public']['FriendlyPlayerAvailabilityHistory']['responseId'];
+    response: public_FriendlyPlayerResponse;
+    readonly [RelationKeys]?: 'response';
+  };
+  export type public_FriendlyPlayerResponse = {
+    applicationId: FieldOutputTypes['public']['FriendlyPlayerResponse']['applicationId'];
+    availability: FieldOutputTypes['public']['FriendlyPlayerResponse']['availability'];
+    createdAt: FieldOutputTypes['public']['FriendlyPlayerResponse']['createdAt'];
+    id: FieldOutputTypes['public']['FriendlyPlayerResponse']['id'];
+    jerseyNumberSnapshot: FieldOutputTypes['public']['FriendlyPlayerResponse']['jerseyNumberSnapshot'];
+    normalizedName: FieldOutputTypes['public']['FriendlyPlayerResponse']['normalizedName'];
+    playerId: FieldOutputTypes['public']['FriendlyPlayerResponse']['playerId'];
+    playerNameSnapshot: FieldOutputTypes['public']['FriendlyPlayerResponse']['playerNameSnapshot'];
+    respondedAt: FieldOutputTypes['public']['FriendlyPlayerResponse']['respondedAt'];
+    revision: FieldOutputTypes['public']['FriendlyPlayerResponse']['revision'];
+    updatedAt: FieldOutputTypes['public']['FriendlyPlayerResponse']['updatedAt'];
+    application: public_FriendlyMatchApplication;
+    availabilityHistory: public_FriendlyPlayerAvailabilityHistory[];
+    invite: public_FriendlyInvite | null;
+    player: public_Player | null;
+    readonly [RelationKeys]?: 'application' | 'availabilityHistory' | 'invite' | 'player';
+  };
   export type public_Game = {
-    clockElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-    createdAt: TimestampString<3>;
-    currentPeriodNumber: CodecTypes['pg/int4@1']['output'];
-    currentPeriodStatus: 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
-    endedAt: TimestampString<3> | null;
-    id: CodecTypes['pg/int4@1']['output'];
-    isClockRunning: CodecTypes['pg/bool@1']['output'];
-    label: CodecTypes['pg/text@1']['output'];
-    lastClockStartedAt: TimestampString<3> | null;
-    lastPeriodStartedAt: TimestampString<3> | null;
-    periodElapsedSeconds: CodecTypes['pg/int4@1']['output'];
-    shareToken: CodecTypes['pg/text@1']['output'] | null;
-    startedAt: TimestampString<3> | null;
-    status: 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
-    teamId: CodecTypes['pg/int4@1']['output'];
-    updatedAt: TimestampString<3>;
+    clockElapsedSeconds: FieldOutputTypes['public']['Game']['clockElapsedSeconds'];
+    createdAt: FieldOutputTypes['public']['Game']['createdAt'];
+    currentPeriodNumber: FieldOutputTypes['public']['Game']['currentPeriodNumber'];
+    currentPeriodStatus: FieldOutputTypes['public']['Game']['currentPeriodStatus'];
+    endedAt: FieldOutputTypes['public']['Game']['endedAt'];
+    id: FieldOutputTypes['public']['Game']['id'];
+    isClockRunning: FieldOutputTypes['public']['Game']['isClockRunning'];
+    label: FieldOutputTypes['public']['Game']['label'];
+    lastClockStartedAt: FieldOutputTypes['public']['Game']['lastClockStartedAt'];
+    lastPeriodStartedAt: FieldOutputTypes['public']['Game']['lastPeriodStartedAt'];
+    periodElapsedSeconds: FieldOutputTypes['public']['Game']['periodElapsedSeconds'];
+    shareToken: FieldOutputTypes['public']['Game']['shareToken'];
+    startedAt: FieldOutputTypes['public']['Game']['startedAt'];
+    status: FieldOutputTypes['public']['Game']['status'];
+    teamId: FieldOutputTypes['public']['Game']['teamId'];
+    updatedAt: FieldOutputTypes['public']['Game']['updatedAt'];
     players: public_GamePlayer[];
     rotationEvents: public_GameRotationEvent[];
     team: public_Team;
     readonly [RelationKeys]?: 'players' | 'rotationEvents' | 'team';
   };
   export type public_GamePlayer = {
-    createdAt: TimestampString<3>;
-    gameId: CodecTypes['pg/int4@1']['output'];
-    id: CodecTypes['pg/int4@1']['output'];
-    isAvailable: CodecTypes['pg/bool@1']['output'];
-    isStarter: CodecTypes['pg/bool@1']['output'];
-    playerId: CodecTypes['pg/int4@1']['output'];
-    updatedAt: TimestampString<3>;
+    createdAt: FieldOutputTypes['public']['GamePlayer']['createdAt'];
+    gameId: FieldOutputTypes['public']['GamePlayer']['gameId'];
+    id: FieldOutputTypes['public']['GamePlayer']['id'];
+    isAvailable: FieldOutputTypes['public']['GamePlayer']['isAvailable'];
+    isStarter: FieldOutputTypes['public']['GamePlayer']['isStarter'];
+    playerId: FieldOutputTypes['public']['GamePlayer']['playerId'];
+    updatedAt: FieldOutputTypes['public']['GamePlayer']['updatedAt'];
     game: public_Game;
     player: public_Player;
     playingTime: public_PlayerGameTime | null;
     readonly [RelationKeys]?: 'game' | 'player' | 'playingTime';
   };
   export type public_GameRotationEvent = {
-    clockMarkSeconds: CodecTypes['pg/int4@1']['output'];
-    createdAt: TimestampString<3>;
-    gameId: CodecTypes['pg/int4@1']['output'];
-    id: CodecTypes['pg/int4@1']['output'];
-    kind: 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
-    payload: CodecTypes['pg/jsonb@1']['output'] | null;
-    periodNumber: CodecTypes['pg/int4@1']['output'];
+    clockMarkSeconds: FieldOutputTypes['public']['GameRotationEvent']['clockMarkSeconds'];
+    createdAt: FieldOutputTypes['public']['GameRotationEvent']['createdAt'];
+    gameId: FieldOutputTypes['public']['GameRotationEvent']['gameId'];
+    id: FieldOutputTypes['public']['GameRotationEvent']['id'];
+    kind: FieldOutputTypes['public']['GameRotationEvent']['kind'];
+    payload: FieldOutputTypes['public']['GameRotationEvent']['payload'];
+    periodNumber: FieldOutputTypes['public']['GameRotationEvent']['periodNumber'];
     game: public_Game;
     readonly [RelationKeys]?: 'game';
   };
   export type public_Player = {
-    createdAt: TimestampString<3>;
-    id: CodecTypes['pg/int4@1']['output'];
-    jerseyNumber: CodecTypes['pg/text@1']['output'];
-    name: CodecTypes['pg/text@1']['output'];
-    position: CodecTypes['pg/text@1']['output'] | null;
-    teamId: CodecTypes['pg/int4@1']['output'];
-    updatedAt: TimestampString<3>;
+    createdAt: FieldOutputTypes['public']['Player']['createdAt'];
+    id: FieldOutputTypes['public']['Player']['id'];
+    jerseyNumber: FieldOutputTypes['public']['Player']['jerseyNumber'];
+    name: FieldOutputTypes['public']['Player']['name'];
+    position: FieldOutputTypes['public']['Player']['position'];
+    teamId: FieldOutputTypes['public']['Player']['teamId'];
+    updatedAt: FieldOutputTypes['public']['Player']['updatedAt'];
+    friendlyApplications: public_FriendlyApplicationPlayer[];
+    friendlyResponses: public_FriendlyPlayerResponse[];
     gamePlayers: public_GamePlayer[];
     team: public_Team;
-    readonly [RelationKeys]?: 'gamePlayers' | 'team';
+    readonly [RelationKeys]?: 'friendlyApplications' | 'friendlyResponses' | 'gamePlayers' | 'team';
   };
   export type public_PlayerGameTime = {
-    assists: CodecTypes['pg/int4@1']['output'];
-    blocks: CodecTypes['pg/int4@1']['output'];
-    createdAt: TimestampString<3>;
-    fouls: CodecTypes['pg/int4@1']['output'];
-    gamePlayerId: CodecTypes['pg/int4@1']['output'];
-    id: CodecTypes['pg/int4@1']['output'];
-    interceptions: CodecTypes['pg/int4@1']['output'];
-    isOnCourt: CodecTypes['pg/bool@1']['output'];
-    lastEnteredAt: TimestampString<3> | null;
-    lastPeriodEnteredAt: TimestampString<3> | null;
-    periodFouls: CodecTypes['pg/int4@1']['output'];
-    periodSeconds: CodecTypes['pg/int4@1']['output'];
-    points: CodecTypes['pg/int4@1']['output'];
-    rebounds: CodecTypes['pg/int4@1']['output'];
-    totalSeconds: CodecTypes['pg/int4@1']['output'];
-    updatedAt: TimestampString<3>;
+    assists: FieldOutputTypes['public']['PlayerGameTime']['assists'];
+    blocks: FieldOutputTypes['public']['PlayerGameTime']['blocks'];
+    createdAt: FieldOutputTypes['public']['PlayerGameTime']['createdAt'];
+    fouls: FieldOutputTypes['public']['PlayerGameTime']['fouls'];
+    gamePlayerId: FieldOutputTypes['public']['PlayerGameTime']['gamePlayerId'];
+    id: FieldOutputTypes['public']['PlayerGameTime']['id'];
+    interceptions: FieldOutputTypes['public']['PlayerGameTime']['interceptions'];
+    isOnCourt: FieldOutputTypes['public']['PlayerGameTime']['isOnCourt'];
+    lastEnteredAt: FieldOutputTypes['public']['PlayerGameTime']['lastEnteredAt'];
+    lastPeriodEnteredAt: FieldOutputTypes['public']['PlayerGameTime']['lastPeriodEnteredAt'];
+    periodFouls: FieldOutputTypes['public']['PlayerGameTime']['periodFouls'];
+    periodSeconds: FieldOutputTypes['public']['PlayerGameTime']['periodSeconds'];
+    points: FieldOutputTypes['public']['PlayerGameTime']['points'];
+    rebounds: FieldOutputTypes['public']['PlayerGameTime']['rebounds'];
+    totalSeconds: FieldOutputTypes['public']['PlayerGameTime']['totalSeconds'];
+    updatedAt: FieldOutputTypes['public']['PlayerGameTime']['updatedAt'];
     gamePlayer: public_GamePlayer;
     readonly [RelationKeys]?: 'gamePlayer';
   };
+  export type public_PushSubscription = {
+    auth: FieldOutputTypes['public']['PushSubscription']['auth'];
+    createdAt: FieldOutputTypes['public']['PushSubscription']['createdAt'];
+    endpoint: FieldOutputTypes['public']['PushSubscription']['endpoint'];
+    id: FieldOutputTypes['public']['PushSubscription']['id'];
+    p256dh: FieldOutputTypes['public']['PushSubscription']['p256dh'];
+    updatedAt: FieldOutputTypes['public']['PushSubscription']['updatedAt'];
+    userId: FieldOutputTypes['public']['PushSubscription']['userId'];
+    user: public_User;
+    readonly [RelationKeys]?: 'user';
+  };
   export type public_SharedGameSnapshot = {
-    createdAt: TimestampString<3>;
-    id: CodecTypes['pg/int4@1']['output'];
-    payload: CodecTypes['pg/jsonb@1']['output'];
-    shareId: CodecTypes['pg/text@1']['output'];
-    updatedAt: TimestampString<3>;
+    createdAt: FieldOutputTypes['public']['SharedGameSnapshot']['createdAt'];
+    id: FieldOutputTypes['public']['SharedGameSnapshot']['id'];
+    payload: FieldOutputTypes['public']['SharedGameSnapshot']['payload'];
+    shareId: FieldOutputTypes['public']['SharedGameSnapshot']['shareId'];
+    updatedAt: FieldOutputTypes['public']['SharedGameSnapshot']['updatedAt'];
     readonly [RelationKeys]?: never;
   };
   export type public_Team = {
-    createdAt: TimestampString<3>;
-    gender: 'MIXED' | 'FEMININE' | 'MASCULINE';
-    id: CodecTypes['pg/int4@1']['output'];
-    name: CodecTypes['pg/text@1']['output'];
-    updatedAt: TimestampString<3>;
-    userId: CodecTypes['pg/int4@1']['output'] | null;
+    createdAt: FieldOutputTypes['public']['Team']['createdAt'];
+    gender: FieldOutputTypes['public']['Team']['gender'];
+    id: FieldOutputTypes['public']['Team']['id'];
+    name: FieldOutputTypes['public']['Team']['name'];
+    updatedAt: FieldOutputTypes['public']['Team']['updatedAt'];
+    userId: FieldOutputTypes['public']['Team']['userId'];
+    candidateFriendlyMatches: public_FriendlyConfirmedMatch[];
+    friendlyApplications: public_FriendlyMatchApplication[];
+    friendlyProposals: public_FriendlyMatchProposal[];
     games: public_Game[];
+    organizerFriendlyMatches: public_FriendlyConfirmedMatch[];
     players: public_Player[];
     user: public_User | null;
-    readonly [RelationKeys]?: 'games' | 'players' | 'user';
+    readonly [RelationKeys]?:
+      | 'candidateFriendlyMatches'
+      | 'friendlyApplications'
+      | 'friendlyProposals'
+      | 'games'
+      | 'organizerFriendlyMatches'
+      | 'players'
+      | 'user';
   };
   export type public_User = {
-    createdAt: TimestampString<3>;
-    email: CodecTypes['pg/text@1']['output'];
-    id: CodecTypes['pg/int4@1']['output'];
-    name: CodecTypes['pg/text@1']['output'] | null;
-    passwordHash: CodecTypes['pg/text@1']['output'];
-    passwordSalt: CodecTypes['pg/text@1']['output'];
-    updatedAt: TimestampString<3>;
+    createdAt: FieldOutputTypes['public']['User']['createdAt'];
+    email: FieldOutputTypes['public']['User']['email'];
+    id: FieldOutputTypes['public']['User']['id'];
+    name: FieldOutputTypes['public']['User']['name'];
+    passwordHash: FieldOutputTypes['public']['User']['passwordHash'];
+    passwordSalt: FieldOutputTypes['public']['User']['passwordSalt'];
+    updatedAt: FieldOutputTypes['public']['User']['updatedAt'];
+    friendlyApplications: public_FriendlyMatchApplication[];
+    friendlyNotifications: public_FriendlyNotification[];
+    friendlyProposals: public_FriendlyMatchProposal[];
+    pushSubscriptions: public_PushSubscription[];
     teams: public_Team[];
-    readonly [RelationKeys]?: 'teams';
+    readonly [RelationKeys]?:
+      | 'friendlyApplications'
+      | 'friendlyNotifications'
+      | 'friendlyProposals'
+      | 'pushSubscriptions'
+      | 'teams';
   };
 }
 
 export declare const models: {
   public: {
+    FriendlyApplicationPlayer: Models.public_FriendlyApplicationPlayer;
+    FriendlyConfirmedMatch: Models.public_FriendlyConfirmedMatch;
+    FriendlyInvite: Models.public_FriendlyInvite;
+    FriendlyMatchApplication: Models.public_FriendlyMatchApplication;
+    FriendlyMatchProposal: Models.public_FriendlyMatchProposal;
+    FriendlyNotification: Models.public_FriendlyNotification;
+    FriendlyPlayerAvailabilityHistory: Models.public_FriendlyPlayerAvailabilityHistory;
+    FriendlyPlayerResponse: Models.public_FriendlyPlayerResponse;
     Game: Models.public_Game;
     GamePlayer: Models.public_GamePlayer;
     GameRotationEvent: Models.public_GameRotationEvent;
     Player: Models.public_Player;
     PlayerGameTime: Models.public_PlayerGameTime;
+    PushSubscription: Models.public_PushSubscription;
     SharedGameSnapshot: Models.public_SharedGameSnapshot;
     Team: Models.public_Team;
     User: Models.public_User;
@@ -743,6 +824,971 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly FriendlyApplicationPlayer: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly jerseyNumberSnapshot: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly playerId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly playerNameSnapshot: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyApplicationPlayer_applicationId_idx';
+                  readonly columns: readonly ['applicationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyApplicationPlayer_applicationId_playerId_key';
+                  readonly columns: readonly ['applicationId', 'playerId'];
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyApplicationPlayer';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyApplicationPlayer';
+                    readonly columns: readonly ['playerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Player';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyConfirmedMatch: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly area: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly cancellationReason: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelledAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly cancelledByUserId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly candidateTeamId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly confirmedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly durationMinutes: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly format: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly organizerTeamId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly proposalId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly startsAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/enum@1', 'CONFIRMED'>;
+                  };
+                  readonly typeParams: { readonly typeName: 'FriendlyMatchLifecycle' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyConfirmedMatch_applicationId_key';
+                  readonly columns: readonly ['applicationId'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'FriendlyConfirmedMatch_candidateTeamId_startsAt_idx';
+                  readonly columns: readonly ['candidateTeamId', 'startsAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyConfirmedMatch_organizerTeamId_startsAt_idx';
+                  readonly columns: readonly ['organizerTeamId', 'startsAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyConfirmedMatch_proposalId_key';
+                  readonly columns: readonly ['proposalId'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'FriendlyConfirmedMatch_status_startsAt_idx';
+                  readonly columns: readonly ['status', 'startsAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyConfirmedMatch';
+                    readonly columns: readonly ['proposalId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchProposal';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyConfirmedMatch';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyConfirmedMatch';
+                    readonly columns: readonly ['organizerTeamId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Team';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyConfirmedMatch';
+                    readonly columns: readonly ['candidateTeamId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Team';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyInvite: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly expiresAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly lastUsedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly responseId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly revokedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly tokenHash: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyInvite_applicationId_key';
+                  readonly columns: readonly ['applicationId'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'FriendlyInvite_expiresAt_revokedAt_idx';
+                  readonly columns: readonly ['expiresAt', 'revokedAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyInvite_responseId_key';
+                  readonly columns: readonly ['responseId'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'FriendlyInvite_tokenHash_key';
+                  readonly columns: readonly ['tokenHash'];
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyInvite';
+                    readonly columns: readonly ['responseId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyPlayerResponse';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyInvite';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyMatchApplication: {
+              columns: {
+                readonly acceptedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly coachUserId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly proposalId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/enum@1', 'INTERESTED'>;
+                  };
+                  readonly typeParams: { readonly typeName: 'FriendlyApplicationStatus' };
+                  readonly many: false;
+                };
+                readonly submittedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly teamId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyMatchApplication_coachUserId_status_idx';
+                  readonly columns: readonly ['coachUserId', 'status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyMatchApplication_proposalId_status_idx';
+                  readonly columns: readonly ['proposalId', 'status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyMatchApplication_proposalId_teamId_key';
+                  readonly columns: readonly ['proposalId', 'teamId'];
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['proposalId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchProposal';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['teamId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Team';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['coachUserId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyMatchProposal: {
+              columns: {
+                readonly area: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly cancelledAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly category: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly createdByUserId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly durationMinutes: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly format: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly level: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly organizerTeamId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly requestedPlayerCount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly responseDeadline: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly startsAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/enum@1', 'OPEN'>;
+                  };
+                  readonly typeParams: { readonly typeName: 'FriendlyProposalStatus' };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly venueName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyMatchProposal_organizerTeamId_createdAt_idx';
+                  readonly columns: readonly ['organizerTeamId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyMatchProposal_status_startsAt_idx';
+                  readonly columns: readonly ['status', 'startsAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchProposal';
+                    readonly columns: readonly ['organizerTeamId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Team';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchProposal';
+                    readonly columns: readonly ['createdByUserId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyNotification: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly proposalId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly readAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly type: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly typeName: 'FriendlyNotificationType' };
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyNotification_userId_readAt_createdAt_idx';
+                  readonly columns: readonly ['userId', 'readAt', 'createdAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyNotification';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyNotification';
+                    readonly columns: readonly ['proposalId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchProposal';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyNotification';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyPlayerAvailabilityHistory: {
+              columns: {
+                readonly availability: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly typeName: 'FriendlyAvailability' };
+                  readonly many: false;
+                };
+                readonly changedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly respondedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly responseId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyPlayerAvailabilityHistory_responseId_changedAt_idx';
+                  readonly columns: readonly ['responseId', 'changedAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyPlayerAvailabilityHistory';
+                    readonly columns: readonly ['responseId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyPlayerResponse';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly FriendlyPlayerResponse: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly availability: {
+                  readonly dataType: 'pg/enum';
+                  readonly codecId: 'pg/enum@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly typeName: 'FriendlyAvailability' };
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly jerseyNumberSnapshot: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly normalizedName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                  readonly many: false;
+                };
+                readonly playerId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly playerNameSnapshot: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly respondedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly revision: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'FriendlyPlayerResponse_applicationId_availability_idx';
+                  readonly columns: readonly ['applicationId', 'availability'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'FriendlyPlayerResponse_applicationId_normalizedName_key';
+                  readonly columns: readonly ['applicationId', 'normalizedName'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'FriendlyPlayerResponse_applicationId_playerId_key';
+                  readonly columns: readonly ['applicationId', 'playerId'];
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyPlayerResponse';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyMatchApplication';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'FriendlyPlayerResponse';
+                    readonly columns: readonly ['playerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Player';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly Game: {
               columns: {
                 readonly clockElapsedSeconds: {
@@ -757,7 +1803,7 @@ type ContractBase = Omit<
                 };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -786,7 +1832,7 @@ type ContractBase = Omit<
                 };
                 readonly endedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -819,14 +1865,14 @@ type ContractBase = Omit<
                 };
                 readonly lastClockStartedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
                 };
                 readonly lastPeriodStartedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -849,7 +1895,7 @@ type ContractBase = Omit<
                 };
                 readonly startedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -873,7 +1919,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -912,7 +1958,7 @@ type ContractBase = Omit<
               columns: {
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -962,7 +2008,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1018,7 +2064,7 @@ type ContractBase = Omit<
                 };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1088,7 +2134,7 @@ type ContractBase = Omit<
               columns: {
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1130,7 +2176,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1184,7 +2230,7 @@ type ContractBase = Omit<
                 };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1238,14 +2284,14 @@ type ContractBase = Omit<
                 };
                 readonly lastEnteredAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
                 };
                 readonly lastPeriodEnteredAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1302,7 +2348,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1332,11 +2378,92 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly PushSubscription: {
+              columns: {
+                readonly auth: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly endpoint: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly p256dh: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'PushSubscription_endpoint_key';
+                  readonly columns: readonly ['endpoint'];
+                  readonly unique: true;
+                },
+                {
+                  readonly name: 'PushSubscription_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'PushSubscription';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly SharedGameSnapshot: {
               columns: {
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1366,7 +2493,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1387,7 +2514,7 @@ type ContractBase = Omit<
               columns: {
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1422,7 +2549,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1462,7 +2589,7 @@ type ContractBase = Omit<
               columns: {
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly typeParams: { readonly precision: 3 };
@@ -1504,7 +2631,7 @@ type ContractBase = Omit<
                 };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamp';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 3 };
                   readonly many: false;
@@ -1523,6 +2650,49 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly FriendlyApplicationStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'INTERESTED',
+                'COLLECTING',
+                'SUBMITTED',
+                'NEEDS_RECONFIRMATION',
+                'ACCEPTED',
+                'REJECTED',
+                'WITHDRAWN',
+                'EXPIRED',
+              ];
+            };
+            readonly FriendlyAvailability: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['AVAILABLE', 'UNAVAILABLE'];
+            };
+            readonly FriendlyMatchLifecycle: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CONFIRMED', 'CANCELLED'];
+            };
+            readonly FriendlyNotificationType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'INTEREST_RECEIVED',
+                'TEAM_SUBMITTED',
+                'MATCH_CONFIRMED',
+                'APPLICATION_REJECTED',
+                'MATCH_CANCELLED',
+              ];
+            };
+            readonly FriendlyProposalStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'DRAFT',
+                'OPEN',
+                'IN_DISCUSSION',
+                'CONFIRMED',
+                'CANCELLED',
+                'COMPLETED',
+                'EXPIRED',
+              ];
+            };
             readonly GameStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['DRAFT', 'LIVE', 'PAUSED', 'FINISHED'];
@@ -1550,6 +2720,38 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly FriendlyApplicationPlayer: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyApplicationPlayer';
+    };
+    readonly FriendlyConfirmedMatch: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyConfirmedMatch';
+    };
+    readonly FriendlyInvite: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyInvite';
+    };
+    readonly FriendlyMatchApplication: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyMatchApplication';
+    };
+    readonly FriendlyMatchProposal: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyMatchProposal';
+    };
+    readonly FriendlyNotification: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyNotification';
+    };
+    readonly FriendlyPlayerAvailabilityHistory: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyPlayerAvailabilityHistory';
+    };
+    readonly FriendlyPlayerResponse: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'FriendlyPlayerResponse';
+    };
     readonly Game: { readonly namespace: 'public' & NamespaceId; readonly model: 'Game' };
     readonly GamePlayer: {
       readonly namespace: 'public' & NamespaceId;
@@ -1564,6 +2766,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PlayerGameTime';
     };
+    readonly PushSubscription: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PushSubscription';
+    };
     readonly SharedGameSnapshot: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'SharedGameSnapshot';
@@ -1575,6 +2781,928 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly FriendlyApplicationPlayer: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly jerseyNumberSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly playerId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly playerNameSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly player: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Player';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['playerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyApplicationPlayer';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly jerseyNumberSnapshot: { readonly column: 'jerseyNumberSnapshot' };
+                readonly playerId: { readonly column: 'playerId' };
+                readonly playerNameSnapshot: { readonly column: 'playerNameSnapshot' };
+              };
+            };
+          };
+          readonly FriendlyConfirmedMatch: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly area: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly cancellationReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly cancelledAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly cancelledByUserId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly candidateTeamId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly confirmedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly durationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly format: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly organizerTeamId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly proposalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly startsAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyMatchLifecycle' };
+                };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly candidateTeam: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Team' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['candidateTeamId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly organizerTeam: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Team' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizerTeamId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly proposal: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchProposal';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['proposalId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyConfirmedMatch';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly area: { readonly column: 'area' };
+                readonly cancellationReason: { readonly column: 'cancellationReason' };
+                readonly cancelledAt: { readonly column: 'cancelledAt' };
+                readonly cancelledByUserId: { readonly column: 'cancelledByUserId' };
+                readonly candidateTeamId: { readonly column: 'candidateTeamId' };
+                readonly confirmedAt: { readonly column: 'confirmedAt' };
+                readonly durationMinutes: { readonly column: 'durationMinutes' };
+                readonly format: { readonly column: 'format' };
+                readonly id: { readonly column: 'id' };
+                readonly organizerTeamId: { readonly column: 'organizerTeamId' };
+                readonly proposalId: { readonly column: 'proposalId' };
+                readonly startsAt: { readonly column: 'startsAt' };
+                readonly status: { readonly column: 'status' };
+              };
+            };
+          };
+          readonly FriendlyInvite: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly lastUsedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly responseId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly revokedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly tokenHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly response: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyPlayerResponse';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['responseId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyInvite';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly id: { readonly column: 'id' };
+                readonly lastUsedAt: { readonly column: 'lastUsedAt' };
+                readonly responseId: { readonly column: 'responseId' };
+                readonly revokedAt: { readonly column: 'revokedAt' };
+                readonly tokenHash: { readonly column: 'tokenHash' };
+              };
+            };
+          };
+          readonly FriendlyMatchApplication: {
+            readonly fields: {
+              readonly acceptedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly coachUserId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly proposalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyApplicationStatus' };
+                };
+              };
+              readonly submittedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly teamId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly coach: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['coachUserId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly confirmation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyConfirmedMatch';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
+              readonly notifications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyNotification';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
+              readonly playerResponses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyPlayerResponse';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
+              readonly proposal: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchProposal';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['proposalId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly proposedPlayers: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyApplicationPlayer';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
+              readonly team: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Team' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['teamId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly teamInvite: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyInvite';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyMatchApplication';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly acceptedAt: { readonly column: 'acceptedAt' };
+                readonly coachUserId: { readonly column: 'coachUserId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly proposalId: { readonly column: 'proposalId' };
+                readonly status: { readonly column: 'status' };
+                readonly submittedAt: { readonly column: 'submittedAt' };
+                readonly teamId: { readonly column: 'teamId' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly FriendlyMatchProposal: {
+            readonly fields: {
+              readonly area: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly cancelledAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly category: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly createdByUserId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly durationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly format: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly level: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizerTeamId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly requestedPlayerCount: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly responseDeadline: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly startsAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyProposalStatus' };
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly venueName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly applications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['proposalId'];
+                };
+              };
+              readonly confirmation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyConfirmedMatch';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['proposalId'];
+                };
+              };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['createdByUserId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly notifications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyNotification';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['proposalId'];
+                };
+              };
+              readonly organizerTeam: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Team' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizerTeamId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyMatchProposal';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly area: { readonly column: 'area' };
+                readonly cancelledAt: { readonly column: 'cancelledAt' };
+                readonly category: { readonly column: 'category' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdByUserId: { readonly column: 'createdByUserId' };
+                readonly durationMinutes: { readonly column: 'durationMinutes' };
+                readonly format: { readonly column: 'format' };
+                readonly id: { readonly column: 'id' };
+                readonly level: { readonly column: 'level' };
+                readonly notes: { readonly column: 'notes' };
+                readonly organizerTeamId: { readonly column: 'organizerTeamId' };
+                readonly requestedPlayerCount: { readonly column: 'requestedPlayerCount' };
+                readonly responseDeadline: { readonly column: 'responseDeadline' };
+                readonly startsAt: { readonly column: 'startsAt' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly venueName: { readonly column: 'venueName' };
+              };
+            };
+          };
+          readonly FriendlyNotification: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly proposalId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly readAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly type: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyNotificationType' };
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly proposal: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchProposal';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['proposalId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyNotification';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly proposalId: { readonly column: 'proposalId' };
+                readonly readAt: { readonly column: 'readAt' };
+                readonly type: { readonly column: 'type' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly FriendlyPlayerAvailabilityHistory: {
+            readonly fields: {
+              readonly availability: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyAvailability' };
+                };
+              };
+              readonly changedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly respondedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly responseId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly response: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyPlayerResponse';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['responseId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyPlayerAvailabilityHistory';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly availability: { readonly column: 'availability' };
+                readonly changedAt: { readonly column: 'changedAt' };
+                readonly id: { readonly column: 'id' };
+                readonly respondedAt: { readonly column: 'respondedAt' };
+                readonly responseId: { readonly column: 'responseId' };
+              };
+            };
+          };
+          readonly FriendlyPlayerResponse: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly availability: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/enum@1';
+                  readonly typeParams: { readonly typeName: 'FriendlyAvailability' };
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly jerseyNumberSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly normalizedName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly playerId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly playerNameSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly respondedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly revision: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly availabilityHistory: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyPlayerAvailabilityHistory';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['responseId'];
+                };
+              };
+              readonly invite: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyInvite';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['responseId'];
+                };
+              };
+              readonly player: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Player';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['playerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'FriendlyPlayerResponse';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly availability: { readonly column: 'availability' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly jerseyNumberSnapshot: { readonly column: 'jerseyNumberSnapshot' };
+                readonly normalizedName: { readonly column: 'normalizedName' };
+                readonly playerId: { readonly column: 'playerId' };
+                readonly playerNameSnapshot: { readonly column: 'playerNameSnapshot' };
+                readonly respondedAt: { readonly column: 'respondedAt' };
+                readonly revision: { readonly column: 'revision' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly Game: {
             readonly fields: {
               readonly clockElapsedSeconds: {
@@ -1585,7 +3713,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1605,7 +3733,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1625,7 +3753,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1633,7 +3761,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1649,7 +3777,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1669,7 +3797,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1736,7 +3864,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1764,7 +3892,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1828,7 +3956,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1888,7 +4016,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1916,12 +4044,34 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
             };
             readonly relations: {
+              readonly friendlyApplications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyApplicationPlayer';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['playerId'];
+                };
+              };
+              readonly friendlyResponses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyPlayerResponse';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['playerId'];
+                };
+              };
               readonly gamePlayers: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1971,7 +4121,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -1999,7 +4149,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2007,7 +4157,7 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2035,7 +4185,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2077,13 +4227,77 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PushSubscription: {
+            readonly fields: {
+              readonly auth: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly endpoint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly p256dh: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'PushSubscription';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly auth: { readonly column: 'auth' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly endpoint: { readonly column: 'endpoint' };
+                readonly id: { readonly column: 'id' };
+                readonly p256dh: { readonly column: 'p256dh' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
           readonly SharedGameSnapshot: {
             readonly fields: {
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2103,7 +4317,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2127,7 +4341,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2151,7 +4365,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2161,12 +4375,56 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly candidateFriendlyMatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyConfirmedMatch';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['candidateTeamId'];
+                };
+              };
+              readonly friendlyApplications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['teamId'];
+                };
+              };
+              readonly friendlyProposals: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchProposal';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizerTeamId'];
+                };
+              };
               readonly games: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Game' };
                 readonly cardinality: '1:N';
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['teamId'];
+                };
+              };
+              readonly organizerFriendlyMatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyConfirmedMatch';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizerTeamId'];
                 };
               };
               readonly players: {
@@ -2209,7 +4467,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
@@ -2237,12 +4495,56 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamp-string@1';
+                  readonly codecId: 'pg/timestamp-date@1';
                   readonly typeParams: { readonly precision: 3 };
                 };
               };
             };
             readonly relations: {
+              readonly friendlyApplications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['coachUserId'];
+                };
+              };
+              readonly friendlyNotifications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyNotification';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
+              readonly friendlyProposals: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'FriendlyMatchProposal';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['createdByUserId'];
+                };
+              };
+              readonly pushSubscriptions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PushSubscription';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
               readonly teams: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Team' };
                 readonly cardinality: '1:N';
@@ -2288,6 +4590,7 @@ type ContractBase = Omit<
       readonly forShare: true;
       readonly forUpdate: true;
       readonly insertOnConflictSkip: true;
+      readonly insertOnConflictTarget: true;
       readonly insertOnConflictWithoutTarget: true;
       readonly lateral: true;
       readonly lockNowait: true;
@@ -2303,8 +4606,175 @@ type ContractBase = Omit<
     readonly mutations: {
       readonly defaults: readonly [
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyApplicationPlayer';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyConfirmedMatch';
+            readonly field: 'confirmedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyInvite';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyMatchApplication';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyMatchApplication';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyMatchProposal';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyMatchProposal';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyNotification';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyPlayerAvailabilityHistory';
+            readonly field: 'changedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyPlayerResponse';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'FriendlyPlayerResponse';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Game';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'Game';
             readonly field: 'updatedAt';
@@ -2312,8 +4782,28 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'GamePlayer';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'GamePlayer';
             readonly field: 'updatedAt';
@@ -2321,8 +4811,40 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'GameRotationEvent';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Player';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'Player';
             readonly field: 'updatedAt';
@@ -2330,8 +4852,28 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'PlayerGameTime';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'PlayerGameTime';
             readonly field: 'updatedAt';
@@ -2339,8 +4881,57 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'PushSubscription';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'PushSubscription';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'SharedGameSnapshot';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'SharedGameSnapshot';
             readonly field: 'updatedAt';
@@ -2348,8 +4939,28 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'Team';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'Team';
             readonly field: 'updatedAt';
@@ -2357,8 +4968,28 @@ type ContractBase = Omit<
           };
         },
         {
-          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly ref: {
+            readonly entry: 'User';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
+          readonly onUpdate: {
+            readonly id: 'timestampNow';
+            readonly kind: 'generator';
+            readonly params: { readonly precision: 3 };
+          };
           readonly ref: {
             readonly entry: 'User';
             readonly field: 'updatedAt';
@@ -2369,7 +5000,6 @@ type ContractBase = Omit<
     };
   };
   readonly meta: {};
-
   readonly profileHash: ProfileHash;
 };
 
