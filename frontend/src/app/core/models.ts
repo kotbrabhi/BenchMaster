@@ -362,8 +362,3 @@ export interface AuthUser {
   email: string;
   name: string | null;
 }
-
-export interface AuthSession {
-  token: string;
-  user: AuthUser;
-}

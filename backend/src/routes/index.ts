@@ -11,24 +11,34 @@ import * as pushController from '../controllers/push.controller';
 import * as teamController from '../controllers/team.controller';
 
 const router = Router();
-const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false
-});
+function publicRateLimit(windowMs: number, limit: number) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false
+  });
+}
+
+const registrationRateLimit = publicRateLimit(60 * 60 * 1000, 5);
+const loginRateLimit = publicRateLimit(15 * 60 * 1000, 30);
+const createShareRateLimit = publicRateLimit(60 * 60 * 1000, 20);
+const readShareRateLimit = publicRateLimit(15 * 60 * 1000, 120);
+const readInviteRateLimit = publicRateLimit(15 * 60 * 1000, 120);
+const respondInviteRateLimit = publicRateLimit(15 * 60 * 1000, 60);
 
 router.get('/health', (_request, response) => {
   response.json({ status: 'ok' });
 });
 
-router.post('/auth/register', authRateLimit, asyncHandler(authController.register));
-router.post('/auth/login', authRateLimit, asyncHandler(authController.login));
+router.post('/auth/register', registrationRateLimit, asyncHandler(authController.register));
+router.post('/auth/login', loginRateLimit, asyncHandler(authController.login));
+router.post('/auth/logout', asyncHandler(async (request, response) => authController.logout(request, response)));
 router.get('/auth/me', asyncHandler(requireAuth), asyncHandler(authController.me));
-router.post('/public/game-shares', asyncHandler(gameController.createPublicShare));
-router.get('/public/game-shares/:shareId', asyncHandler(gameController.getPublicSharedSummary));
-router.get('/public/friendly-match-invites/:token', asyncHandler(friendlyMatchController.getPublicInvite));
-router.put('/public/friendly-match-invites/:token/response', asyncHandler(friendlyMatchController.setPublicAvailability));
+router.post('/public/game-shares', createShareRateLimit, asyncHandler(gameController.createPublicShare));
+router.get('/public/game-shares/:shareId', readShareRateLimit, asyncHandler(gameController.getPublicSharedSummary));
+router.get('/public/friendly-match-invites/:token', readInviteRateLimit, asyncHandler(friendlyMatchController.getPublicInvite));
+router.put('/public/friendly-match-invites/:token/response', respondInviteRateLimit, asyncHandler(friendlyMatchController.setPublicAvailability));
 
 router.use(asyncHandler(requireAuth));
 

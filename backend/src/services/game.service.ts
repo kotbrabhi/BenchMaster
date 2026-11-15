@@ -323,6 +323,7 @@ export async function createGameShare(gameId: number, userId: number): Promise<G
 }
 
 export async function createPublicShareSnapshot(payload: unknown): Promise<GameShareResult> {
+  validatePublicSharePayload(payload);
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const shareId = createSnapshotShareId();
 
@@ -346,8 +347,27 @@ export async function createPublicShareSnapshot(payload: unknown): Promise<GameS
   throw new HttpError(500, 'Impossible de generer un identifiant de partage.');
 }
 
+function validatePublicSharePayload(payload: unknown): asserts payload is Record<string, unknown> {
+  const isRecord = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
+  const allowed = ['schemaVersion', 'exportedAt', 'shareId', 'game', 'team', 'totals', 'players', 'insights', 'rotationTimeline'];
+  if (!isRecord(payload) || Object.keys(payload).some((key) => !allowed.includes(key))
+    || payload.schemaVersion !== 1 || typeof payload.exportedAt !== 'string' || !Number.isFinite(Date.parse(payload.exportedAt))
+    || (payload.shareId !== null && typeof payload.shareId !== 'string')
+    || !isRecord(payload.game) || !isRecord(payload.team) || !isRecord(payload.totals) || !isRecord(payload.insights)
+    || !Array.isArray(payload.players) || payload.players.length > 100
+    || !Array.isArray(payload.rotationTimeline) || payload.rotationTimeline.length > 500) {
+    throw new HttpError(400, 'Le résumé de partage est invalide ou trop volumineux.');
+  }
+  const checkText = (value: unknown, max: number) => typeof value === 'string' && value.length <= max;
+  if (!checkText(payload.game.label, 120) || !checkText(payload.team.name, 120)
+    || payload.players.some((player) => !isRecord(player) || !checkText(player.name, 80) || !checkText(player.jerseyNumber, 12))
+    || payload.rotationTimeline.some((event) => !isRecord(event) || !checkText(event.kind, 40))) {
+    throw new HttpError(400, 'Le résumé de partage contient des champs invalides.');
+  }
+}
+
 export async function getPublicSharedSummary(shareId: string) {
-  if (!shareId?.trim()) {
+  if (!/^(?:[a-f0-9]{24}|pub_[a-f0-9]{24})$/.test(shareId)) {
     throw new HttpError(400, 'Identifiant de partage invalide.');
   }
 

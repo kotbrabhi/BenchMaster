@@ -11,13 +11,31 @@ function ensureAuthenticatedUser(request: Request) {
 }
 
 export async function register(request: Request, response: Response) {
-  response.status(201).json(await authService.register(request.body));
+  const session = await authService.register(request.body);
+  response.cookie('benchmaster_session', session.token, sessionCookieOptions());
+  response.status(201).json({ user: session.user });
 }
 
 export async function login(request: Request, response: Response) {
-  response.json(await authService.login(request.body));
+  const session = await authService.login(request.body);
+  response.cookie('benchmaster_session', session.token, sessionCookieOptions());
+  response.json({ user: session.user });
 }
 
 export async function me(request: Request, response: Response) {
   response.json({ user: ensureAuthenticatedUser(request) });
+}
+
+export function logout(_request: Request, response: Response) {
+  response.clearCookie('benchmaster_session', sessionCookieOptions());
+  response.status(204).end();
+}
+
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/api'
+  };
 }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { AuthSession, AuthUser } from './models';
+import { AuthUser } from './models';
 
 interface AuthPayload {
   email: string;
@@ -10,25 +10,17 @@ interface AuthPayload {
   name?: string;
 }
 
-const AUTH_TOKEN_STORAGE_KEY = 'benchmaster.auth-token';
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
 
-  readonly token = signal<string | null>(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY));
   readonly currentUser = signal<AuthUser | null>(null);
   readonly isRestoring = signal(false);
-  readonly isAuthenticated = computed(() => !!this.token());
+  readonly isAuthenticated = computed(() => !!this.currentUser());
 
   private restorePromise: Promise<void> | null = null;
 
   async restoreSession() {
-    if (!this.token()) {
-      this.currentUser.set(null);
-      return;
-    }
-
     if (this.currentUser()) {
       return;
     }
@@ -52,19 +44,25 @@ export class AuthService {
   }
 
   async register(payload: AuthPayload) {
-    const session = await firstValueFrom(this.http.post<AuthSession>(`${API_BASE_URL}/auth/register`, payload));
-    this.applySession(session);
-    return session.user;
+    const response = await firstValueFrom(this.http.post<{ user: AuthUser }>(`${API_BASE_URL}/auth/register`, payload));
+    this.currentUser.set(response.user);
+    return response.user;
   }
 
   async login(payload: AuthPayload) {
-    const session = await firstValueFrom(this.http.post<AuthSession>(`${API_BASE_URL}/auth/login`, payload));
-    this.applySession(session);
-    return session.user;
+    const response = await firstValueFrom(this.http.post<{ user: AuthUser }>(`${API_BASE_URL}/auth/login`, payload));
+    this.currentUser.set(response.user);
+    return response.user;
   }
 
-  logout() {
-    this.clearSession();
+  async logout() {
+    try {
+      await firstValueFrom(this.http.post<void>(`${API_BASE_URL}/auth/logout`, {}));
+    } catch {
+      // Clear local UI state even if the server cannot be reached.
+    } finally {
+      this.clearSession();
+    }
   }
 
   private async fetchCurrentUser() {
@@ -72,15 +70,7 @@ export class AuthService {
     return response.user;
   }
 
-  private applySession(session: AuthSession) {
-    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, session.token);
-    this.token.set(session.token);
-    this.currentUser.set(session.user);
-  }
-
   private clearSession() {
-    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    this.token.set(null);
     this.currentUser.set(null);
   }
 }

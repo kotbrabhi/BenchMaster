@@ -384,7 +384,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async logout() {
     await this.detachCurrentPushSubscription();
-    this.authService.logout();
+    await this.authService.logout();
     this.notifications.set([]);
     this.notificationsOpen.set(false);
     this.appModeService.setMode('guest');

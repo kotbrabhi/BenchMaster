@@ -3,19 +3,11 @@ import { HttpError } from '../utils/http-error';
 import { getUserById } from './auth.service';
 import { verifyAuthToken } from './token';
 
-function extractBearerToken(request: Request) {
-  const header = request.headers.authorization;
-
-  if (!header?.startsWith('Bearer ')) {
-    return null;
-  }
-
-  return header.slice('Bearer '.length).trim();
-}
+const SESSION_COOKIE = 'benchmaster_session';
 
 export async function requireAuth(request: Request, _response: Response, next: NextFunction) {
   try {
-    const token = extractBearerToken(request);
+    const token = request.cookies?.[SESSION_COOKIE];
 
     if (!token) {
       throw new HttpError(401, 'Authentification requise.');

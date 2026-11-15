@@ -15,7 +15,7 @@ function normalizeEmail(email: string) {
 
 function sanitizeName(name: string | undefined) {
   const value = name?.trim();
-  return value ? value : null;
+  return value ? value.slice(0, 80) : null;
 }
 
 function validateCredentials(email: string, password: string) {
@@ -23,13 +23,27 @@ function validateCredentials(email: string, password: string) {
     throw new HttpError(400, 'L’adresse e-mail est obligatoire.');
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new HttpError(400, 'L’adresse e-mail est invalide.');
   }
 
-  if (password.length < 8) {
-    throw new HttpError(400, 'Le mot de passe doit contenir au moins 8 caractères.');
+  if (password.length < 8 || password.length > 128) {
+    throw new HttpError(400, 'Le mot de passe doit contenir entre 8 et 128 caractères.');
   }
+}
+
+function parseAuthInput(input: unknown, registration: boolean): AuthInput {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'Les identifiants sont invalides.');
+  const value = input as Record<string, unknown>;
+  const allowedKeys = registration ? ['email', 'password', 'name'] : ['email', 'password'];
+  if (Object.keys(value).some((key) => !allowedKeys.includes(key))) throw new HttpError(400, 'Les identifiants contiennent des champs inconnus.');
+  if (typeof value.email !== 'string' || typeof value.password !== 'string' || (value.name !== undefined && typeof value.name !== 'string')) {
+    throw new HttpError(400, 'Les identifiants sont invalides.');
+  }
+  if (value.name !== undefined && (value.name.trim().length === 0 || value.name.trim().length > 80)) {
+    throw new HttpError(400, 'Le nom doit contenir entre 1 et 80 caractères.');
+  }
+  return { email: value.email, password: value.password, ...(typeof value.name === 'string' ? { name: value.name } : {}) };
 }
 
 function toSession(user: { id: number; email: string; name: string | null }) {
@@ -39,7 +53,8 @@ function toSession(user: { id: number; email: string; name: string | null }) {
   };
 }
 
-export async function register(input: AuthInput) {
+export async function register(rawInput: unknown) {
+  const input = parseAuthInput(rawInput, true);
   const email = normalizeEmail(input.email);
   const password = input.password.trim();
   const name = sanitizeName(input.name);
@@ -73,7 +88,8 @@ export async function register(input: AuthInput) {
   return toSession(user);
 }
 
-export async function login(input: AuthInput) {
+export async function login(rawInput: unknown) {
+  const input = parseAuthInput(rawInput, false);
   const email = normalizeEmail(input.email);
   const password = input.password.trim();
 

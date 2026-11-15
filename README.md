@@ -27,6 +27,14 @@ BenchMaster already goes beyond the initial MVP scope.
 - Bilingual UI: French and English
 - Optional Web Push alerts for newly published friendly-match proposals
 
+Authentication uses a server-issued `HttpOnly` session cookie (`Secure` in production,
+`SameSite=Lax`, scoped to `/api`). The browser never reads or stores the session token.
+Because cookies are sent automatically, the API checks the exact configured `FRONTEND_ORIGIN`
+on every state-changing request. Configure the production frontend and API on the same
+site (same registrable domain) so `SameSite=Lax` works; cross-site hosting requires a
+separate CSRF-token design and `SameSite=None; Secure`. Set a unique `AUTH_TOKEN_SECRET`
+of at least 32 bytes and `NODE_ENV=production` on the backend deployment.
+
 ## Web Push Notifications
 
 Users can enable proposal alerts from the in-app notifications menu. Push delivery requires VAPID keys on the backend. Generate a key pair with `node backend/scripts/generate-vapid-keys.mjs`, then set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and a real contact address in `VAPID_SUBJECT` on the backend deployment. Keep the private key secret. The included database migration creates the per-device subscription table.
@@ -185,6 +193,16 @@ The web app runs on [http://localhost:4200](http://localhost:4200).
 - `POST /api/auth/login`
 - `POST /api/public/game-shares`
 - `GET /api/public/game-shares/:shareId`
+- `GET /api/public/friendly-match-invites/:token`
+- `PUT /api/public/friendly-match-invites/:token/response`
+
+### Public endpoint protections
+
+Public API limits use the client IP reported by Express. In production, the backend trusts exactly one proxy hop because Render terminates the connection and forwards the client address. Do not expose the backend directly behind a different proxy topology without adjusting this setting; trusting arbitrary forwarded headers would let callers evade limits.
+
+Rate limits are per backend process and return standard `RateLimit` headers: account registration allows 5 requests per IP per hour, login 30 per 15 minutes, public share creation 20 per hour, share reads 120 per 15 minutes, invitation reads 120 per 15 minutes, and invitation responses 60 per 15 minutes. The separate quotas let ordinary users behind a shared network browse or answer invites without sharing the stricter registration budget. Deployments with multiple backend instances should use a shared rate-limit store if limits must apply across all instances.
+
+Registration and login reject malformed or unknown fields, cap email addresses at 254 characters, passwords at 128 characters, and names at 80 characters. Public match-share JSON is capped at 32 KB, requires export schema version 1 and the expected summary objects, caps player and timeline counts, and validates display text lengths. Invitation response names are capped at 80 characters and unknown fields are rejected. Invitation tokens already expire at the proposal response deadline (or match start when no deadline is set); coaches can rotate or revoke them, and expired or revoked links return unavailable.
 
 ### Protected endpoints
 

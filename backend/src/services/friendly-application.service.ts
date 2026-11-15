@@ -329,11 +329,12 @@ async function expireDueProposalForInvite(token: string) {
 
 export async function setPublicAvailability(token: string, input: { availability?: string; playerName?: string; revision?: number }) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'La réponse est invalide.');
+  if (Object.keys(input).some((key) => !['availability', 'playerName', 'revision'].includes(key))) throw new HttpError(400, 'La réponse contient des champs inconnus.');
   if (input.availability !== FriendlyAvailability.AVAILABLE && input.availability !== FriendlyAvailability.UNAVAILABLE) {
     throw new HttpError(400, 'Choisissez disponible ou indisponible.');
   }
   const availability = input.availability as FriendlyAvailability;
-  if (typeof input.playerName !== 'string' || !input.playerName.trim() || input.playerName.trim().length > 80) throw new HttpError(400, 'Saisissez un nom valide (80 caractères maximum).');
+  if (typeof input.playerName !== 'string' || !input.playerName.trim() || input.playerName.trim().length > 80 || /[\u0000-\u001f\u007f]/.test(input.playerName)) throw new HttpError(400, 'Saisissez un nom valide (80 caractères maximum).');
   const playerName = input.playerName.trim();
   const normalizedName = normalizeFriendlyPlayerName(playerName);
   if (input.revision !== undefined && (!Number.isInteger(input.revision) || input.revision < 0)) throw new HttpError(400, 'La version de la réponse est invalide. Rechargez la page.');
