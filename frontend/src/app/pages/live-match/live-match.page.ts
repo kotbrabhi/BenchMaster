@@ -45,6 +45,8 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private rosterTouchStart: { x: number; y: number } | null = null;
   private mobileMediaQuery: MediaQueryList | null = null;
+  private playerLongPressTimer: number | null = null;
+  private longPressSelectedPlayerId: number | null = null;
   readonly liveMatchService = inject(LiveMatchService);
   readonly timeTrackingService = inject(TimeTrackingService);
 
@@ -75,6 +77,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.mobileMediaQuery?.removeEventListener('change', this.handleMobileViewportChange);
+    this.cancelPlayerLongPress();
     this.timeTrackingService.stop();
   }
 
@@ -135,6 +138,49 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
 
   togglePlayerExpanded(playerId: number) {
     this.expandedPlayerId.update((currentPlayerId) => currentPlayerId === playerId ? null : playerId);
+  }
+
+  startPlayerLongPress(event: PointerEvent, playerId: number, view: LiveRosterView) {
+    if (!this.isMobileViewport() || event.pointerType === 'mouse' || (event.target as HTMLElement).closest('[data-player-control="stat"]')) {
+      return;
+    }
+
+    this.cancelPlayerLongPress();
+    this.longPressSelectedPlayerId = null;
+    this.playerLongPressTimer = this.document.defaultView?.setTimeout(() => {
+      this.playerLongPressTimer = null;
+      this.longPressSelectedPlayerId = playerId;
+      if (view === 'court') {
+        void this.toggleActivePlayer(playerId);
+      } else {
+        void this.toggleBenchPlayer(playerId);
+      }
+    }, 480) ?? null;
+  }
+
+  cancelPlayerLongPress() {
+    if (this.playerLongPressTimer != null) {
+      this.document.defaultView?.clearTimeout(this.playerLongPressTimer);
+      this.playerLongPressTimer = null;
+    }
+  }
+
+  handlePlayerCardExpand(playerId: number) {
+    if (this.consumeLongPressSelection(playerId)) {
+      return;
+    }
+    this.togglePlayerExpanded(playerId);
+  }
+
+  handlePlayerCardAction(playerId: number, view: LiveRosterView) {
+    if (this.consumeLongPressSelection(playerId)) {
+      return;
+    }
+    if (view === 'court') {
+      void this.toggleActivePlayer(playerId);
+    } else {
+      void this.toggleBenchPlayer(playerId);
+    }
   }
 
   async toggleActivePlayer(playerId: number) {
@@ -249,11 +295,16 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     return this.timeTrackingService.getPlayerPeriodSeconds(game, player);
   }
 
-  playerTimeSummary(game: GameDetail, player: GamePlayerState) {
-    return [
-      `${this.t('live.playerTime.periodShort')} ${this.formatClock(this.playerPeriodSeconds(game, player))}`,
-      `${this.t('live.playerTime.matchShort')} ${this.formatClock(this.playerSeconds(game, player))}`
-    ].join(' · ');
+  playerTimeProgress(game: GameDetail, player: GamePlayerState) {
+    const matchElapsed = this.clockSeconds(game);
+    const periodElapsed = this.periodClockSeconds(game);
+
+    return {
+      matchLabel: this.t('live.playerTime.matchShort'),
+      matchPercent: this.timeSharePercent(this.playerSeconds(game, player), matchElapsed),
+      periodLabel: this.t('live.playerTime.periodShort'),
+      periodPercent: this.timeSharePercent(this.playerPeriodSeconds(game, player), periodElapsed)
+    };
   }
 
   playerStats(player: GamePlayerState): PlayerCardStat[] {
@@ -732,6 +783,22 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     return player[action] >= 1;
   }
 
+  private timeSharePercent(playedSeconds: number, elapsedSeconds: number) {
+    if (elapsedSeconds <= 0) {
+      return 0;
+    }
+
+    return Math.min(100, Math.max(0, Math.round((playedSeconds / elapsedSeconds) * 100)));
+  }
+
+  private consumeLongPressSelection(playerId: number) {
+    if (this.longPressSelectedPlayerId !== playerId) {
+      return false;
+    }
+    this.longPressSelectedPlayerId = null;
+    return true;
+  }
+
   private isDisqualified(player: GamePlayerState) {
     return player.fouls >= 5;
   }
@@ -769,18 +836,6 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     if (succeeded && activeControl === actionKey && replacementControl) {
       this.focusLiveControl(replacementControl);
     }
-  }
-
-  private formatClock(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   private readonly handleMobileViewportChange = (event: MediaQueryListEvent) => {

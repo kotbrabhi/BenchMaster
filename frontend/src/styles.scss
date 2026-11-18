@@ -485,6 +485,15 @@ button {
   color: var(--color-danger);
 }
 
+:root[data-theme='dark'] .roster-player-card__action.button--ghost,
+:root[data-theme='dark'] .roster-player-card__action.button--danger {
+  color: #fff;
+}
+
+:root[data-theme='dark'] .roster-player-card__action .button__icon {
+  color: #fff;
+}
+
 .button--icon {
   min-width: var(--tap-target-min);
   min-height: var(--tap-target-min);

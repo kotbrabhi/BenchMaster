@@ -40,6 +40,63 @@
   cursor: pointer;
 }
 
+.player-card__summary-toggle--with-time {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.player-card__summary-toggle--with-time > .player-card__number { order: 0; flex: 0 0 40px; }
+.player-card__summary-toggle--with-time > .player-card__summary-identity { order: 1; flex: 1 1 6ch; }
+.player-card__summary-toggle--with-time > .player-card__summary-stat { order: 2; }
+.player-card__summary-toggle--with-time > .player-card__disclosure-icon { order: 3; }
+.player-card__time-bars {
+  display: grid;
+  order: 4;
+  flex: 1 0 0;
+  gap: 3px;
+  min-width: 0;
+  margin-left: 48px;
+}
+
+.player-card__time-row {
+  display: grid;
+  grid-template-columns: 14px minmax(24px, 1fr) 32px;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.player-card__time-label,
+.player-card__time-percent {
+  color: var(--color-text-muted);
+  font-size: var(--state-label-size);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.player-card__time-track {
+  overflow: hidden;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-chart-track);
+}
+
+.player-card__time-track > span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.player-card__time-track--period > span {
+  background: var(--color-court);
+}
+
+.player-card__time-percent { text-align: right; }
+
+.player-card__summary-toggle--with-time .player-card__summary-state {
+  display: none;
+}
+
 .player-card__summary-toggle:hover {
   background: var(--color-ink-soft);
 }

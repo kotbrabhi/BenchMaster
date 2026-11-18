@@ -45,7 +45,8 @@
                   <circle cx="12" cy="12" r="8" />
                   <path d="M10 9v6M14 9v6" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.pauseClock' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.pauseClock' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.pauseShort' | t }}</span>
               </button>
             }
 
@@ -61,7 +62,8 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="m8 5 11 7-11 7V5Z" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.resumeClock' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.resumeClock' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.resumeShort' | t }}</span>
               </button>
             }
 
@@ -78,7 +80,8 @@
                   <path d="M6 4v16" />
                   <path d="M8 5h8l-2.5 3L16 11H8" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.end' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.end' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.endShort' | t }}</span>
               </button>
             }
 
@@ -92,7 +95,8 @@
                   <path d="M5 5v14h14" />
                   <path d="m9 15 3-3 2 2 5-6" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.viewSummary' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.viewSummary' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.viewSummaryShort' | t }}</span>
               </a>
             }
           </div>
@@ -126,7 +130,8 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="m8 5 11 7-11 7V5Z" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.start' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.start' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.startShort' | t }}</span>
               </button>
             }
 
@@ -142,7 +147,8 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <rect x="7" y="7" width="10" height="10" rx="1.5" />
                 </svg>
-                <span class="live-clock-card__control-label">{{ 'live.actions.completePeriod' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.completePeriod' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.completePeriodShort' | t }}</span>
               </button>
             }
 
@@ -360,18 +366,22 @@
                 [selected]="isActiveSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'court')"
                 [note]="playerNote(player, 'court')"
-                [timeLabel]="playerTimeSummary(currentGame, player)"
+                [timeProgress]="playerTimeProgress(currentGame, player)"
                 [inlineStat]="foulCounter(player, isFoulCounterClickable(player, 'court'))"
                 [stats]="playerStats(player)"
                 [quickActions]="isMobileViewport() ? [] : pointActions(player)"
                 [quickActionsTone]="correctionMode() ? 'danger' : 'default'"
                 [actionLabel]="activePlayerActionLabel(player.playerId)"
                 [actionDisabled]="isPlayerActionDisabled(player, 'court')"
+                (pointerdown)="startPlayerLongPress($event, player.playerId, 'court')"
+                (pointerup)="cancelPlayerLongPress()"
+                (pointercancel)="cancelPlayerLongPress()"
+                (pointerleave)="cancelPlayerLongPress()"
                 (inlineStatPressed)="handleQuickAction(player.playerId, 'fouls')"
-                (expandPressed)="togglePlayerExpanded(player.playerId)"
+                (expandPressed)="handlePlayerCardExpand(player.playerId)"
                 (statPressed)="handleQuickAction(player.playerId, $event)"
                 (quickActionPressed)="handleQuickAction(player.playerId, $event)"
-                (actionPressed)="toggleActivePlayer(player.playerId)">
+                (actionPressed)="handlePlayerCardAction(player.playerId, 'court')">
               </app-player-card>
             }
           </div>
@@ -410,14 +420,18 @@
                 [selected]="isBenchSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'bench')"
                 [note]="playerNote(player, 'bench')"
-                [timeLabel]="playerTimeSummary(currentGame, player)"
+                [timeProgress]="playerTimeProgress(currentGame, player)"
                 [inlineStat]="foulCounter(player, isFoulCounterClickable(player, 'bench'))"
                 [stats]="playerStats(player)"
                 [actionLabel]="benchPlayerActionLabel(player.playerId)"
                 [actionDisabled]="isPlayerActionDisabled(player, 'bench')"
+                (pointerdown)="startPlayerLongPress($event, player.playerId, 'bench')"
+                (pointerup)="cancelPlayerLongPress()"
+                (pointercancel)="cancelPlayerLongPress()"
+                (pointerleave)="cancelPlayerLongPress()"
                 (inlineStatPressed)="handleQuickAction(player.playerId, 'fouls')"
-                (expandPressed)="togglePlayerExpanded(player.playerId)"
-                (actionPressed)="toggleBenchPlayer(player.playerId)">
+                (expandPressed)="handlePlayerCardExpand(player.playerId)"
+                (actionPressed)="handlePlayerCardAction(player.playerId, 'bench')">
               </app-player-card>
             }
           </div>
@@ -467,11 +481,9 @@
             (click)="setMobileRosterView('bench')">
             {{ mobileRosterTabLabel('bench') }}
           </button>
-        </div>
 
-        <div class="live-thumb-dock__utility">
           <button
-            class="button"
+            class="button button--icon live-thumb-dock__correction"
             type="button"
             [class.button--secondary]="!correctionMode()"
             [class.button--danger]="correctionMode()"
@@ -479,28 +491,11 @@
             [attr.title]="correctionActionKey() | t"
             [attr.aria-pressed]="correctionMode()"
             (click)="toggleCorrectionMode()">
-            {{ correctionActionKey() | t }}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m8 16 7.5-7.5a2.12 2.12 0 1 1 3 3L11 19H6a1 1 0 0 1-.7-.3l-1-1a1 1 0 0 1 0-1.4L9 11" />
+              <path d="m13.5 10.5 3 3M6 19h9" />
+            </svg>
           </button>
-
-          @if (canCompletePeriod(currentGame)) {
-            <button
-              class="button button--secondary"
-              type="button"
-              data-live-control="complete-period"
-              [attr.aria-busy]="isActionBusy('complete-period')"
-              (click)="requestCompletePeriod()">
-              {{ 'live.actions.completePeriod' | t }}
-            </button>
-          } @else if (canStartNextPeriod(currentGame)) {
-            <button
-              class="button button--secondary"
-              type="button"
-              data-live-control="start-next-period"
-              [attr.aria-busy]="isActionBusy('start-next-period')"
-              (click)="startNextPeriod()">
-              {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
-            </button>
-          }
         </div>
 
         <div class="live-thumb-dock__actions">
@@ -531,14 +526,16 @@
               {{ 'live.actions.pauseClock' | t }}
             </button>
 
-            <button
-              class="button button--danger"
-              type="button"
-              data-live-control="end-game"
-              [attr.aria-busy]="isActionBusy('end-game')"
-              (click)="requestEndGame()">
-              {{ 'live.actions.end' | t }}
-            </button>
+            @if (canCompletePeriod(currentGame)) {
+              <button
+                class="button button--secondary"
+                type="button"
+                data-live-control="complete-period"
+                [attr.aria-busy]="isActionBusy('complete-period')"
+                (click)="requestCompletePeriod()">
+                {{ 'live.actions.completePeriod' | t }}
+              </button>
+            }
           } @else if (canResume(currentGame)) {
             <button
               class="button"
@@ -549,23 +546,45 @@
               {{ 'live.actions.resumeClock' | t }}
             </button>
 
-            <button
-              class="button button--danger"
-              type="button"
-              data-live-control="end-game"
-              [attr.aria-busy]="isActionBusy('end-game')"
-              (click)="requestEndGame()">
-              {{ 'live.actions.end' | t }}
-            </button>
+            @if (canCompletePeriod(currentGame)) {
+              <button
+                class="button button--secondary"
+                type="button"
+                data-live-control="complete-period"
+                [attr.aria-busy]="isActionBusy('complete-period')"
+                (click)="requestCompletePeriod()">
+                {{ 'live.actions.completePeriod' | t }}
+              </button>
+            } @else if (canStartNextPeriod(currentGame)) {
+              <button
+                class="button button--secondary"
+                type="button"
+                data-live-control="start-next-period"
+                [attr.aria-busy]="isActionBusy('start-next-period')"
+                (click)="startNextPeriod()">
+                {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+              </button>
+            }
           } @else {
-            <button
-              class="button button--danger"
-              type="button"
-              data-live-control="end-game"
-              [attr.aria-busy]="isActionBusy('end-game')"
-              (click)="requestEndGame()">
-              {{ 'live.actions.end' | t }}
-            </button>
+            @if (canCompletePeriod(currentGame)) {
+              <button
+                class="button button--secondary"
+                type="button"
+                data-live-control="complete-period"
+                [attr.aria-busy]="isActionBusy('complete-period')"
+                (click)="requestCompletePeriod()">
+                {{ 'live.actions.completePeriod' | t }}
+              </button>
+            } @else if (canStartNextPeriod(currentGame)) {
+              <button
+                class="button button--secondary"
+                type="button"
+                data-live-control="start-next-period"
+                [attr.aria-busy]="isActionBusy('start-next-period')"
+                (click)="startNextPeriod()">
+                {{ 'live.actions.startNextPeriod' | t : { number: currentGame.currentPeriodNumber + 1 } }}
+              </button>
+            }
           }
         </div>
       </section>

@@ -8,6 +8,7 @@
   @if (expandable) {
     <button
       class="player-card__summary-toggle"
+      [class.player-card__summary-toggle--with-time]="!!timeProgress"
       type="button"
       [attr.aria-expanded]="expanded"
       [attr.aria-controls]="'player-card-details-' + playerId"
@@ -25,7 +26,24 @@
           <strong>{{ currentInlineStat.value }}</strong>
         </span>
       }
-      @if (timeLabel) {
+      @if (timeProgress; as progress) {
+        <span class="player-card__time-bars" [attr.aria-label]="playerName + ', ' + progress.matchLabel + ' ' + progress.matchPercent + '%, ' + progress.periodLabel + ' ' + progress.periodPercent + '%'">
+          <span class="player-card__time-row">
+            <span class="player-card__time-label">{{ progress.matchLabel }}</span>
+            <span class="player-card__time-track" role="progressbar" [attr.aria-label]="playerName + ', ' + progress.matchLabel" [attr.aria-valuenow]="progress.matchPercent" aria-valuemin="0" aria-valuemax="100">
+              <span [style.width.%]="progress.matchPercent"></span>
+            </span>
+            <span class="player-card__time-percent">{{ progress.matchPercent }}%</span>
+          </span>
+          <span class="player-card__time-row">
+            <span class="player-card__time-label">{{ progress.periodLabel }}</span>
+            <span class="player-card__time-track player-card__time-track--period" role="progressbar" [attr.aria-label]="playerName + ', ' + progress.periodLabel" [attr.aria-valuenow]="progress.periodPercent" aria-valuemin="0" aria-valuemax="100">
+              <span [style.width.%]="progress.periodPercent"></span>
+            </span>
+            <span class="player-card__time-percent">{{ progress.periodPercent }}%</span>
+          </span>
+        </span>
+      } @else if (timeLabel) {
         <span class="player-card__meta-pill player-card__meta-pill--accent player-card__summary-time">{{ timeLabel }}</span>
       }
       @if (stateLabel) {

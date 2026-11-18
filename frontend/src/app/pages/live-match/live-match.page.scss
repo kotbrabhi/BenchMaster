@@ -108,6 +108,8 @@
   font-size: var(--player-meta-size);
 }
 
+.live-clock-card__control-label--short { display: none; }
+
 .live-clock-card__label {
   margin: 0;
   color: var(--color-text-muted);
@@ -362,6 +364,67 @@
     font-size: 0.82rem;
   }
 
+  .live-clock-card {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .live-clock-card__row {
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0 10px;
+    border: 0;
+    flex-wrap: nowrap;
+  }
+
+  .live-clock-card__row:first-child {
+    border-right: 1px solid var(--color-border);
+  }
+
+  .live-clock-card__row:last-child {
+    padding: 0 10px;
+  }
+
+  .live-clock-card__metric {
+    flex-shrink: 1;
+  }
+
+  .live-clock-card__metric-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .live-clock-card__actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .live-clock-card__control,
+  .live-clock-card__control.button--icon {
+    width: auto;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  .live-clock-card__control-label--full {
+    display: none;
+  }
+
+  .live-clock-card__control-label--short {
+    display: inline;
+    font-size: 0.8125rem;
+  }
+
   .live-clock-card .button {
     min-height: 44px;
     padding: 0 14px;
@@ -396,11 +459,22 @@
   }
 
   .live-clock-card__row {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .live-clock-card__actions {
     width: 100%;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .live-clock-card__control.button--icon {
+    width: auto;
+    min-width: 44px;
+    padding: 0 4px;
+  }
+
+  .live-clock-card__actions {
     flex-wrap: wrap;
   }
 
@@ -473,14 +547,14 @@
   }
 
   .live-thumb-dock__switch,
-  .live-thumb-dock__utility,
   .live-thumb-dock__actions {
     display: grid;
     gap: 8px;
   }
 
   .live-thumb-dock__switch {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px;
+    align-items: center;
     padding: 6px;
     border: 1px solid var(--color-border);
     border-radius: 999px;
@@ -495,9 +569,27 @@
     min-height: 44px;
   }
 
-  .live-thumb-dock__utility,
   .live-thumb-dock__actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-thumb-dock__correction {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    justify-self: center;
+    padding: 0;
+  }
+
+  .live-thumb-dock__correction svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .live-thumb-dock__actions .button:only-child {

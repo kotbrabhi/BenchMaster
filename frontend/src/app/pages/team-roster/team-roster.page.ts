@@ -78,6 +78,9 @@ export class TeamRosterPageComponent implements OnInit {
   editingPlayerName = '';
   editingJerseyNumber = '';
   editingPosition = '';
+  private editingPlayerSnapshot: { id: number; name: string; jerseyNumber: string; position: string | null } | null = null;
+  private playerSaveInFlight = false;
+  private cancelEditingRequested = false;
 
   async ngOnInit() {
     await this.refresh();
@@ -133,6 +136,8 @@ export class TeamRosterPageComponent implements OnInit {
   }
 
   editPlayer(player: { id: number; name: string; jerseyNumber: string; position: string | null }) {
+    this.cancelEditingRequested = false;
+    this.editingPlayerSnapshot = { ...player };
     this.editingPlayerId = player.id;
     this.editingPlayerName = player.name;
     this.editingJerseyNumber = player.jerseyNumber;
@@ -147,20 +152,56 @@ export class TeamRosterPageComponent implements OnInit {
       return;
     }
 
+    if (this.playerSaveInFlight) {
+      return;
+    }
+
+    const playerId = this.editingPlayerId;
+    const next = {
+      name: this.editingPlayerName.trim(),
+      jerseyNumber,
+      position: this.editingPosition || null
+    };
+    const snapshot = this.editingPlayerSnapshot;
+    if (snapshot && snapshot.name === next.name && snapshot.jerseyNumber === next.jerseyNumber && snapshot.position === next.position) {
+      return;
+    }
+
     try {
+      this.playerSaveInFlight = true;
       this.isSavingEditedPlayer.set(true);
-      await this.playerService.updatePlayer(this.teamId, this.editingPlayerId, {
-        name: this.editingPlayerName,
-        jerseyNumber,
-        position: this.editingPosition || null
-      });
-      this.resetEditingPlayer();
+      await this.playerService.updatePlayer(this.teamId, playerId, next);
+      if (this.editingPlayerId !== playerId) return;
+      this.editingPlayerSnapshot = { id: playerId, ...next };
       this.syncSuggestedJerseyNumber();
       this.errorMessage.set('');
+      this.resetEditingPlayer();
     } catch (error) {
-      this.errorMessage.set(getErrorMessage(error, this.t));
+      const message = getErrorMessage(error, this.t);
+      this.errorMessage.set(message);
+      if (message === this.t('error.jerseyAlreadyUsed')) {
+        this.editingJerseyNumber = this.editingPlayerSnapshot?.jerseyNumber ?? this.editingJerseyNumber;
+      }
     } finally {
+      this.playerSaveInFlight = false;
       this.isSavingEditedPlayer.set(false);
+      if (this.cancelEditingRequested) {
+        this.cancelEditingRequested = false;
+        this.resetEditingPlayer();
+      }
+    }
+  }
+
+  async saveEditedPlayerIfValid() {
+    if (!this.editingPlayerId || this.cancelEditingRequested || !this.canSaveEditedPlayer()) {
+      return;
+    }
+    await this.saveEditedPlayer();
+  }
+
+  async saveEditedPlayerOnPositionChange() {
+    if (this.editingPlayerId && this.canSaveEditedPlayer()) {
+      await this.saveEditedPlayer();
     }
   }
 
@@ -213,6 +254,12 @@ export class TeamRosterPageComponent implements OnInit {
   }
 
   resetEditingPlayer() {
+    if (this.playerSaveInFlight) {
+      this.cancelEditingRequested = true;
+      return;
+    }
+    this.cancelEditingRequested = false;
+    this.editingPlayerSnapshot = null;
     this.editingPlayerId = null;
     this.editingPlayerName = '';
     this.editingJerseyNumber = '';
@@ -252,6 +299,11 @@ export class TeamRosterPageComponent implements OnInit {
 
   editedPlayerDisabledReason() {
     return this.canSaveEditedPlayer() ? '' : this.t('common.reasons.playerFormIncomplete');
+  }
+
+  isJerseyNumberDuplicate() {
+    const jerseyNumber = this.editingJerseyNumber.trim();
+    return Boolean(jerseyNumber && this.roster().some((player) => player.id !== this.editingPlayerId && player.jerseyNumber === jerseyNumber));
   }
 
   getPositionOptions(currentPosition?: string | null) {

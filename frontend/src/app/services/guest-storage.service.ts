@@ -460,6 +460,9 @@ export class GuestStorageService {
     }
 
     const playerPayload = this.validatePlayerPayload(payload, team.players, team.gender, playerId);
+    if (team.players.some((entry) => entry.id !== playerId && entry.jerseyNumber === playerPayload.jerseyNumber)) {
+      throw new Error('Ce numéro est déjà utilisé dans cette équipe.');
+    }
     player.name = playerPayload.name;
     player.jerseyNumber = playerPayload.jerseyNumber;
     player.position = playerPayload.position;

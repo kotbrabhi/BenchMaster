@@ -35,6 +35,13 @@ export interface PlayerCardInlineStat {
   tone?: 'default' | 'danger';
 }
 
+export interface PlayerCardTimeProgress {
+  matchLabel: string;
+  matchPercent: number;
+  periodLabel: string;
+  periodPercent: number;
+}
+
 @Component({
   selector: 'app-player-card',
   standalone: true,
@@ -49,6 +56,7 @@ export class PlayerCardComponent {
   @Input() position: string | null = null;
   @Input() note = '';
   @Input() timeLabel = '';
+  @Input() timeProgress: PlayerCardTimeProgress | null = null;
   @Input() stateLabel = '';
   @Input() actionLabel = '';
   @Input() stats: PlayerCardStat[] = [];
