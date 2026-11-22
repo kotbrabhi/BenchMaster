@@ -16,6 +16,12 @@ export const routes: Routes = [
     title: 'document.title.coachSettings'
   },
   {
+    path: 'history',
+    loadComponent: () => import('./pages/history/history.page').then((module) => module.HistoryPageComponent),
+    canActivate: [modeAuthGuard],
+    title: 'document.title.history'
+  },
+  {
     path: 'teams/:teamId',
     loadComponent: () => import('./pages/team-roster/team-roster.page').then((module) => module.TeamRosterPageComponent),
     canActivate: [modeAuthGuard],

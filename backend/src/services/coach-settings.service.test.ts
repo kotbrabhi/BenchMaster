@@ -3,10 +3,11 @@ import test from 'node:test';
 import { DEFAULT_COACH_SETTINGS, validateCoachSettings } from './coach-settings.service';
 import { HttpError } from '../utils/http-error';
 
-test('coach defaults retain the current game format and all live stats', () => {
+test('coach defaults retain the current game format and hide fouls', () => {
   assert.equal(DEFAULT_COACH_SETTINGS.defaultPeriodCount, 4);
   assert.equal(DEFAULT_COACH_SETTINGS.defaultPeriodDurationSeconds, 600);
-  assert.deepEqual(DEFAULT_COACH_SETTINGS.visibleLiveStats, ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls']);
+  assert.equal(DEFAULT_COACH_SETTINGS.playingTimeDisplay, 'PERCENTAGE');
+  assert.deepEqual(DEFAULT_COACH_SETTINGS.visibleLiveStats, ['points', 'rebounds', 'assists', 'blocks', 'interceptions']);
 });
 
 test('coach settings reject invalid formats and an empty quick-stat selection', () => {

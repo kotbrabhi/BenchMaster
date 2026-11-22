@@ -8,8 +8,8 @@ export interface CoachSettings {
   openSummaryAfterEnd: boolean;
 }
 export const DEFAULT_COACH_SETTINGS: CoachSettings = {
-  defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'MINUTES',
-  visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls'],
+  defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'PERCENTAGE',
+  visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions'],
   confirmSessionEnd: true, openSummaryAfterEnd: true
 };
 export function formatPlayingTime(totalSeconds: number, totalGameSeconds: number, display: CoachSettings['playingTimeDisplay']) {

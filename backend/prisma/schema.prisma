@@ -315,8 +315,8 @@ model CoachSettings {
   userId Int @id
   defaultPeriodCount Int @default(4)
   defaultPeriodDurationSeconds Int @default(600)
-  playingTimeDisplay String @default("MINUTES")
-  visibleLiveStats Json @default("[\"points\",\"rebounds\",\"assists\",\"blocks\",\"interceptions\",\"fouls\"]")
+  playingTimeDisplay String @default("PERCENTAGE")
+  visibleLiveStats Json @default("[\"points\",\"rebounds\",\"assists\",\"blocks\",\"interceptions\"]")
   confirmSessionEnd Boolean @default(true)
   openSummaryAfterEnd Boolean @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz(3)

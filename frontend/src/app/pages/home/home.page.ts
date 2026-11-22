@@ -42,6 +42,11 @@ export class HomePageComponent implements OnInit {
   readonly teams = this.teamService.teams;
   readonly games = this.gameService.games;
   readonly friendlyMatches = signal<FriendlyConfirmedMatch[]>([]);
+  recentSessions() {
+    return [...this.games()]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+  }
   readonly errorMessage = signal('');
   readonly isSubmittingTeam = signal(false);
   readonly isCreatingTeam = signal(false);

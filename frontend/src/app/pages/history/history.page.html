@@ -1,0 +1,47 @@
+<section class="page">
+  <header class="surface-card history-header">
+    <div>
+      <span class="toolbar__eyebrow">{{ 'history.eyebrow' | t }}</span>
+      <h1>{{ 'history.title' | t }}</h1>
+      <p>{{ 'history.subtitle' | t }}</p>
+    </div>
+    <a class="button button--secondary" routerLink="/">{{ 'history.back' | t }}</a>
+  </header>
+
+  @if (errorMessage()) { <div class="error-banner" role="alert">{{ errorMessage() }}</div> }
+
+  <section class="surface-card" aria-label="{{ 'history.title' | t }}">
+    <div class="history-controls">
+      <label class="history-search">
+        <span>{{ 'history.search' | t }}</span>
+        <input type="search" [(ngModel)]="searchQuery" [placeholder]="'history.searchPlaceholder' | t" />
+      </label>
+      <label class="history-filter">
+        <span>{{ 'history.filter' | t }}</span>
+        <select [(ngModel)]="filter">
+          <option value="ALL">{{ 'history.filterAll' | t }}</option>
+          <option value="GAME">{{ 'history.filterGames' | t }}</option>
+          <option value="TRAINING">{{ 'history.filterTraining' | t }}</option>
+        </select>
+      </label>
+    </div>
+
+    @if (filteredSessions().length) {
+      <div class="stack">
+        @for (game of filteredSessions(); track game.id) {
+          <a class="game-card" [class.game-card--draft]="game.status === 'DRAFT'" [class.game-card--live]="game.status === 'LIVE'" [class.game-card--paused]="game.status === 'PAUSED'" [class.game-card--finished]="game.status === 'FINISHED'" [routerLink]="gameLink(game)">
+            <div class="game-card__content">
+              <strong>{{ game.label }}</strong>
+              <p>@if (game.sessionType === 'TRAINING') { {{ 'training.badge' | t }} · }{{ game.teamName }}</p>
+              <span class="game-card__date">{{ formattedDate(game.createdAt) }}</span>
+              @if (game.sessionType === 'TRAINING') { <span class="game-card__date">{{ 'training.history.players' | t : { count: game.selectedCount, active: game.activeCount } }}</span> }
+            </div>
+            <span class="game-card__status"><span>{{ statusLabel(game.status) }}</span></span>
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="status-panel status-panel--empty"><p class="status-panel__text">{{ 'history.empty' | t }}</p></div>
+    }
+  </section>
+</section>

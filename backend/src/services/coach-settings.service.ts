@@ -4,8 +4,8 @@ import { HttpError } from '../utils/http-error';
 export const DEFAULT_COACH_SETTINGS = {
   defaultPeriodCount: 4,
   defaultPeriodDurationSeconds: 600,
-  playingTimeDisplay: 'MINUTES' as const,
-  visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls'],
+  playingTimeDisplay: 'PERCENTAGE' as const,
+  visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions'],
   confirmSessionEnd: true,
   openSummaryAfterEnd: true
 };

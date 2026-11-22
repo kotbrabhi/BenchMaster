@@ -1,6 +1,5 @@
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, TitleStrategy } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { AppModeService } from './core/app-mode.service';
@@ -17,7 +16,7 @@ import { TranslatePipe } from './shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -129,7 +128,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.currentUser()) {
       this.appModeService.setMode('authenticated');
-      void this.coachSettingsService.load().catch(() => undefined);
+      await this.coachSettingsService.load().catch(() => undefined);
       await this.refreshPushNotificationState();
     } else {
       this.appModeService.setMode('guest');
@@ -423,7 +422,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.accountMenuOpen.set(false);
     await this.detachCurrentPushSubscription();
     await this.authService.logout();
-    this.coachSettingsService.settings.set({ defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'MINUTES', visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls'], confirmSessionEnd: true, openSummaryAfterEnd: true });
+    this.coachSettingsService.settings.set({ defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'PERCENTAGE', visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions'], confirmSessionEnd: true, openSummaryAfterEnd: true });
     this.document.defaultView?.sessionStorage.removeItem('benchmaster.authReturnUrl');
     this.notifications.set([]);
     this.notificationsOpen.set(false);

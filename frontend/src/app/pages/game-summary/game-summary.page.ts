@@ -114,6 +114,7 @@ export class GameSummaryPageComponent implements OnInit {
   );
   readonly gameId = Number(this.route.snapshot.paramMap.get('gameId'));
   readonly summarySortKeys: SummarySortKey[] = ['totalSeconds', 'points', 'assists', 'rebounds', 'blocks', 'interceptions', 'fouls', 'name'];
+  readonly visibleSummaryStats = computed(() => this.coachSettingsService.settings().visibleLiveStats);
   readonly t = this.i18n.t;
 
   async ngOnInit() {

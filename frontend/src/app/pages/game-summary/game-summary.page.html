@@ -74,7 +74,7 @@
         </strong>
         <p class="info-panel__text">
           @if (leader(); as leader) {
-            {{ leader.totalSeconds | duration : 'compact' }}
+            {{ playingMinutes(leader.totalSeconds) }}
           }
         </p>
       </article>
@@ -112,7 +112,7 @@
                 <strong>#{{ player.jerseyNumber }} {{ player.name }}</strong>
                 <p>{{ player.isStarter ? ('summary.notes.starter' | t) : ('summary.notes.benchContributor' | t) }}</p>
               </div>
-              <span>{{ player.totalSeconds | duration : 'compact' }}</span>
+              <span>{{ playingMinutes(player.totalSeconds) }}</span>
             </div>
           }
         </div>
@@ -151,7 +151,7 @@
                 <strong>{{ 'summary.insights.averageMinutes' | t }}</strong>
                 <p>{{ 'summary.insights.starterShare' | t }}</p>
               </div>
-              <span>{{ split.starterAverageSeconds | duration : 'compact' }}</span>
+              <span>{{ playingMinutes(split.starterAverageSeconds) }}</span>
             </div>
 
             <div class="insight-row">
@@ -159,7 +159,7 @@
                 <strong>{{ 'summary.insights.averageMinutes' | t }}</strong>
                 <p>{{ 'summary.insights.benchShare' | t }}</p>
               </div>
-              <span>{{ split.benchAverageSeconds | duration : 'compact' }}</span>
+              <span>{{ playingMinutes(split.benchAverageSeconds) }}</span>
             </div>
           </div>
         </article>
@@ -297,30 +297,30 @@
             </div>
 
             <dl class="summary-card__stats">
-              <div>
+              @if (visibleSummaryStats().includes('points')) { <div>
                 <dt>{{ 'summary.table.points' | t }}</dt>
                 <dd>{{ player.points }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('assists')) { <div>
                 <dt>{{ 'summary.table.assists' | t }}</dt>
                 <dd>{{ player.assists }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('rebounds')) { <div>
                 <dt>{{ 'summary.table.rebounds' | t }}</dt>
                 <dd>{{ player.rebounds }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('blocks')) { <div>
                 <dt>{{ 'summary.table.blocks' | t }}</dt>
                 <dd>{{ player.blocks }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('interceptions')) { <div>
                 <dt>{{ 'summary.table.interceptions' | t }}</dt>
                 <dd>{{ player.interceptions }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('fouls')) { <div>
                 <dt>{{ 'summary.table.fouls' | t }}</dt>
                 <dd>{{ player.fouls }}</dd>
-              </div>
+              </div> }
             </dl>
           </article>
         }
@@ -339,30 +339,30 @@
             </div>
 
             <dl class="summary-card__stats">
-              <div>
+              @if (visibleSummaryStats().includes('points')) { <div>
                 <dt>{{ 'summary.table.points' | t }}</dt>
                 <dd>{{ totals.points }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('assists')) { <div>
                 <dt>{{ 'summary.table.assists' | t }}</dt>
                 <dd>{{ totals.assists }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('rebounds')) { <div>
                 <dt>{{ 'summary.table.rebounds' | t }}</dt>
                 <dd>{{ totals.rebounds }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('blocks')) { <div>
                 <dt>{{ 'summary.table.blocks' | t }}</dt>
                 <dd>{{ totals.blocks }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('interceptions')) { <div>
                 <dt>{{ 'summary.table.interceptions' | t }}</dt>
                 <dd>{{ totals.interceptions }}</dd>
-              </div>
-              <div>
+              </div> }
+              @if (visibleSummaryStats().includes('fouls')) { <div>
                 <dt>{{ 'summary.table.fouls' | t }}</dt>
                 <dd>{{ totals.fouls }}</dd>
-              </div>
+              </div> }
             </dl>
           </article>
         }
@@ -402,7 +402,7 @@
                   <span>{{ (coachSettingsService.settings().playingTimeDisplay === 'PERCENTAGE' ? 'coachSettings.live.percentage' : 'summary.table.minutes') | t }}</span>
                 </button>
               </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('points')">
+              @if (visibleSummaryStats().includes('points')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('points')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -412,8 +412,8 @@
                   [attr.title]="sortButtonLabel('points')">
                   <span>{{ 'summary.table.points' | t }}</span>
                 </button>
-              </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('assists')">
+              </th> }
+              @if (visibleSummaryStats().includes('assists')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('assists')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -423,8 +423,8 @@
                   [attr.title]="sortButtonLabel('assists')">
                   <span>{{ 'summary.table.assists' | t }}</span>
                 </button>
-              </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('blocks')">
+              </th> }
+              @if (visibleSummaryStats().includes('blocks')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('blocks')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -434,8 +434,8 @@
                   [attr.title]="sortButtonLabel('blocks')">
                   <span>{{ 'summary.table.blocks' | t }}</span>
                 </button>
-              </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('rebounds')">
+              </th> }
+              @if (visibleSummaryStats().includes('rebounds')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('rebounds')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -445,8 +445,8 @@
                   [attr.title]="sortButtonLabel('rebounds')">
                   <span>{{ 'summary.table.rebounds' | t }}</span>
                 </button>
-              </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('interceptions')">
+              </th> }
+              @if (visibleSummaryStats().includes('interceptions')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('interceptions')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -456,8 +456,8 @@
                   [attr.title]="sortButtonLabel('interceptions')">
                   <span>{{ 'summary.table.interceptions' | t }}</span>
                 </button>
-              </th>
-              <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('fouls')">
+              </th> }
+              @if (visibleSummaryStats().includes('fouls')) { <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('fouls')">
                 <button
                   class="summary-table__sort-button"
                   type="button"
@@ -467,7 +467,7 @@
                   [attr.title]="sortButtonLabel('fouls')">
                   <span>{{ 'summary.table.fouls' | t }}</span>
                 </button>
-              </th>
+              </th> }
             </tr>
           </thead>
 
@@ -476,12 +476,12 @@
               <tr>
                 <td class="summary-table__player">{{ player.name }}</td>
                 <td class="summary-table__minutes">{{ playingMinutes(player.totalSeconds) }}</td>
-                <td class="summary-table__stat">{{ player.points }}</td>
-                <td class="summary-table__stat">{{ player.assists }}</td>
-                <td class="summary-table__stat">{{ player.blocks }}</td>
-                <td class="summary-table__stat">{{ player.rebounds }}</td>
-                <td class="summary-table__stat">{{ player.interceptions }}</td>
-                <td class="summary-table__stat">{{ player.fouls }}</td>
+                @if (visibleSummaryStats().includes('points')) { <td class="summary-table__stat">{{ player.points }}</td> }
+                @if (visibleSummaryStats().includes('assists')) { <td class="summary-table__stat">{{ player.assists }}</td> }
+                @if (visibleSummaryStats().includes('blocks')) { <td class="summary-table__stat">{{ player.blocks }}</td> }
+                @if (visibleSummaryStats().includes('rebounds')) { <td class="summary-table__stat">{{ player.rebounds }}</td> }
+                @if (visibleSummaryStats().includes('interceptions')) { <td class="summary-table__stat">{{ player.interceptions }}</td> }
+                @if (visibleSummaryStats().includes('fouls')) { <td class="summary-table__stat">{{ player.fouls }}</td> }
               </tr>
             }
           </tbody>
@@ -491,12 +491,12 @@
               <tr class="summary-table__total-row">
                 <th class="summary-table__player" scope="row">{{ 'summary.table.total' | t }}</th>
                 <td class="summary-table__minutes"></td>
-                <td class="summary-table__stat">{{ totals.points }}</td>
-                <td class="summary-table__stat">{{ totals.assists }}</td>
-                <td class="summary-table__stat">{{ totals.blocks }}</td>
-                <td class="summary-table__stat">{{ totals.rebounds }}</td>
-                <td class="summary-table__stat">{{ totals.interceptions }}</td>
-                <td class="summary-table__stat">{{ totals.fouls }}</td>
+                @if (visibleSummaryStats().includes('points')) { <td class="summary-table__stat">{{ totals.points }}</td> }
+                @if (visibleSummaryStats().includes('assists')) { <td class="summary-table__stat">{{ totals.assists }}</td> }
+                @if (visibleSummaryStats().includes('blocks')) { <td class="summary-table__stat">{{ totals.blocks }}</td> }
+                @if (visibleSummaryStats().includes('rebounds')) { <td class="summary-table__stat">{{ totals.rebounds }}</td> }
+                @if (visibleSummaryStats().includes('interceptions')) { <td class="summary-table__stat">{{ totals.interceptions }}</td> }
+                @if (visibleSummaryStats().includes('fouls')) { <td class="summary-table__stat">{{ totals.fouls }}</td> }
               </tr>
             </tfoot>
           }

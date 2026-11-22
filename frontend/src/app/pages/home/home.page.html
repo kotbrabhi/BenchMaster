@@ -255,11 +255,12 @@
         <h2>{{ 'home.games.title' | t }}</h2>
         <p>{{ 'home.games.subtitle' | t }}</p>
       </div>
+      <a class="button button--secondary" routerLink="/history">{{ 'history.viewAll' | t }}</a>
     </div>
 
     @if (games().length) {
       <div class="stack">
-        @for (game of games(); track game.id) {
+        @for (game of recentSessions(); track game.id) {
           <a
             class="game-card"
             [class.game-card--draft]="game.status === 'DRAFT'"
