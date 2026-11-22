@@ -201,9 +201,9 @@ async function finalizeClockAndPlayers(
   const activePlayers = game.players.filter((player) => player.playingTime?.isOnCourt && player.playingTime.lastEnteredAt);
   if (activePlayers.length) {
     const rows = Prisma.join(activePlayers.map((player) => Prisma.sql`(
-      ${player.id},
-      ${diffSeconds(player.playingTime!.lastEnteredAt!, now)},
-      ${player.playingTime!.lastPeriodEnteredAt ? diffSeconds(player.playingTime!.lastPeriodEnteredAt, now) : 0}
+      CAST(${player.id} AS INTEGER),
+      CAST(${diffSeconds(player.playingTime!.lastEnteredAt!, now)} AS INTEGER),
+      CAST(${player.playingTime!.lastPeriodEnteredAt ? diffSeconds(player.playingTime!.lastPeriodEnteredAt, now) : 0} AS INTEGER)
     )`));
     await transaction.$executeRaw(Prisma.sql`
       UPDATE "PlayerGameTime" AS pgt
