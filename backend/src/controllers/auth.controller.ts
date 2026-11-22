@@ -35,9 +35,12 @@ function sessionCookieOptions() {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    // The frontend and API use separate Render hostnames. Their session
-    // cookie must be sent on credentialed cross-site API requests.
+    // The frontend and API use separate Render hostnames. SameSite=None
+    // permits the cross-site API calls, while Partitioned keeps this session
+    // cookie isolated to the BenchMaster top-level site in browsers that
+    // restrict unpartitioned third-party cookies.
     sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+    partitioned: process.env.NODE_ENV === 'production',
     path: '/api'
   };
 }
