@@ -47,6 +47,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private authTrigger: HTMLElement | null = null;
   private notificationsSubscription?: Subscription;
   private notificationMenuElement: HTMLElement | null = null;
+  private accountMenuElement: HTMLElement | null = null;
   private installPromptEvent: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }) | null = null;
   readonly installBannerVisible = signal(false);
   readonly installHelpVisible = signal(false);
@@ -86,6 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly locale = this.i18nService.locale;
   readonly notifications = signal<FriendlyNotification[]>([]);
   readonly notificationsOpen = signal(false);
+  readonly accountMenuOpen = signal(false);
   readonly pushNotificationStatus = signal<'checking' | 'enabled' | 'disabled' | 'unsupported' | 'blocked' | 'error'>('checking');
   readonly pushBannerDismissed = signal(false);
   readonly pushBannerVisible = computed(() => this.isAuthenticated()
@@ -99,6 +101,11 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('notificationMenu')
   set notificationMenuRef(element: ElementRef<HTMLElement> | undefined) {
     this.notificationMenuElement = element?.nativeElement ?? null;
+  }
+
+  @ViewChild('accountMenu')
+  set accountMenuRef(element: ElementRef<HTMLElement> | undefined) {
+    this.accountMenuElement = element?.nativeElement ?? null;
   }
 
   readonly navigationItems = [
@@ -182,6 +189,20 @@ export class AppComponent implements OnInit, OnDestroy {
   toggleNotifications() {
     this.notificationsOpen.update((open) => !open);
     if (this.notificationsOpen()) void this.refreshNotifications();
+  }
+
+  toggleAccountMenu() {
+    this.accountMenuOpen.update((open) => !open);
+  }
+
+  closeAccountMenu() {
+    this.accountMenuOpen.set(false);
+  }
+
+  userInitials() {
+    const user = this.currentUser();
+    const name = user?.name?.trim() || user?.email || '';
+    return name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((part) => part[0].toLocaleUpperCase()).join('') || '?';
   }
 
   async openNotification(notification: FriendlyNotification) {
@@ -288,11 +309,15 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.notificationsOpen() && !this.notificationMenuElement?.contains(event.target as Node)) {
       this.notificationsOpen.set(false);
     }
+    if (this.accountMenuOpen() && !this.accountMenuElement?.contains(event.target as Node)) {
+      this.accountMenuOpen.set(false);
+    }
   }
 
   @HostListener('document:keydown.escape')
   closeNotificationsOnEscape() {
     if (this.notificationsOpen()) this.notificationsOpen.set(false);
+    if (this.accountMenuOpen()) this.accountMenuOpen.set(false);
   }
 
   themeToggleLabel() {
@@ -395,6 +420,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async logout() {
+    this.accountMenuOpen.set(false);
     await this.detachCurrentPushSubscription();
     await this.authService.logout();
     this.coachSettingsService.settings.set({ defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'MINUTES', visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls'], confirmSessionEnd: true, openSummaryAfterEnd: true });

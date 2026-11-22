@@ -1,5 +1,5 @@
-const CACHE_NAME = 'benchmaster-shell-v1';
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE_NAME = 'benchmaster-shell-v2';
+const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png', '/brand/benchmaster-light.svg', '/brand/benchmaster-app.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

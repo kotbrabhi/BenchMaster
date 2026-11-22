@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 128" role="img" aria-label="BenchMaster"><g stroke-linecap="round" stroke-linejoin="round">
+      <path d="M57 9h14v12H57z" fill="#101E38"/>
+      <path d="M71 15l8 6" stroke="#101E38" stroke-width="7"/>
+      <circle cx="64" cy="70" r="45" fill="#FF681D"/>
+      <g fill="none" stroke="#101E38" stroke-width="5.5">
+        <path d="M21 64c24 7 62 7 86 0"/>
+        <path d="M64 25c-15 15-15 74 0 90"/>
+        <path d="M64 25c15 15 15 74 0 90"/>
+      </g>
+    </g><g font-family="Inter, Manrope, Arial, sans-serif" font-weight="750" font-size="53" letter-spacing="-2.1">
+      <text x="151" y="82" fill="#101E38">Bench</text><text x="299" y="82" fill="#FF681D">Master</text>
+    </g></svg>

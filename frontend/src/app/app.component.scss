@@ -50,6 +50,16 @@
   display: none;
 }
 
+.shell__account-menu-wrap { position: relative; }
+.shell__user-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 10px 4px 5px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-glass-strong); color: var(--color-ink); font: inherit; font-weight: 700; cursor: pointer; }
+.shell__user-avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--color-accent-soft); font-size: .75rem; font-weight: 800; }
+.shell__user-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell__user-chevron { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.shell__user-toggle:focus-visible, .shell__account-menu a:focus-visible, .shell__account-menu button:focus-visible { outline: 2px solid var(--color-accent-strong); }
+.shell__account-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 50; display: grid; gap: 4px; min-width: 190px; padding: 6px; }
+.shell__account-menu a, .shell__account-menu button { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--color-ink); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.shell__account-menu a:hover, .shell__account-menu button:hover { background: var(--color-toggle-hover); }
+
 .shell__theme-toggle:hover {
   background: var(--color-toggle-hover);
 }
@@ -178,6 +188,12 @@
   .shell__account-toggle { display: grid; flex: 0 0 auto; }
   .shell__header-actions { right: 12px; gap: 6px; }
 
+  .shell__user-toggle { min-height: 40px; padding-right: 8px; gap: 6px; border-radius: 12px; }
+  .shell__user-avatar { width: 30px; height: 30px; }
+  .shell__user-name { max-width: 104px; font-size: .78rem; }
+  .shell__user-chevron { width: 14px; height: 14px; }
+  .shell__account-menu { min-width: 180px; }
+
   .shell__header-actions .shell__theme-toggle,
   .shell__header-actions .shell__account-toggle,
   .shell__header-actions .shell__notifications-toggle {
@@ -207,7 +223,8 @@
 
   .tabbar__label { display: block; max-width: 100%; }
   .tabbar__item--locale,
-  .tabbar__item--auth { display: none; }
+  .tabbar__item--auth,
+  .tabbar__item--settings { display: none; }
   .shell__account-toggle:focus-visible { outline-offset: 2px; }
 
   .shell__mobile-locale-toggle {
@@ -394,6 +411,8 @@
 
   .shell__account-toggle { display: none; }
   .tabbar__item--auth { display: inline-flex; }
+  .tabbar__item--settings { display: inline-flex; margin-top: -10px; }
+  .shell__user-toggle { display: none; }
 
   .tabbar__item--auth {
     border-top: 1px solid var(--color-border);

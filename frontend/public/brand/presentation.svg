@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 850" role="img" aria-label="BenchMaster identity system presentation">
+<rect width="1200" height="850" fill="#F4F6F9"/>
+<text x="56" y="64" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="2" fill="#526078">BENCHMASTER · IDENTITÉ MODERNISÉE</text>
+<text x="56" y="110" font-family="Arial,sans-serif" font-size="32" font-weight="700" fill="#101E38">Un symbole, plusieurs contextes</text>
+<rect x="56" y="145" width="1088" height="225" rx="18" fill="#FFFFFF"/>
+<text x="88" y="190" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#65738A">FOND CLAIR</text>
+<image href="benchmaster-light.svg" x="88" y="210" width="490" height="128"/>
+<rect x="56" y="394" width="1088" height="225" rx="18" fill="#101E38"/>
+<text x="88" y="440" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#B8C4D8">FOND SOMBRE</text>
+<image href="benchmaster-dark.svg" x="88" y="460" width="490" height="128"/>
+<text x="56" y="682" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#65738A">APERÇU PETITE TAILLE</text>
+<image href="benchmaster-app.svg" x="56" y="704" width="64" height="64"/>
+<image href="benchmaster-app.svg" x="139" y="704" width="40" height="40"/>
+<image href="benchmaster-mono.svg" x="200" y="704" width="64" height="64"/>
+<text x="300" y="731" font-family="Arial,sans-serif" font-size="14" fill="#34425A">App / PWA · 64 px</text>
+<text x="300" y="754" font-family="Arial,sans-serif" font-size="14" fill="#34425A">Aperçu réduit · 40 px</text>
+<text x="300" y="777" font-family="Arial,sans-serif" font-size="14" fill="#34425A">Monochrome · 64 px</text>
+</svg>

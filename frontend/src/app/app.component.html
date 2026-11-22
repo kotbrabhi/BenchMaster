@@ -6,15 +6,10 @@
   [class.shell--mobile-nav-hidden]="isLiveMatchRoute">
   <header class="shell__header">
     <a class="shell__brand" routerLink="/" aria-label="BenchMaster">
-      <img class="shell__brand-logo" src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
+      <img class="shell__brand-logo" src="brand/benchmaster-light.svg" alt="BenchMaster" width="490" height="128" />
     </a>
 
     <div class="shell__header-actions">
-      @if (isAuthenticated()) {
-        <button class="shell__account-toggle" type="button" [attr.aria-label]="'coachSettings.title' | t" [attr.title]="'coachSettings.title' | t" (click)="openAccountEntry($event)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 2.94-.08-.02a1.7 1.7 0 0 0-1.75.56l-.06.07h-3.4l-.04-.08a1.7 1.7 0 0 0-1.48-1.02 1.7 1.7 0 0 0-1.48 1.02l-.04.08h-3.4l-.06-.07a1.7 1.7 0 0 0-1.75-.56l-.08.02-1.7-2.94.06-.06A1.7 1.7 0 0 0 3.2 15l-.08-.04v-3.4l.08-.04a1.7 1.7 0 0 0 1.02-1.48A1.7 1.7 0 0 0 3.2 8.56l-.08-.04 1.7-2.94.08.02a1.7 1.7 0 0 0 1.75-.56l.06-.07h3.4l.04.08a1.7 1.7 0 0 0 1.48 1.02 1.7 1.7 0 0 0 1.48-1.02l.04-.08h3.4l.06.07a1.7 1.7 0 0 0 1.75.56l.08-.02 1.7 2.94-.06.06A1.7 1.7 0 0 0 19.4 9l.08.04v3.4z"/></svg>
-        </button>
-      }
       @if (isAuthenticated()) {
         <div #notificationMenu class="shell__notifications">
         <button
@@ -90,25 +85,29 @@
           }
         </svg>
       </button>
-      <button
-        class="shell__account-toggle"
-        type="button"
-        [attr.aria-label]="(isAuthenticated() ? 'home.auth.logout' : 'home.auth.loginTab') | t"
-        [attr.title]="(isAuthenticated() ? 'home.auth.logout' : 'home.auth.loginTab') | t"
-        (click)="openAccountEntry($event)">
-        @if (isAuthenticated()) {
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M15 16.5 21 12l-6-4.5" />
-            <path d="M21 12H9" />
-            <path d="M11 4H6.75A2.75 2.75 0 0 0 4 6.75v10.5A2.75 2.75 0 0 0 6.75 20H11" />
-          </svg>
-        } @else {
+      @if (!isAuthenticated()) {
+        <button class="shell__account-toggle" type="button" [attr.aria-label]="'home.auth.loginTab' | t" [attr.title]="'home.auth.loginTab' | t" (click)="openAuthPanel($event)">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 12a4 4 0 1 0 0-8a4 4 0 1 0 0 8" />
             <path d="M4 20a8 8 0 0 1 16 0" />
           </svg>
-        }
-      </button>
+        </button>
+      }
+      @if (isAuthenticated()) {
+        <div #accountMenu class="shell__account-menu-wrap">
+          <button class="shell__user-toggle" type="button" [attr.aria-expanded]="accountMenuOpen()" aria-controls="shell-account-menu" (click)="toggleAccountMenu()">
+            <span class="shell__user-avatar" aria-hidden="true">{{ userInitials() }}</span>
+            <span class="shell__user-name">{{ currentUser()?.name || currentUser()?.email }}</span>
+            <svg class="shell__user-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+          </button>
+          @if (accountMenuOpen()) {
+            <div id="shell-account-menu" class="shell__account-menu surface-card" role="menu">
+              <a routerLink="/coach/settings" role="menuitem" (click)="closeAccountMenu()"><span aria-hidden="true">⚙</span>{{ 'coachSettings.title' | t }}</a>
+              <button type="button" role="menuitem" (click)="logout()"><span aria-hidden="true">↪</span>{{ 'home.auth.logout' | t }}</button>
+            </div>
+          }
+        </div>
+      }
     </div>
 
     <button
@@ -181,6 +180,10 @@
           </span>
           <span class="tabbar__label">{{ 'home.auth.logout' | t }}</span>
         </button>
+        <a class="tabbar__item tabbar__item--settings" routerLink="/coach/settings" routerLinkActive="tabbar__item--active" ariaCurrentWhenActive="page" [attr.aria-label]="'coachSettings.title' | t" [attr.title]="'coachSettings.title' | t">
+          <span class="tabbar__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 2.94-.08-.02a1.7 1.7 0 0 0-1.75.56l-.06.07h-3.4l-.04-.08a1.7 1.7 0 0 0-1.48-1.02 1.7 1.7 0 0 0-1.48 1.02l-.04.08h-3.4l-.06-.07a1.7 1.7 0 0 0-1.75-.56l-.08.02-1.7-2.94.06-.06A1.7 1.7 0 0 0 3.2 15l-.08-.04v-3.4l.08-.04a1.7 1.7 0 0 0 1.02-1.48A1.7 1.7 0 0 0 3.2 8.56l-.08-.04 1.7-2.94.08.02a1.7 1.7 0 0 0 1.75-.56l.06-.07h3.4l.04.08a1.7 1.7 0 0 0 1.48 1.02 1.7 1.7 0 0 0 1.48-1.02l.04-.08h3.4l.06.07a1.7 1.7 0 0 0 1.75.56l.08-.02 1.7 2.94-.06.06A1.7 1.7 0 0 0 19.4 9l.08.04v3.4z"/></svg></span>
+          <span class="tabbar__label">{{ 'coachSettings.title' | t }}</span>
+        </a>
       } @else {
         <button class="tabbar__item tabbar__item--button tabbar__item--auth" type="button" (click)="openAuthPanel($event)">
           <span class="tabbar__icon" aria-hidden="true">
@@ -258,7 +261,7 @@
       aria-labelledby="auth-panel-title"
       tabindex="-1">
       <div class="auth-sheet__brand">
-        <img class="auth-sheet__brand-logo" src="logo-clair.png" alt="BenchMaster" width="960" height="640" />
+        <img class="auth-sheet__brand-logo" src="brand/benchmaster-light.svg" alt="BenchMaster" width="490" height="128" />
       </div>
 
       <div class="section-heading">

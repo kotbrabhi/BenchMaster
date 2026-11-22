@@ -27,13 +27,13 @@ BenchMaster already goes beyond the initial MVP scope.
 - Bilingual UI: French and English
 - Optional Web Push alerts for newly published friendly-match proposals
 
-Authentication uses a server-issued `HttpOnly` session cookie (`Secure` in production,
-`SameSite=Lax`, scoped to `/api`). The browser never reads or stores the session token.
-Because cookies are sent automatically, the API checks the exact configured `FRONTEND_ORIGIN`
-on every state-changing request. Configure the production frontend and API on the same
-site (same registrable domain) so `SameSite=Lax` works; cross-site hosting requires a
-separate CSRF-token design and `SameSite=None; Secure`. Set a unique `AUTH_TOKEN_SECRET`
-of at least 32 bytes and `NODE_ENV=production` on the backend deployment.
+Authentication uses a server-issued `HttpOnly` session cookie scoped to `/api`. Local
+development uses `SameSite=Lax`; production uses `SameSite=None; Secure; Partitioned`
+because Render hosts the frontend and API on separate domains. The browser never reads
+or stores the session token. Because cookies are sent automatically, the API checks the
+exact configured `FRONTEND_ORIGIN` on every state-changing request. Set a unique
+`AUTH_TOKEN_SECRET` of at least 32 bytes and `NODE_ENV=production` on the backend
+deployment.
 
 ## Web Push Notifications
 
@@ -120,13 +120,23 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
+Generate a unique session secret for the backend and paste its output into
+`backend/.env` as `AUTH_TOKEN_SECRET`:
+
+```sh
+openssl rand -base64 32
+```
+
+Keep the same secret across backend restarts. Use a different secret for each
+environment, and never use a local development secret in production.
+
 Backend example:
 
 ```env
 DATABASE_URL="postgresql://USER@localhost:5432/benchmaster?schema=public"
 PORT=3000
 FRONTEND_ORIGIN="http://localhost:4200"
-AUTH_TOKEN_SECRET="change-me-in-production"
+AUTH_TOKEN_SECRET=""
 ```
 
 Frontend example:
