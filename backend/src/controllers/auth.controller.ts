@@ -35,7 +35,9 @@ function sessionCookieOptions() {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    // The frontend and API use separate Render hostnames. Their session
+    // cookie must be sent on credentialed cross-site API requests.
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
     path: '/api'
   };
 }

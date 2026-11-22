@@ -302,7 +302,7 @@
 
         <div class="form-field">
           <label for="navAuthEmail">{{ 'home.auth.emailLabel' | t }}</label>
-          <input id="navAuthEmail" name="navAuthEmail" [(ngModel)]="authEmail" [placeholder]="'home.auth.emailPlaceholder' | t" />
+          <input id="navAuthEmail" name="navAuthEmail" type="email" autocomplete="email" [(ngModel)]="authEmail" [placeholder]="'home.auth.emailPlaceholder' | t" />
         </div>
 
         <div class="form-field">
@@ -311,6 +311,7 @@
             id="navAuthPassword"
             name="navAuthPassword"
             type="password"
+            autocomplete="{{ authIntent() === 'login' ? 'current-password' : 'new-password' }}"
             [(ngModel)]="authPassword"
             [placeholder]="'home.auth.passwordPlaceholder' | t" />
         </div>

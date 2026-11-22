@@ -409,7 +409,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   canSubmitAuth() {
     const hasIdentity = this.authIntent() === 'login' || this.authName.trim().length > 0;
-    return hasIdentity && this.authEmail.trim().length > 0 && this.authPassword.trim().length >= 8;
+    const email = this.authEmail.trim();
+    const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    return hasIdentity && hasValidEmail && this.authPassword.length >= 8;
   }
 
   authDisabledReason(): TranslationKey | '' {
@@ -417,7 +419,15 @@ export class AppComponent implements OnInit, OnDestroy {
       return 'common.reasons.authRestoring';
     }
 
-    return this.canSubmitAuth() ? '' : 'common.reasons.authIncomplete';
+    if (this.authIntent() === 'register' && !this.authName.trim()) {
+      return 'common.reasons.authNameRequired';
+    }
+
+    const email = this.authEmail.trim();
+    if (!email) return 'error.authEmailRequired';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'error.authEmailInvalid';
+    if (this.authPassword.length < 8) return 'error.authPasswordShort';
+    return '';
   }
 
   authIntentLabel() {
