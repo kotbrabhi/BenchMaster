@@ -870,7 +870,84 @@ button {
   }
 }
 
+.player-card__mobile-stat-actions {
+  display: none;
+}
+
 @media (max-width: 767px) {
+  .player-card--expandable .player-card__mobile-stat-actions {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .player-card--expandable .player-card__mobile-stat-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 3px 1px;
+    border: 1px solid var(--color-accent-strong-soft);
+    border-radius: 10px;
+    background: var(--color-surface-glass-strong);
+    color: var(--color-accent-strong);
+    cursor: pointer;
+  }
+
+  .player-card__mobile-stat-action strong {
+    font-size: 0.82rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .player-card__mobile-stat-action span {
+    overflow: hidden;
+    max-width: 100%;
+    color: var(--color-text-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .player-card__mobile-stat-action.player-card__stat--highlighted {
+    background: var(--color-accent-soft);
+  }
+
+  .player-card__mobile-stat-action.player-card__stat--danger {
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+
+  .player-card__mobile-stat-action:disabled {
+    cursor: default;
+    opacity: 1;
+    border-color: var(--color-disabled-border);
+    background: var(--color-disabled-bg);
+    color: var(--color-disabled-ink);
+  }
+
+  .player-card__mobile-stat-action:disabled span {
+    color: inherit;
+  }
+
+  .player-card__mobile-stat-action:focus-visible {
+    outline: 3px solid var(--color-accent-strong);
+    outline-offset: 2px;
+  }
+
+  .player-card--expandable .player-card__stats {
+    display: none;
+  }
+
   .auth-sheet {
     place-items: stretch;
   }
