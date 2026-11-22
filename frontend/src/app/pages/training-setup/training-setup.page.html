@@ -1,0 +1,34 @@
+<section class="page training-setup">
+  <header class="toolbar">
+    <span class="toolbar__eyebrow">{{ 'training.badge' | t }}</span>
+    <h1 class="toolbar__title">{{ 'training.setup.title' | t }}</h1>
+    <p class="toolbar__subtitle">{{ 'training.setup.subtitle' | t }}</p>
+  </header>
+  @if (error()) { <div class="error-banner" role="alert">{{ error() }}</div> }
+  <section class="surface-card training-setup__form">
+    <div class="form-field">
+      <label for="trainingTeam">{{ 'training.setup.team' | t }}</label>
+      <select id="trainingTeam" [ngModel]="selectedTeamId()" (ngModelChange)="changeTeam($event)">
+        @for (team of teams(); track team.id) { <option [ngValue]="team.id">{{ team.name }}</option> }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="trainingName">{{ 'training.setup.name' | t }}</label>
+      <input id="trainingName" [ngModel]="name()" (ngModelChange)="name.set($event)" [placeholder]="'training.setup.namePlaceholder' | t" />
+    </div>
+  </section>
+  <section class="surface-card">
+    <div class="section-heading"><div><h2>{{ 'training.setup.roster' | t }}</h2><p>{{ 'training.setup.count' | t : { count: selectedCount() } }}</p></div></div>
+    @if (!players().length) { <p>{{ 'training.setup.noPlayers' | t }}</p> }
+    <div class="training-roster">
+      @for (player of players(); track player.id) {
+        <label class="training-player" [class.training-player--selected]="isSelected(player.id)">
+          <input type="checkbox" [attr.aria-label]="('training.setup.includePlayer' | t : { player: player.name })" [checked]="isSelected(player.id)" (change)="togglePlayer(player)" />
+          <span class="training-player__number">#{{ player.jerseyNumber }}</span><strong>{{ player.name }}</strong>
+          @if (player.position) { <span class="training-player__position">{{ player.position }}</span> }
+        </label>
+      }
+    </div>
+  </section>
+  <footer class="training-setup__footer"><a class="button button--secondary" routerLink="/">{{ 'common.actions.cancel' | t }}</a><button class="button" type="button" [disabled]="busy() || !selectedCount()" (click)="create()">{{ 'training.setup.start' | t : { count: selectedCount() } }}</button></footer>
+</section>

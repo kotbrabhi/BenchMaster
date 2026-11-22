@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BenchMaster — pistes de cartes de stats mobiles</title>
+  <style>
+    :root { color-scheme: light; --ink:#14283b; --muted:#4f6476; --line:#d6e0e8; --bg:#edf3f8; --blue:#1d4ed8; --blue-soft:#eaf1ff; --amber:#b45309; --surface:#fff; font-family:'Avenir Next','Segoe UI',sans-serif; }
+    * { box-sizing:border-box }
+    body { margin:0; background:var(--bg); color:var(--ink); }
+    header { max-width:1160px; margin:auto; padding:32px 24px 18px; }
+    h1 { margin:0 0 8px; font-size:clamp(1.5rem,4vw,2.15rem); letter-spacing:-.04em; }
+    header p { margin:0; max-width:720px; color:var(--muted); line-height:1.55; }
+    .scope { display:inline-flex; margin-top:14px; padding:6px 10px; border:1px solid #c5d6e5; border-radius:999px; background:#f8fbff; color:#31516c; font-size:.76rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+    main { display:grid; grid-template-columns:repeat(3,minmax(290px,1fr)); gap:18px; max-width:1160px; margin:auto; padding:8px 24px 36px; align-items:start; }
+    .proposal { overflow:hidden; border:1px solid #d3dee7; border-radius:20px; background:#f8fafc; box-shadow:0 10px 24px #14283b12; }
+    .proposal-head { min-height:124px; padding:18px 18px 12px; }
+    .proposal-head small { color:var(--blue); font-size:.7rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    h2 { margin:5px 0 6px; font-size:1.08rem; letter-spacing:-.02em; }
+    .proposal-head p { min-height:38px; margin:0; color:var(--muted); font-size:.82rem; line-height:1.45; }
+    .phone { width:min(100%,360px); min-height:575px; margin:0 auto 16px; padding:12px 11px 18px; border:8px solid #182a38; border-radius:30px; background:#e7eef4; box-shadow:0 5px 14px #14283b18; }
+    .phone-top { height:15px; margin:-4px auto 12px; width:74px; border-radius:0 0 10px 10px; background:#182a38; }
+    .status { display:flex; align-items:center; justify-content:space-between; margin:0 4px 10px; font-size:.72rem; font-weight:800; }
+    .score { padding:4px 7px; border-radius:999px; color:#14532d; background:#dcfce7; }
+    .roster-title { display:flex; justify-content:space-between; margin:0 3px 8px; color:#4f6476; font-size:.72rem; font-weight:800; letter-spacing:.03em; text-transform:none; }
+    .player { margin-bottom:9px; padding:10px; border:1px solid #d6e0e8; border-radius:15px; background:#fff; box-shadow:0 5px 14px #14283b10; }
+    .player.active { border-color:#b7d2ff; background:linear-gradient(135deg,#f5f8ff,#fff); }
+    .player-head { display:flex; align-items:center; gap:8px; min-width:0; }
+    .jersey { display:grid; flex:none; width:32px; height:32px; place-items:center; border-radius:10px; background:#edf3f8; font-size:.72rem; font-weight:900; }
+    .who { min-width:0; flex:1; }
+    .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.86rem; font-weight:800; }
+    .meta { margin-top:2px; color:var(--muted); font-size:.7rem; }
+    .fouls { flex:none; padding:5px 7px; border:1px solid #f1d0ca; border-radius:999px; background:#fff4f2; color:#a93226; font-size:.72rem; font-weight:800; }
+    .split { height:1px; margin:9px 0; background:#e7edf2; }
+    .metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; }
+    .metric { min-width:0; padding:6px 2px; border:1px solid #e0e7ee; border-radius:9px; background:#f8fafc; text-align:center; }
+    .metric b { display:block; font-size:.8rem; line-height:1.1; }
+    .metric span { display:block; overflow:hidden; margin-top:3px; color:var(--muted); font-size:.68rem; font-weight:800; letter-spacing:.01em; text-overflow:ellipsis; }
+    .metric.hot { border-color:#c9d9ff; background:var(--blue-soft); }
+    .actions { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:5px; }
+    .act { display:grid; min-width:0; min-height:39px; place-items:center; border:1px solid #b9cafa; border-radius:10px; background:#f8faff; color:#244cb6; font-size:.68rem; font-weight:900; }
+    .act.primary { background:#e9efff; }
+    .time { display:flex; align-items:center; gap:6px; margin-top:8px; color:var(--muted); font-size:.7rem; font-weight:700; }
+    .track { height:5px; flex:1; overflow:hidden; border-radius:999px; background:#e3eaf0; }
+    .track i { display:block; width:62%; height:100%; border-radius:inherit; background:var(--blue); }
+    .proposal[data-option="a"] .metrics { gap:3px; }
+    .proposal[data-option="a"] .metric { padding:5px 1px; border-radius:8px; }
+    .proposal[data-option="a"] .actions { gap:4px; }
+    .proposal[data-option="a"] .act { min-height:35px; border-radius:8px; }
+    .proposal[data-option="a"] .inline-stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
+    .proposal[data-option="a"] .inline-stats .metric { display:flex; min-height:37px; align-items:center; justify-content:center; gap:3px; padding:4px 1px; }
+    .proposal[data-option="a"] .inline-stats .metric span { margin:0; font-size:.63rem; }
+    .proposal[data-option="a"] .inline-stats .metric b { font-size:.73rem; }
+    .proposal[data-option="a"] .inline-stats .metric small { color:#244cb6; font-size:.65rem; font-weight:900; }
+    .proposal[data-option="a"] .separate { display:none; }
+    .proposal[data-option="b"] .stat-actions { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
+    .proposal[data-option="b"] .stat-actions .act { display:flex; flex-direction:column; gap:2px; min-height:48px; padding:3px 1px; }
+    .proposal[data-option="b"] .stat-actions .act b { font-size:.76rem; }
+    .proposal[data-option="b"] .stat-actions .act span { color:#47627a; font-size:.63rem; text-transform:uppercase; }
+    .proposal[data-option="b"] .numbers { display:none; }
+    .proposal[data-option="b"] .separate { display:none; }
+    .proposal[data-option="c"] .numbers { display:none; }
+    .proposal[data-option="c"] .stat-actions { display:flex; overflow-x:auto; gap:6px; padding:2px 1px 6px; scrollbar-width:thin; }
+    .proposal[data-option="c"] .stat-actions .act { flex:0 0 62px; min-height:40px; }
+    .proposal[data-option="c"] .stat-actions .act span { display:none; }
+    .proposal[data-option="c"] .stat-actions .act b { display:none; }
+    .proposal[data-option="c"] .stat-actions .act::after { content:attr(data-label); font-size:.7rem; }
+    .proposal[data-option="c"] .stat-actions .act:first-child::after { content:'+1'; }
+    .proposal[data-option="c"] .stat-actions .act:nth-child(2)::after { content:'+2'; }
+    .proposal[data-option="c"] .stat-actions .act:nth-child(3)::after { content:'+3'; }
+    .proposal[data-option="c"] .stat-actions .act:nth-child(4)::after { content:'PASSE'; }
+    .proposal[data-option="c"] .stat-actions .act:nth-child(5)::after { content:'REBOND'; }
+    .proposal[data-option="c"] .actions { display:none; }
+    .tag { display:inline-flex; margin:0 0 13px 18px; padding:5px 8px; border-radius:999px; background:#e9eff7; color:#43596c; font-size:.72rem; font-weight:800; }
+    .footer { max-width:1160px; margin:0 auto; padding:0 24px 32px; color:#536a7d; font-size:.82rem; line-height:1.55; }
+    @media (max-width:980px) { main { grid-template-columns:1fr; max-width:430px; } .proposal-head { min-height:unset; } .proposal-head p { min-height:unset; } header,.footer { max-width:430px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Trois pistes pour les cartes de stats</h1>
+    <p>Refonte limitée au mobile : rapprocher les données joueur et les actions rapides pour réduire la hauteur de chaque carte en match.</p>
+    <span class="scope">Mobile uniquement · desktop inchangé</span>
+  </header>
+  <main>
+    <article class="proposal" data-option="a">
+      <div class="proposal-head"><small>Option 01 · fusion</small><h2>Stats et actions sur une ligne</h2><p>Chaque stat devient un bouton compact qui affiche la valeur et l’ajout associé.</p></div>
+      <div class="phone"><div class="phone-top"></div><div class="status"><span>BENCHMASTER · MATCH</span><span class="score">● EN COURS</span></div><div class="roster-title"><span>Sur le terrain</span><span>5 joueurs</span></div>
+        <div class="player active"><div class="player-head"><div class="jersey">#7</div><div class="who"><div class="name">Camille Martin</div><div class="meta">Ailier · 18 min</div></div><div class="fouls">F 2</div></div><div class="split"></div><div class="inline-stats"><div class="metric hot"><b>12</b><span>PTS</span><small>+1</small></div><div class="metric"><b>4</b><span>PD</span><small>+</small></div><div class="metric hot"><b>6</b><span>REB</span><small>+</small></div><div class="metric"><b>1</b><span>INT</span><small>+</small></div><div class="metric"><b>0</b><span>CTR</span><small>+</small></div></div><div class="time">TEMPS <div class="track"><i></i></div>62%</div></div>
+        <div class="player"><div class="player-head"><div class="jersey">#12</div><div class="who"><div class="name">Noah Bernard</div><div class="meta">Meneur · 14 min</div></div><div class="fouls">F 1</div></div><div class="split"></div><div class="inline-stats"><div class="metric hot"><b>8</b><span>PTS</span><small>+1</small></div><div class="metric hot"><b>5</b><span>PD</span><small>+</small></div><div class="metric"><b>2</b><span>REB</span><small>+</small></div><div class="metric"><b>2</b><span>INT</span><small>+</small></div><div class="metric"><b>0</b><span>CTR</span><small>+</small></div></div><div class="time">TEMPS <div class="track"><i style="width:48%"></i></div>48%</div></div>
+      </div><span class="tag">Gain de hauteur maximal · cibles plus petites</span>
+    </article>
+    <article class="proposal" data-option="b">
+      <div class="proposal-head"><small>Option 02 · tout-en-un</small><h2>Une rangée de boutons lisibles</h2><p>Les boutons affichent valeur et nom de stat, et assurent aussi l’incrément au toucher.</p></div>
+      <div class="phone"><div class="phone-top"></div><div class="status"><span>BENCHMASTER · MATCH</span><span class="score">● EN COURS</span></div><div class="roster-title"><span>Sur le terrain</span><span>5 joueurs</span></div>
+        <div class="player active"><div class="player-head"><div class="jersey">#7</div><div class="who"><div class="name">Camille Martin</div><div class="meta">Ailier · 18 min</div></div><div class="fouls">F 2</div></div><div class="split"></div><div class="stat-actions"><button class="act primary"><b>12</b><span>PTS</span></button><button class="act"><b>4</b><span>PD</span></button><button class="act primary"><b>6</b><span>REB</span></button><button class="act"><b>1</b><span>INT</span></button><button class="act"><b>0</b><span>CTR</span></button></div><div class="time">TEMPS <div class="track"><i></i></div>62%</div></div>
+        <div class="player"><div class="player-head"><div class="jersey">#12</div><div class="who"><div class="name">Noah Bernard</div><div class="meta">Meneur · 14 min</div></div><div class="fouls">F 1</div></div><div class="split"></div><div class="stat-actions"><button class="act primary"><b>8</b><span>PTS</span></button><button class="act primary"><b>5</b><span>PD</span></button><button class="act"><b>2</b><span>REB</span></button><button class="act"><b>2</b><span>INT</span></button><button class="act"><b>0</b><span>CTR</span></button></div><div class="time">TEMPS <div class="track"><i style="width:48%"></i></div>48%</div></div>
+      </div><span class="tag">Un seul geste · boutons d’environ 48 px</span>
+    </article>
+    <article class="proposal" data-option="c">
+      <div class="proposal-head"><small>Option 03 · bande défilante</small><h2>Une ligne compacte, défilable</h2><p>Valeurs visibles dans la carte, actions à portée dans une rangée horizontale défilable.</p></div>
+      <div class="phone"><div class="phone-top"></div><div class="status"><span>BENCHMASTER · MATCH</span><span class="score">● EN COURS</span></div><div class="roster-title"><span>Sur le terrain</span><span>5 joueurs</span></div>
+        <div class="player active"><div class="player-head"><div class="jersey">#7</div><div class="who"><div class="name">Camille Martin</div><div class="meta">Ailier · 18 min</div></div><div class="fouls">F 2</div></div><div class="split"></div><div class="numbers metrics"><div class="metric hot"><b>12</b><span>PTS</span></div><div class="metric"><b>4</b><span>PD</span></div><div class="metric hot"><b>6</b><span>REB</span></div><div class="metric"><b>1</b><span>INT</span></div><div class="metric"><b>0</b><span>CTR</span></div></div><div class="split separate"></div><div class="stat-actions"><button class="act" data-label="PTS"></button><button class="act" data-label="PTS"></button><button class="act" data-label="PTS"></button><button class="act" data-label="PD"></button><button class="act" data-label="REB"></button><button class="act" data-label="INT"></button><button class="act" data-label="CTR"></button></div><div class="time">TEMPS <div class="track"><i></i></div>62%</div></div>
+        <div class="player"><div class="player-head"><div class="jersey">#12</div><div class="who"><div class="name">Noah Bernard</div><div class="meta">Meneur · 14 min</div></div><div class="fouls">F 1</div></div><div class="split"></div><div class="numbers metrics"><div class="metric hot"><b>8</b><span>PTS</span></div><div class="metric hot"><b>5</b><span>PD</span></div><div class="metric"><b>2</b><span>REB</span></div><div class="metric"><b>2</b><span>INT</span></div><div class="metric"><b>0</b><span>CTR</span></div></div><div class="split separate"></div><div class="stat-actions"><button class="act"></button><button class="act"></button><button class="act"></button><button class="act"></button><button class="act"></button></div><div class="time">TEMPS <div class="track"><i style="width:48%"></i></div>48%</div></div>
+      </div><span class="tag">Cibles confortables · un léger défilement</span>
+    </article>
+  </main>
+  <p class="footer"><strong>À noter :</strong> maquettes de direction uniquement. Elles illustrent le traitement mobile des stats et des commandes rapides. À partir de 768 px, la carte desktop garde son apparence et son comportement actuels.</p>
+</body>
+</html>

@@ -9,6 +9,7 @@ import { Player } from '../../core/models';
 import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
+import { CoachSettingsService } from '../../services/coach-settings.service';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
@@ -45,6 +46,7 @@ export class NewGameSetupPageComponent implements OnInit {
   private readonly teamService = inject(TeamService);
   private readonly playerService = inject(PlayerService);
   private readonly gameService = inject(GameService);
+  private readonly coachSettingsService = inject(CoachSettingsService);
 
   readonly games = this.gameService.games;
   readonly teams = this.teamService.teams;
@@ -60,6 +62,8 @@ export class NewGameSetupPageComponent implements OnInit {
   readonly invalidStarterPlayerId = signal<number | null>(null);
   readonly playerInlineError = signal<{ playerId: number; message: string } | null>(null);
   readonly t = this.i18n.t;
+  periodCount = 4;
+  periodDurationSeconds = 600;
   readonly labelParams = computed(() => buildTeamLabelParams(this.selectedTeam()?.gender ?? 'MIXED'));
   readonly sortedRoster = computed(() =>
     [...this.roster()].sort((left, right) => this.playerSortRank(left.id) - this.playerSortRank(right.id))
@@ -135,6 +139,11 @@ export class NewGameSetupPageComponent implements OnInit {
 
   async ngOnInit() {
     try {
+      try {
+        const settings = await this.coachSettingsService.load();
+        this.periodCount = settings.defaultPeriodCount;
+        this.periodDurationSeconds = settings.defaultPeriodDurationSeconds;
+      } catch { /* Guest mode retains the existing match defaults. */ }
       const [teams] = await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
       const requestedTeamId = Number(this.route.snapshot.queryParamMap.get('teamId'));
       const requestedTeam = teams.find((team) => team.id === requestedTeamId);
@@ -274,7 +283,9 @@ export class NewGameSetupPageComponent implements OnInit {
         teamId,
         label: this.gameLabel,
         availablePlayerIds: this.availablePlayerIds(),
-        starterPlayerIds: this.starterPlayerIds()
+        starterPlayerIds: this.starterPlayerIds(),
+        periodCount: this.periodCount,
+        periodDurationSeconds: this.periodDurationSeconds
       });
 
       if (!game) {

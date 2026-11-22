@@ -1,8 +1,8 @@
 <section class="page">
   <header class="toolbar">
-    <span class="toolbar__eyebrow">{{ 'teamRoster.hero.eyebrow' | t }}</span>
+    <span class="toolbar__eyebrow">{{ trainingPickerGameId() ? ('training.addPlayer.title' | t) : ('teamRoster.hero.eyebrow' | t) }}</span>
     <h1 class="toolbar__title">{{ team()?.name || ('teamRoster.hero.titleFallback' | t) }}</h1>
-    <p class="toolbar__subtitle">{{ 'teamRoster.hero.subtitle' | t }}</p>
+    <p class="toolbar__subtitle">{{ trainingPickerGameId() ? ('training.addPlayer.subtitle' | t) : ('teamRoster.hero.subtitle' | t) }}</p>
   </header>
 
   <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ displayErrorMessage() }}</p>
@@ -10,6 +10,26 @@
     <div class="error-banner" aria-hidden="true">{{ displayErrorMessage() }}</div>
   }
 
+  @if (trainingPickerGameId(); as sessionId) {
+    <section class="surface-card">
+      <div class="section-heading"><div><h2>{{ 'training.setup.roster' | t }}</h2><p>{{ 'training.setup.subtitle' | t }}</p></div></div>
+      <div class="roster-stack">
+        @for (player of roster(); track player.id) {
+          <article class="roster-player-card">
+            <div class="roster-player-card__row roster-player-card__row--main">
+              <div class="roster-player-card__identity"><span class="roster-player-card__number">#{{ player.jerseyNumber }}</span><div class="roster-player-card__copy"><h3>{{ player.name }}</h3><p>{{ getPositionLabel(player.position) }}</p></div></div>
+              @if (trackedTrainingPlayerIds().has(player.id)) {
+                <span class="state-chip">{{ 'training.addPlayer.alreadyTracked' | t }}</span>
+              } @else {
+                <button class="button roster-player-card__action training-picker-action" type="button" [disabled]="addingPlayerToTrainingId() !== null" [attr.aria-busy]="addingPlayerToTrainingId() === player.id" [attr.aria-label]="'training.addPlayer.submit' | t" [attr.title]="'training.addPlayer.submit' | t" (click)="selectPlayerForTraining(player.id)"><span class="button__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></span><span class="training-picker-action__label">{{ 'training.addPlayer.submit' | t }}</span></button>
+              }
+            </div>
+          </article>
+        } @empty { <p>{{ 'teamRoster.list.empty' | t : labelParams() }}</p> }
+      </div>
+      <div class="action-flow training-roster-picker__actions"><a class="button button--secondary training-picker-action" [routerLink]="['/games', sessionId, 'live']" [attr.aria-label]="'common.actions.cancel' | t" [attr.title]="'common.actions.cancel' | t"><span class="button__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14 5-7 7 7 7M7 12h14" /></svg></span><span class="training-picker-action__label">{{ 'common.actions.cancel' | t }}</span></a></div>
+    </section>
+  } @else {
   <section class="surface-card">
     <div class="team-card-inline">
       <div class="team-card-inline__content">
@@ -102,6 +122,9 @@
           <a class="button team-card-inline__cta" [routerLink]="['/games/new']" [queryParams]="{ teamId: teamId }">
             {{ 'teamRoster.details.createGame' | t }}
           </a>
+          <a class="button button--secondary team-card-inline__cta" [routerLink]="['/training/new']" [queryParams]="{ teamId: teamId }">
+            {{ 'training.newAction' | t }}
+          </a>
         </div>
       }
     </div>
@@ -116,6 +139,21 @@
     </div>
 
     <div class="roster-stack">
+      @if (!isAddingPlayerFormOpen()) {
+        <button
+          class="button roster-editor-card__action"
+          type="button"
+          [attr.aria-label]="'teamRoster.playerForm.add' | t : labelParams()"
+          [attr.title]="'teamRoster.playerForm.add' | t : labelParams()"
+          (click)="openNewPlayerForm()">
+          <span class="button__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </span>
+          <span class="button__label">{{ 'teamRoster.playerForm.add' | t : labelParams() }}</span>
+        </button>
+      } @else {
       <article class="roster-editor-card roster-editor-card--new">
         <div class="roster-editor-card__header">
           <h3>{{ 'teamRoster.playerForm.addTitle' | t : labelParams() }}</h3>
@@ -197,6 +235,7 @@
           <p class="control-reason">{{ disabledReason }}</p>
         }
       </article>
+      }
 
       @if (roster().length) {
         @for (player of roster(); track player.id) {
@@ -276,6 +315,7 @@
       }
     </div>
   </section>
+  }
 
   @if (pendingPlayerDeletion(); as deletion) {
     <app-confirmation-dialog

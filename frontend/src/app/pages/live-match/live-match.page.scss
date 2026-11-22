@@ -681,3 +681,83 @@
     border-right: 0;
   }
 }
+
+
+@media (max-width: 900px) {
+  .live-clock-card--training {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .live-clock-card--training .live-clock-card__row:first-child {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+    border: 0;
+  }
+
+  .live-clock-card--training .live-clock-card__metric {
+    flex: 0 1 auto;
+    min-width: max-content;
+  }
+
+  .live-clock-card--training .live-clock-card__metric-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .live-clock-card--training .live-clock-card__actions {
+    width: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .live-clock-card--training .live-clock-card__actions > a {
+    flex: 0 1 auto;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 390px) {
+  .live-clock-card--training .live-clock-card__row:first-child {
+    gap: 8px;
+  }
+
+  .live-clock-card--training .live-clock-card__actions {
+    gap: 4px;
+  }
+
+  .live-clock-card--training .live-clock-card__actions > a {
+    padding-inline: 8px;
+    font-size: 0.78rem;
+  }
+}
+
+.training-status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+}
+
+.training-status-dot--running {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16);
+}
+
+.training-status-dot--stopped {
+  background: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16);
+}
+
+.live-clock-card__time-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

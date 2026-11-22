@@ -10,6 +10,7 @@ import { I18nService } from './core/i18n.service';
 import { Locale, TranslationKey } from './core/translations';
 import { FriendlyNotification } from './core/models';
 import { FriendlyMatchService } from './services/friendly-match.service';
+import { CoachSettingsService } from './services/coach-settings.service';
 import { GameService } from './services/game.service';
 import { TeamService } from './services/team.service';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
@@ -31,6 +32,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly teamService = inject(TeamService);
   private readonly gameService = inject(GameService);
   private readonly friendlyMatchService = inject(FriendlyMatchService);
+  private readonly coachSettingsService = inject(CoachSettingsService);
 
   isSidebarCollapsed = false;
   readonly isDarkTheme = signal(false);
@@ -102,6 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly navigationItems = [
     { labelKey: 'app.nav.home' as const, link: '/', icon: 'home' as const },
     { labelKey: 'app.nav.newGame' as const, link: '/games/new', icon: 'plus' as const },
+    { labelKey: 'training.newAction' as const, link: '/training/new', icon: 'training' as const },
     { labelKey: 'app.nav.friendlies' as const, link: '/friendlies', icon: 'calendar' as const }
   ];
 
@@ -119,6 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.currentUser()) {
       this.appModeService.setMode('authenticated');
+      void this.coachSettingsService.load().catch(() => undefined);
       await this.refreshPushNotificationState();
     } else {
       this.appModeService.setMode('guest');
@@ -370,11 +374,14 @@ export class AppComponent implements OnInit, OnDestroy {
       }
 
       this.appModeService.setMode('authenticated');
+      void this.coachSettingsService.load().catch(() => undefined);
       await this.refreshPushNotificationState();
       await this.refreshNotifications();
       await this.refreshNavigationData();
       this.closeAuthPanel();
-      await this.router.navigate(['/']);
+      const returnUrl = this.document.defaultView?.sessionStorage.getItem('benchmaster.authReturnUrl');
+      this.document.defaultView?.sessionStorage.removeItem('benchmaster.authReturnUrl');
+      await this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : '/');
     } catch (error) {
       this.authErrorMessage.set(getErrorMessage(error, this.i18nService.t));
     } finally {
@@ -382,9 +389,16 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  openAccountEntry(event: MouseEvent) {
+    if (this.isAuthenticated()) { void this.router.navigate(['/coach/settings']); return; }
+    this.openAuthPanel(event);
+  }
+
   async logout() {
     await this.detachCurrentPushSubscription();
     await this.authService.logout();
+    this.coachSettingsService.settings.set({ defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'MINUTES', visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions', 'fouls'], confirmSessionEnd: true, openSummaryAfterEnd: true });
+    this.document.defaultView?.sessionStorage.removeItem('benchmaster.authReturnUrl');
     this.notifications.set([]);
     this.notificationsOpen.set(false);
     this.appModeService.setMode('guest');

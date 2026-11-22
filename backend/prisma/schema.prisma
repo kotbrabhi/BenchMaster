@@ -14,6 +14,11 @@ enum GameStatus {
   FINISHED
 }
 
+enum SessionType {
+  GAME
+  TRAINING
+}
+
 enum PeriodStatus {
   NOT_STARTED
   LIVE
@@ -25,6 +30,7 @@ enum RotationEventType {
   SUBSTITUTION
   PERIOD_END
   GAME_END
+  ACTIVITY_CHANGE
 }
 
 enum TeamGender {
@@ -266,6 +272,9 @@ model Game {
   label               String
   shareToken          String?      @unique
   status              GameStatus   @default(DRAFT)
+  sessionType         SessionType  @default(GAME)
+  periodCount         Int          @default(4)
+  periodDurationSeconds Int        @default(600)
   currentPeriodNumber Int          @default(1)
   currentPeriodStatus PeriodStatus @default(NOT_STARTED)
   startedAt           DateTime?
@@ -299,6 +308,20 @@ model User {
   friendlyApplications FriendlyMatchApplication[]
   friendlyNotifications FriendlyNotification[]
   pushSubscriptions PushSubscription[]
+  coachSettings CoachSettings?
+}
+
+model CoachSettings {
+  userId Int @id
+  defaultPeriodCount Int @default(4)
+  defaultPeriodDurationSeconds Int @default(600)
+  playingTimeDisplay String @default("MINUTES")
+  visibleLiveStats Json @default("[\"points\",\"rebounds\",\"assists\",\"blocks\",\"interceptions\",\"fouls\"]")
+  confirmSessionEnd Boolean @default(true)
+  openSummaryAfterEnd Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PushSubscription {

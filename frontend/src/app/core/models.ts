@@ -1,4 +1,5 @@
 export type GameStatus = 'DRAFT' | 'LIVE' | 'PAUSED' | 'FINISHED';
+export type SessionType = 'GAME' | 'TRAINING';
 export type PeriodStatus = 'NOT_STARTED' | 'LIVE' | 'COMPLETED';
 export type PlayerStatType = 'assists' | 'blocks' | 'rebounds' | 'interceptions' | 'fouls';
 export type AppMode = 'guest' | 'authenticated';
@@ -8,7 +9,7 @@ export type FriendlyApplicationStatus = 'INTERESTED' | 'COLLECTING' | 'SUBMITTED
 export type FriendlyAvailability = 'AVAILABLE' | 'UNAVAILABLE';
 export type FriendlyNotificationType = 'INTEREST_RECEIVED' | 'TEAM_SUBMITTED' | 'MATCH_CONFIRMED' | 'APPLICATION_REJECTED' | 'MATCH_CANCELLED';
 export type FriendlyMatchLifecycle = 'CONFIRMED' | 'CANCELLED';
-export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END';
+export type RotationEventType = 'PERIOD_START' | 'SUBSTITUTION' | 'PERIOD_END' | 'GAME_END' | 'ACTIVITY_CHANGE';
 
 export interface Player {
   id: number;
@@ -232,12 +233,16 @@ export interface GameListItem {
   teamGender: TeamGender;
   selectedCount: number;
   activeCount: number;
+  sessionType: SessionType;
 }
 
 export interface GameDetail {
   id: number;
   label: string;
   status: GameStatus;
+  sessionType: SessionType;
+  periodCount: number;
+  periodDurationSeconds: number;
   currentPeriodNumber: number;
   currentPeriodStatus: PeriodStatus;
   startedAt: string | null;
@@ -263,6 +268,7 @@ export interface GameSummary {
   id: number;
   label: string;
   status: GameStatus;
+  sessionType: SessionType;
   startedAt: string | null;
   endedAt: string | null;
   team: {
@@ -286,6 +292,7 @@ export interface GameSummaryExport {
     id: number;
     label: string;
     status: GameStatus;
+    sessionType: SessionType;
     startedAt: string | null;
     endedAt: string | null;
     totalGameSeconds: number;

@@ -48,6 +48,10 @@ export async function substitutePlayers(request: Request, response: Response) {
   );
 }
 
+export async function addTrainingPlayer(request: Request, response: Response) {
+  response.json(await liveMatchService.addTrainingPlayer(Number(request.params.gameId), getAuthenticatedUser(request).id, Number(request.body.playerId)));
+}
+
 export async function recordPlayerPoints(request: Request, response: Response) {
   response.json(
     await liveMatchService.recordPlayerPoints(

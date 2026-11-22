@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { modeAuthGuard } from './core/mode-auth.guard';
 import { HomePageComponent } from './pages/home/home.page';
+import { coachSettingsGuard } from './core/coach-settings.guard';
 
 export const routes: Routes = [
   {
@@ -9,10 +10,22 @@ export const routes: Routes = [
     title: 'document.title.home'
   },
   {
+    path: 'coach/settings',
+    loadComponent: () => import('./pages/coach-settings/coach-settings.page').then((module) => module.CoachSettingsPageComponent),
+    canActivate: [coachSettingsGuard],
+    title: 'document.title.coachSettings'
+  },
+  {
     path: 'teams/:teamId',
     loadComponent: () => import('./pages/team-roster/team-roster.page').then((module) => module.TeamRosterPageComponent),
     canActivate: [modeAuthGuard],
     title: 'document.title.roster'
+  },
+  {
+    path: 'training/new',
+    loadComponent: () => import('./pages/training-setup/training-setup.page').then((module) => module.TrainingSetupPageComponent),
+    canActivate: [modeAuthGuard],
+    title: 'document.title.training'
   },
   {
     path: 'games/new',

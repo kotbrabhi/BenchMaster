@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import { requireAuth } from '../auth/auth.middleware';
 import { asyncHandler } from '../utils/async-handler';
 import * as authController from '../controllers/auth.controller';
+import * as coachSettingsController from '../controllers/coach-settings.controller';
 import * as gameController from '../controllers/game.controller';
 import * as friendlyMatchController from '../controllers/friendly-match.controller';
 import * as liveMatchController from '../controllers/live-match.controller';
@@ -41,6 +42,9 @@ router.get('/public/friendly-match-invites/:token', readInviteRateLimit, asyncHa
 router.put('/public/friendly-match-invites/:token/response', respondInviteRateLimit, asyncHandler(friendlyMatchController.setPublicAvailability));
 
 router.use(asyncHandler(requireAuth));
+
+router.get('/coach/settings', asyncHandler(coachSettingsController.get));
+router.put('/coach/settings', asyncHandler(coachSettingsController.save));
 
 router.get('/push/public-key', asyncHandler(pushController.publicKey));
 router.post('/push/subscriptions', asyncHandler(pushController.subscribe));
@@ -89,6 +93,7 @@ router.post('/games/:gameId/resume', asyncHandler(liveMatchController.resumeGame
 router.post('/games/:gameId/periods/complete', asyncHandler(liveMatchController.completePeriod));
 router.post('/games/:gameId/periods/start', asyncHandler(liveMatchController.startNextPeriod));
 router.post('/games/:gameId/substitutions', asyncHandler(liveMatchController.substitutePlayers));
+router.post('/games/:gameId/players', asyncHandler(liveMatchController.addTrainingPlayer));
 router.post('/games/:gameId/players/:playerId/points', asyncHandler(liveMatchController.recordPlayerPoints));
 router.post('/games/:gameId/players/:playerId/stats', asyncHandler(liveMatchController.recordPlayerStat));
 router.post('/games/:gameId/end', asyncHandler(liveMatchController.endGame));

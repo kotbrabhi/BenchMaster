@@ -15,6 +15,7 @@ const gameInclude = {
   }
 } satisfies Prisma.GameInclude;
 
+
 const trackableStats = {
   assists: 'passe décisive',
   blocks: 'contre',
@@ -33,7 +34,6 @@ type RotationEventPayload = {
 function diffSeconds(from: Date, to: Date) {
   return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 1000));
 }
-
 async function getGameForUpdate(transaction: Prisma.TransactionClient, gameId: number, userId: number) {
   const game = await transaction.game.findFirst({
     where: {
@@ -149,6 +149,7 @@ function applyFinalizeClockAndPlayers(game: GameForUpdate, now: Date) {
 }
 
 function ensureExactlyFiveStarters(game: Awaited<ReturnType<typeof getGameForUpdate>>) {
+  if (game.sessionType === 'TRAINING') return;
   const starters = game.players.filter((player) => player.isStarter);
   const labels = getTeamLabelSet(game.team.gender);
 
@@ -197,29 +198,24 @@ async function finalizeClockAndPlayers(
     }
   });
 
-  await Promise.all(
-    game.players
-      .filter((player) => player.playingTime?.isOnCourt && player.playingTime.lastEnteredAt)
-      .map((player) =>
-        transaction.playerGameTime.update({
-          where: {
-            gamePlayerId: player.id
-          },
-          data: {
-            totalSeconds:
-              (player.playingTime?.totalSeconds ?? 0) +
-              diffSeconds(player.playingTime!.lastEnteredAt!, now),
-            periodSeconds:
-              (player.playingTime?.periodSeconds ?? 0) +
-              (player.playingTime?.lastPeriodEnteredAt
-                ? diffSeconds(player.playingTime.lastPeriodEnteredAt, now)
-                : 0),
-            lastEnteredAt: null,
-            lastPeriodEnteredAt: null
-          }
-        })
-      )
-  );
+  const activePlayers = game.players.filter((player) => player.playingTime?.isOnCourt && player.playingTime.lastEnteredAt);
+  if (activePlayers.length) {
+    const rows = Prisma.join(activePlayers.map((player) => Prisma.sql`(
+      ${player.id},
+      ${diffSeconds(player.playingTime!.lastEnteredAt!, now)},
+      ${player.playingTime!.lastPeriodEnteredAt ? diffSeconds(player.playingTime!.lastPeriodEnteredAt, now) : 0}
+    )`));
+    await transaction.$executeRaw(Prisma.sql`
+      UPDATE "PlayerGameTime" AS pgt
+      SET "totalSeconds" = pgt."totalSeconds" + v.total_delta,
+          "periodSeconds" = pgt."periodSeconds" + v.period_delta,
+          "lastEnteredAt" = NULL,
+          "lastPeriodEnteredAt" = NULL,
+          "updatedAt" = ${now}
+      FROM (VALUES ${rows}) AS v("gamePlayerId", total_delta, period_delta)
+      WHERE pgt."gamePlayerId" = v."gamePlayerId"
+    `);
+  }
 }
 
 export async function startGame(gameId: number, userId: number) {
@@ -255,18 +251,18 @@ export async function startGame(gameId: number, userId: number) {
             gamePlayerId: player.id
           },
           data: {
-            isOnCourt: player.isStarter,
+            isOnCourt: game.sessionType === 'TRAINING' ? true : player.isStarter,
             periodSeconds: 0,
             periodFouls: 0,
-            lastEnteredAt: player.isStarter ? now : null,
-            lastPeriodEnteredAt: player.isStarter ? now : null
+            lastEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null,
+            lastPeriodEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null
           }
         })
       )
     );
 
-    await createRotationEvent(transaction, game.id, RotationEventType.PERIOD_START, 1, 0, {
-      onCourtPlayerIds: game.players.filter((player) => player.isStarter).map((player) => player.playerId)
+    await createRotationEvent(transaction, game.id, game.sessionType === 'TRAINING' ? RotationEventType.ACTIVITY_CHANGE : RotationEventType.PERIOD_START, 1, 0, {
+      onCourtPlayerIds: game.players.filter((player) => game.sessionType === 'TRAINING' || player.isStarter).map((player) => player.playerId)
     });
 
     const updatedGame = cloneGameForUpdate(game);
@@ -287,22 +283,22 @@ export async function startGame(gameId: number, userId: number) {
         ...player,
         playingTime: {
           ...player.playingTime,
-          isOnCourt: player.isStarter,
+          isOnCourt: game.sessionType === 'TRAINING' || player.isStarter,
           periodSeconds: 0,
           periodFouls: 0,
-          lastEnteredAt: player.isStarter ? now : null,
-          lastPeriodEnteredAt: player.isStarter ? now : null
+          lastEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null,
+          lastPeriodEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null
         }
       };
     });
     updatedGame.rotationEvents.push({
-      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      id: 0,
       gameId: game.id,
       kind: RotationEventType.PERIOD_START,
       periodNumber: 1,
       clockMarkSeconds: 0,
       payload: {
-        onCourtPlayerIds: game.players.filter((player) => player.isStarter).map((player) => player.playerId)
+        onCourtPlayerIds: game.players.filter((player) => game.sessionType === 'TRAINING' || player.isStarter).map((player) => player.playerId)
       },
       createdAt: now
     });
@@ -353,7 +349,7 @@ export async function resumeGame(gameId: number, userId: number) {
 
     const onCourtPlayers = game.players.filter((player) => player.playingTime?.isOnCourt);
 
-    if (onCourtPlayers.length !== 5) {
+    if (game.sessionType === 'GAME' && onCourtPlayers.length !== 5) {
       throw new HttpError(400, `La reprise nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
     }
 
@@ -418,6 +414,10 @@ function ensureTrackableLiveGame(game: Awaited<ReturnType<typeof getGameForUpdat
   }
 }
 
+function ensureGameSession(game: Awaited<ReturnType<typeof getGameForUpdate>>) {
+  if (game.sessionType === 'TRAINING') throw new HttpError(400, 'Les périodes ne sont pas utilisées pendant un entraînement.');
+}
+
 export async function substitutePlayers(gameId: number, userId: number, playerInIds: number[], playerOutIds: number[]) {
   return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId, userId);
@@ -454,7 +454,7 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
     const activeCount = game.players.filter((player) => player.playingTime?.isOnCourt).length;
     const nextActiveCount = activeCount - playerOutIds.length + playerInIds.length;
 
-    if (nextActiveCount !== 5) {
+    if (game.sessionType === 'GAME' && nextActiveCount !== 5) {
       throw new HttpError(400, `Le changement doit laisser exactement cinq ${labels.playerPlural} sur le terrain.`);
     }
 
@@ -576,7 +576,7 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
       return player;
     });
     updatedGame.rotationEvents.push({
-      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      id: 0,
       gameId: game.id,
       kind: RotationEventType.SUBSTITUTION,
       periodNumber: game.currentPeriodNumber,
@@ -590,6 +590,31 @@ export async function substitutePlayers(gameId: number, userId: number, playerIn
     });
 
     return serializeGame(updatedGame);
+  });
+}
+
+export async function addTrainingPlayer(gameId: number, userId: number, playerId: number) {
+  return prisma.$transaction(async (transaction) => {
+    const game = await getGameForUpdate(transaction, gameId, userId);
+    if (game.sessionType !== 'TRAINING' || (game.status !== GameStatus.LIVE && game.status !== GameStatus.PAUSED)) {
+      throw new HttpError(400, 'Un joueur peut être ajouté uniquement pendant un entraînement en cours ou en pause.');
+    }
+    const player = await transaction.player.findFirst({ where: { id: playerId, teamId: game.teamId } });
+    if (!player) throw new HttpError(404, 'Ce joueur ne fait pas partie de l’équipe de la séance.');
+    if (game.players.some((entry) => entry.playerId === player.id)) throw new HttpError(409, 'Ce joueur est déjà suivi dans cette séance.');
+    const now = new Date();
+    await transaction.gamePlayer.create({
+      data: {
+        gameId: game.id,
+        playerId: player.id,
+        isStarter: false,
+        playingTime: { create: { isOnCourt: true, lastEnteredAt: game.isClockRunning ? now : null, lastPeriodEnteredAt: game.isClockRunning ? now : null } }
+      }
+    });
+    const onCourtPlayerIds = [...getOnCourtPlayerIds(game.players), player.id];
+    await createRotationEvent(transaction, game.id, RotationEventType.ACTIVITY_CHANGE, game.currentPeriodNumber, currentPeriodClockSeconds(game, now), { onCourtPlayerIds, playerInIds: [player.id], playerOutIds: [] });
+    const updated = await getGameForUpdate(transaction, gameId, userId);
+    return serializeGame(updated);
   });
 }
 
@@ -765,7 +790,7 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
 
     if (disqualifyOnFifthFoul) {
       updatedGame.rotationEvents.push({
-        id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+        id: 0,
         gameId: game.id,
         kind: RotationEventType.SUBSTITUTION,
         periodNumber: game.currentPeriodNumber,
@@ -786,6 +811,7 @@ export async function recordPlayerStat(gameId: number, userId: number, playerId:
 export async function completePeriod(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId, userId);
+    ensureGameSession(game);
     ensureLiveState(game);
 
     if (game.status === GameStatus.DRAFT) {
@@ -820,7 +846,7 @@ export async function completePeriod(gameId: number, userId: number) {
     updatedGame.lastClockStartedAt = null;
     updatedGame.lastPeriodStartedAt = null;
     updatedGame.rotationEvents.push({
-      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      id: 0,
       gameId: game.id,
       kind: RotationEventType.PERIOD_END,
       periodNumber: game.currentPeriodNumber,
@@ -849,6 +875,7 @@ export async function completePeriod(gameId: number, userId: number) {
 export async function startNextPeriod(gameId: number, userId: number) {
   return prisma.$transaction(async (transaction) => {
     const game = await getGameForUpdate(transaction, gameId, userId);
+    ensureGameSession(game);
     const labels = getTeamLabelSet(game.team.gender);
     ensureLiveState(game);
 
@@ -960,7 +987,7 @@ export async function endGame(gameId: number, userId: number) {
     updatedGame.lastClockStartedAt = null;
     updatedGame.lastPeriodStartedAt = null;
     updatedGame.rotationEvents.push({
-      id: (updatedGame.rotationEvents.at(-1)?.id ?? 0) + 1,
+      id: 0,
       gameId: game.id,
       kind: RotationEventType.GAME_END,
       periodNumber: updatedGame.currentPeriodNumber,

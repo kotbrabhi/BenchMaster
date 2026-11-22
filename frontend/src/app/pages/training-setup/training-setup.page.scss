@@ -1,0 +1,9 @@
+.training-setup__form { display: grid; gap: 16px; }
+.training-roster { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.training-player { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); cursor: pointer; }
+.training-player input { width: 20px; height: 20px; accent-color: var(--color-accent); }
+.training-player--selected { border-color: var(--color-accent); }
+.training-player__number, .training-player__position { color: var(--color-muted); }
+.training-player__position { margin-left: auto; }
+.training-setup__footer { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 520px) { .training-setup__footer > * { flex: 1 1 100%; justify-content: center; } }

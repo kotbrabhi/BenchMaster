@@ -47,6 +47,9 @@ interface CreateGamePayload {
   label?: string;
   availablePlayerIds: number[];
   starterPlayerIds: number[];
+  sessionType?: 'GAME' | 'TRAINING';
+  periodCount?: number;
+  periodDurationSeconds?: number;
 }
 
 interface RotationEventPayload {
@@ -240,13 +243,14 @@ function buildSummaryFromGame(game: GameDetail): GameSummary {
     id: game.id,
     label: game.label,
     status: game.status,
+    sessionType: game.sessionType,
     startedAt: game.startedAt,
     endedAt: game.endedAt,
     team: clone(game.team),
     totalGameSeconds,
     totalPlayerSeconds,
     maxPlayerSeconds: players[0]?.totalSeconds ?? 0,
-    insights,
+    insights: game.sessionType === 'TRAINING' ? { ...insights, starterBenchSplit: { starterCount: 0, benchCount: 0, starterSeconds: 0, benchSeconds: 0, starterAverageSeconds: 0, benchAverageSeconds: 0, starterShare: 0, benchShare: 0 } } : insights,
     rotationTimeline: clone(game.rotationTimeline),
     players
   };
@@ -271,6 +275,7 @@ function ensureLiveState(game: GameDetail) {
 }
 
 function ensureExactlyFiveStarters(game: GameDetail) {
+  if (game.sessionType === 'TRAINING') return;
   const starters = game.selectedPlayers.filter((player) => player.isStarter);
   const labels = getTeamLabelSet(game.team.gender);
 
@@ -446,6 +451,32 @@ export class GuestStorageService {
     return player;
   }
 
+  async addTrainingPlayer(gameId: number, playerId: number) {
+    const state = this.readState();
+    const game = this.requireGame(state, gameId);
+    if (game.sessionType !== 'TRAINING' || (game.status !== 'LIVE' && game.status !== 'PAUSED')) throw new Error('Un joueur peut être ajouté uniquement pendant un entraînement en cours ou en pause.');
+    const team = this.requireTeam(state, game.team.id);
+    const player = team.players.find((entry) => entry.id === playerId);
+    if (!player) throw new Error('Ce joueur ne fait pas partie de l’équipe de la séance.');
+    if (game.selectedPlayers.some((entry) => entry.playerId === playerId)) throw new Error('Ce joueur est déjà suivi dans cette séance.');
+    const now = nowIso();
+    const active = game.isClockRunning;
+    game.selectedPlayers.push({
+      gamePlayerId: Math.max(0, ...game.selectedPlayers.map((entry) => entry.gamePlayerId)) + 1,
+      playerId: player.id, name: player.name, jerseyNumber: player.jerseyNumber, position: player.position,
+      isStarter: false, totalSeconds: 0, periodSeconds: 0, points: 0, assists: 0, blocks: 0, rebounds: 0,
+      interceptions: 0, fouls: 0, periodFouls: 0, isOnCourt: true,
+      lastEnteredAt: active ? now : null, lastPeriodEnteredAt: active ? now : null
+    });
+    pushRotationEvent(game, 'ACTIVITY_CHANGE', game.currentPeriodNumber, currentPeriodClockSeconds(game, new Date(now)), {
+      onCourtPlayerIds: game.selectedPlayers.filter((entry) => entry.isOnCourt).map((entry) => entry.playerId),
+      playerInIds: [player.id], playerOutIds: []
+    }, now);
+    rebuildGameCollections(game);
+    this.writeState(state);
+    return clone(game);
+  }
+
   async updatePlayer(
     teamId: number,
     playerId: number,
@@ -517,11 +548,11 @@ export class GuestStorageService {
       throw new Error('La liste des titulaires contient des doublons.');
     }
 
-    if (starterPlayerIds.length > 5) {
+    if (payload.sessionType !== 'TRAINING' && starterPlayerIds.length > 5) {
       throw new Error('Vous pouvez sélectionner au maximum cinq titulaires.');
     }
 
-    const missingStarter = starterPlayerIds.find((playerId) => !availablePlayerIds.includes(playerId));
+    const missingStarter = payload.sessionType === 'TRAINING' ? undefined : starterPlayerIds.find((playerId) => !availablePlayerIds.includes(playerId));
 
     if (missingStarter) {
       throw new Error(`Les titulaires doivent être choisi·es parmi les ${labels.playerPlural} disponibles.`);
@@ -564,6 +595,9 @@ export class GuestStorageService {
       id: state.nextGameId,
       label: payload.label?.trim() || defaultGameLabel(),
       status: 'DRAFT',
+      sessionType: payload.sessionType ?? 'GAME',
+        periodCount: payload.periodCount ?? 4,
+        periodDurationSeconds: payload.periodDurationSeconds ?? 600,
       currentPeriodNumber: 1,
       currentPeriodStatus: 'NOT_STARTED',
       startedAt: null,
@@ -621,14 +655,14 @@ export class GuestStorageService {
       game.lastPeriodStartedAt = now;
       game.selectedPlayers = game.selectedPlayers.map((player) => ({
         ...player,
-        isOnCourt: player.isStarter,
+        isOnCourt: game.sessionType === 'TRAINING' || player.isStarter,
         periodSeconds: 0,
         periodFouls: 0,
-        lastEnteredAt: player.isStarter ? now : null,
-        lastPeriodEnteredAt: player.isStarter ? now : null
+        lastEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null,
+        lastPeriodEnteredAt: game.sessionType === 'TRAINING' || player.isStarter ? now : null
       }));
-      pushRotationEvent(game, 'PERIOD_START', 1, 0, {
-        onCourtPlayerIds: game.selectedPlayers.filter((player) => player.isStarter).map((player) => player.playerId)
+      pushRotationEvent(game, game.sessionType === 'TRAINING' ? 'ACTIVITY_CHANGE' : 'PERIOD_START', 1, 0, {
+        onCourtPlayerIds: game.selectedPlayers.filter((player) => game.sessionType === 'TRAINING' || player.isStarter).map((player) => player.playerId)
       }, now);
       rebuildGameCollections(game);
     });
@@ -662,7 +696,7 @@ export class GuestStorageService {
 
       const onCourtPlayers = game.selectedPlayers.filter((player) => player.isOnCourt);
 
-      if (onCourtPlayers.length !== 5) {
+      if (game.sessionType !== 'TRAINING' && onCourtPlayers.length !== 5) {
         throw new Error(`La reprise nécessite exactement cinq ${labels.playerPlural} actif·ves.`);
       }
 
@@ -686,6 +720,7 @@ export class GuestStorageService {
 
   async completePeriod(gameId: number) {
     return this.updateGame(gameId, (game) => {
+      if (game.sessionType === 'TRAINING') throw new Error('Les périodes ne sont pas utilisées pendant un entraînement.');
       ensureLiveState(game);
 
       if (game.status === 'DRAFT') {
@@ -718,6 +753,7 @@ export class GuestStorageService {
 
   async startNextPeriod(gameId: number) {
     return this.updateGame(gameId, (game) => {
+      if (game.sessionType === 'TRAINING') throw new Error('Les périodes ne sont pas utilisées pendant un entraînement.');
       const labels = getTeamLabelSet(game.team.gender);
       ensureLiveState(game);
 
@@ -822,7 +858,7 @@ export class GuestStorageService {
 
       const nextActiveCount = game.activePlayers.length - playerOutIds.length + playerInIds.length;
 
-      if (nextActiveCount !== 5) {
+      if (game.sessionType !== 'TRAINING' && nextActiveCount !== 5) {
         throw new Error(`Le changement doit laisser exactement cinq ${labels.playerPlural} sur le terrain.`);
       }
 
@@ -871,7 +907,7 @@ export class GuestStorageService {
       });
       pushRotationEvent(
         game,
-        'SUBSTITUTION',
+        game.sessionType === 'TRAINING' ? 'ACTIVITY_CHANGE' : 'SUBSTITUTION',
         game.currentPeriodNumber,
         currentPeriodClockSeconds(game, new Date(now)),
         {
@@ -1002,7 +1038,8 @@ export class GuestStorageService {
       teamName: game.team.name,
       teamGender: game.team.gender,
       selectedCount: game.selectedPlayers.length,
-      activeCount: game.activePlayers.length
+      activeCount: game.activePlayers.length,
+      sessionType: game.sessionType
     };
   }
 
@@ -1108,7 +1145,10 @@ export class GuestStorageService {
             rotationTimeline: parsedState.game.rotationTimeline ?? [],
             selectedPlayers: (parsedState.game.selectedPlayers ?? []).map(normalizeGamePlayer),
             activePlayers: (parsedState.game.activePlayers ?? []).map(normalizeGamePlayer),
-            benchPlayers: (parsedState.game.benchPlayers ?? []).map(normalizeGamePlayer)
+            benchPlayers: (parsedState.game.benchPlayers ?? []).map(normalizeGamePlayer),
+            sessionType: parsedState.game.sessionType ?? 'GAME',
+            periodCount: parsedState.game.periodCount ?? 4,
+            periodDurationSeconds: parsedState.game.periodDurationSeconds ?? 600
           }
         : null;
 

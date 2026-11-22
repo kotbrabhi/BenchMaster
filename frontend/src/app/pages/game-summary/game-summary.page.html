@@ -3,9 +3,9 @@
   @if (summary(); as gameSummary) {
     <header class="toolbar toolbar--summary">
       <div>
-        <span class="toolbar__eyebrow">{{ 'summary.hero.eyebrow' | t }}</span>
+        <span class="toolbar__eyebrow">{{ gameSummary.sessionType === 'TRAINING' ? ('training.badge' | t) : ('summary.hero.eyebrow' | t) }}</span>
         <h1 class="toolbar__title">{{ gameSummary.label }}</h1>
-        <p class="toolbar__subtitle">{{ 'summary.hero.subtitle' | t }}</p>
+        <p class="toolbar__subtitle">{{ gameSummary.sessionType === 'TRAINING' ? ('training.summary.subtitle' | t) : ('summary.hero.subtitle' | t) }}</p>
       </div>
 
       <div class="toolbar__actions">
@@ -92,7 +92,7 @@
       </article>
     </section>
 
-    <section class="surface-card insights-grid">
+    @if (gameSummary.sessionType === 'GAME') { <section class="surface-card insights-grid">
       <div class="section-heading">
         <div>
           <h2>{{ 'summary.insights.title' | t }}</h2>
@@ -208,13 +208,13 @@
           <p class="insight-empty">{{ 'summary.insights.emptyBalanced' | t }}</p>
         }
       </article>
-    </section>
+    </section> }
 
     <section class="surface-card timeline-card">
       <div class="section-heading">
         <div>
           <h2>{{ 'summary.timeline.title' | t }}</h2>
-          <p>{{ 'summary.timeline.subtitle' | t }}</p>
+          <p>{{ gameSummary.sessionType === 'TRAINING' ? ('training.summary.timeline' | t) : ('summary.timeline.subtitle' | t) }}</p>
         </div>
 
         @if (rotationTimeline().length) {
@@ -291,7 +291,7 @@
               </div>
 
               <div class="summary-card__time">
-                <span>{{ 'summary.table.minutes' | t }}</span>
+                <span>{{ (coachSettingsService.settings().playingTimeDisplay === 'PERCENTAGE' ? 'coachSettings.live.percentage' : 'summary.table.minutes') | t }}</span>
                 <strong>{{ playingMinutes(player.totalSeconds) }}</strong>
               </div>
             </div>
@@ -399,7 +399,7 @@
                   [class.summary-table__sort-button--active]="isSortedBy('totalSeconds')"
                   [attr.aria-label]="sortButtonLabel('totalSeconds')"
                   [attr.title]="sortButtonLabel('totalSeconds')">
-                  <span>{{ 'summary.table.minutes' | t }}</span>
+                  <span>{{ (coachSettingsService.settings().playingTimeDisplay === 'PERCENTAGE' ? 'coachSettings.live.percentage' : 'summary.table.minutes') | t }}</span>
                 </button>
               </th>
               <th class="summary-table__stat" scope="col" [attr.aria-sort]="ariaSort('points')">

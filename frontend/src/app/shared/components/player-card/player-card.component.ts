@@ -60,6 +60,7 @@ export class PlayerCardComponent {
   @Input() stateLabel = '';
   @Input() actionLabel = '';
   @Input() stats: PlayerCardStat[] = [];
+  @Input() mobileStatActions = false;
   @Input() inlineStat: PlayerCardInlineStat | null = null;
   @Input() quickActions: PlayerCardQuickAction[] = [];
   @Input() quickActionsTone: 'default' | 'danger' = 'default';

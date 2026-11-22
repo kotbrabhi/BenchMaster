@@ -1,0 +1,1 @@
+ALTER TYPE "RotationEventType" ADD VALUE 'ACTIVITY_CHANGE';

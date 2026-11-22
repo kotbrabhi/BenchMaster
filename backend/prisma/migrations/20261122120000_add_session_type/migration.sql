@@ -1,0 +1,2 @@
+CREATE TYPE "SessionType" AS ENUM ('GAME', 'TRAINING');
+ALTER TABLE "Game" ADD COLUMN "sessionType" "SessionType" NOT NULL DEFAULT 'GAME';

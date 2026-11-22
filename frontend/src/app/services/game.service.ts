@@ -5,12 +5,16 @@ import { API_BASE_URL } from '../core/api';
 import { AppModeService } from '../core/app-mode.service';
 import { GameDetail, GameListItem, GameShareInfo, GameSummary, GameSummaryExport } from '../core/models';
 import { GuestStorageService } from './guest-storage.service';
+import { CoachSettingsService } from './coach-settings.service';
 
 export interface CreateGamePayload {
   teamId: number;
   label?: string;
   availablePlayerIds: number[];
   starterPlayerIds: number[];
+  sessionType?: 'GAME' | 'TRAINING';
+  periodCount?: number;
+  periodDurationSeconds?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +22,7 @@ export class GameService {
   private readonly http = inject(HttpClient);
   private readonly appModeService = inject(AppModeService);
   private readonly guestStorageService = inject(GuestStorageService);
+  private readonly coachSettingsService = inject(CoachSettingsService);
 
   readonly games = signal<GameListItem[]>([]);
 
@@ -35,9 +40,14 @@ export class GameService {
   }
 
   createGame(payload: CreateGamePayload) {
+    const gamePayload = payload.sessionType === 'TRAINING' ? payload : {
+      ...payload,
+      periodCount: payload.periodCount ?? this.coachSettingsService.settings().defaultPeriodCount,
+      periodDurationSeconds: payload.periodDurationSeconds ?? this.coachSettingsService.settings().defaultPeriodDurationSeconds
+    };
     return this.appModeService.isGuestMode()
-      ? this.guestStorageService.createGame(payload)
-      : firstValueFrom(this.http.post<GameDetail>(`${API_BASE_URL}/games`, payload));
+      ? this.guestStorageService.createGame(gamePayload)
+      : firstValueFrom(this.http.post<GameDetail>(`${API_BASE_URL}/games`, gamePayload));
   }
 
   getGame(gameId: number) {

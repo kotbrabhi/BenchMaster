@@ -124,6 +124,23 @@ export class LiveMatchService {
     return game;
   }
 
+  async toggleTrainingPlayer(gameId: number, playerId: number) {
+    const game = this.game();
+    if (!game || game.sessionType !== 'TRAINING') return null;
+    const next = game.activePlayers.some((player) => player.playerId === playerId)
+      ? { playerInIds: [], playerOutIds: [playerId] }
+      : { playerInIds: [playerId], playerOutIds: [] };
+    return this.updateGame(() => this.appModeService.isGuestMode()
+      ? this.guestStorageService.substitutePlayers(gameId, next.playerInIds, next.playerOutIds)
+      : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/substitutions`, next));
+  }
+
+  async addTrainingPlayer(gameId: number, playerId: number) {
+    return this.updateGame(() => this.appModeService.isGuestMode()
+      ? this.guestStorageService.addTrainingPlayer(gameId, playerId)
+      : this.postGameUpdate(`${API_BASE_URL}/games/${gameId}/players`, { playerId }));
+  }
+
   async recordPlayerPoints(gameId: number, playerId: number, points: number, correction = false) {
     return this.updateGame(() =>
       this.appModeService.isGuestMode()

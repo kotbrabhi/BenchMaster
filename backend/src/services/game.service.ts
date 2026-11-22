@@ -10,6 +10,9 @@ export interface CreateGameInput {
   label?: string;
   availablePlayerIds: number[];
   starterPlayerIds: number[];
+  sessionType?: 'GAME' | 'TRAINING';
+  periodCount?: number;
+  periodDurationSeconds?: number;
 }
 
 export interface GameShareResult {
@@ -138,11 +141,18 @@ export async function listGames(userId: number, teamId?: number) {
 }
 
 export async function createGame(userId: number, input: CreateGameInput) {
+  const sessionType = input.sessionType ?? 'GAME';
   const availablePlayerIds = input.availablePlayerIds.map(Number);
   const starterPlayerIds = input.starterPlayerIds.map(Number);
 
   if (!Number.isInteger(input.teamId)) {
     throw new HttpError(400, 'Une équipe valide est obligatoire.');
+  }
+
+  const periodCount = input.periodCount ?? 4;
+  const periodDurationSeconds = input.periodDurationSeconds ?? 600;
+  if (![2, 4, 6, 8].includes(periodCount) || ![300, 480, 600, 720].includes(periodDurationSeconds)) {
+    throw new HttpError(400, 'Le format des périodes est invalide.');
   }
 
   const team = await prisma.team.findFirst({
@@ -168,14 +178,18 @@ export async function createGame(userId: number, input: CreateGameInput) {
   ensureUniqueIds(`La liste des ${labels.playerPlural} disponibles`, availablePlayerIds);
   ensureUniqueIds('La liste des titulaires', starterPlayerIds);
 
-  if (starterPlayerIds.length > 5) {
-    throw new HttpError(400, 'Vous pouvez sélectionner au maximum cinq titulaires.');
-  }
+  if (sessionType === 'GAME') {
+    if (starterPlayerIds.length > 5) {
+      throw new HttpError(400, 'Vous pouvez sélectionner au maximum cinq titulaires.');
+    }
 
-  const missingStarter = starterPlayerIds.find((playerId) => !availablePlayerIds.includes(playerId));
+    const missingStarter = starterPlayerIds.find((playerId) => !availablePlayerIds.includes(playerId));
 
-  if (missingStarter) {
-    throw new HttpError(400, `Les titulaires doivent être choisi·es parmi les ${labels.playerPlural} disponibles.`);
+    if (missingStarter) {
+      throw new HttpError(400, `Les titulaires doivent être choisi·es parmi les ${labels.playerPlural} disponibles.`);
+    }
+  } else if (starterPlayerIds.length) {
+    throw new HttpError(400, 'Un entraînement ne comporte pas de titulaires.');
   }
 
   const rosterIds = new Set(team.players.map((player) => player.id));
@@ -190,6 +204,9 @@ export async function createGame(userId: number, input: CreateGameInput) {
       teamId: input.teamId,
       label: input.label?.trim() || defaultGameLabel(),
       status: GameStatus.DRAFT,
+      sessionType,
+      periodCount,
+      periodDurationSeconds,
       players: {
         create: availablePlayerIds.map((playerId) => ({
           playerId,

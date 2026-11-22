@@ -16,6 +16,8 @@ import {
 import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { GameService } from '../../services/game.service';
+import { CoachSettingsService } from '../../services/coach-settings.service';
+import { formatPlayingTime } from '../../core/coach-settings';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
@@ -45,6 +47,7 @@ export class GameSummaryPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly gameService = inject(GameService);
   private readonly appModeService = inject(AppModeService);
+  private readonly coachSettingsService = inject(CoachSettingsService);
   private readonly durationPipe = new DurationPipe();
 
   readonly summary = signal<GameSummary | null>(null);
@@ -125,7 +128,8 @@ export class GameSummaryPageComponent implements OnInit {
   }
 
   playingMinutes(totalSeconds: number) {
-    return String(Math.round(totalSeconds / 60));
+    const summary = this.summary();
+    return summary ? formatPlayingTime(totalSeconds, summary.totalGameSeconds, this.coachSettingsService.settings().playingTimeDisplay) : '—';
   }
 
   formatDuration(totalSeconds: number, style: 'clock' | 'compact' = 'compact') {
@@ -206,6 +210,7 @@ export class GameSummaryPageComponent implements OnInit {
   }
 
   timelineTitle(event: RotationTimelineEvent) {
+    if (event.kind === 'ACTIVITY_CHANGE') return this.t('training.timeline.activityChange');
     switch (event.kind) {
       case 'PERIOD_START':
         return this.t('summary.timeline.periodStart', { number: event.periodNumber });
@@ -356,6 +361,7 @@ export class GameSummaryPageComponent implements OnInit {
         id: gameSummary.id,
         label: gameSummary.label,
         status: gameSummary.status,
+        sessionType: gameSummary.sessionType,
         startedAt: gameSummary.startedAt,
         endedAt: gameSummary.endedAt,
         totalGameSeconds: gameSummary.totalGameSeconds,

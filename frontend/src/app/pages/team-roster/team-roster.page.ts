@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { getErrorMessage } from '../../core/api';
 import { I18nService } from '../../core/i18n.service';
 import { Team, TeamGender } from '../../core/models';
@@ -9,6 +9,7 @@ import { buildTeamLabelParams } from '../../core/team-labels';
 import { TranslationKey } from '../../core/translations';
 import { PlayerService } from '../../services/player.service';
 import { TeamService } from '../../services/team.service';
+import { LiveMatchService } from '../../services/live-match.service';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
@@ -37,6 +38,8 @@ export class TeamRosterPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly teamService = inject(TeamService);
   private readonly playerService = inject(PlayerService);
+  private readonly liveMatchService = inject(LiveMatchService);
+  private readonly router = inject(Router);
 
   readonly roster = this.playerService.roster;
   readonly errorMessage = signal('');
@@ -45,10 +48,14 @@ export class TeamRosterPageComponent implements OnInit {
     this.loadError() ? this.t('teamRoster.errors.loadFailed') : this.errorMessage()
   );
   readonly isSavingTeamName = signal(false);
+  readonly isAddingPlayerFormOpen = signal(false);
   readonly isAddingPlayer = signal(false);
   readonly isSavingEditedPlayer = signal(false);
   readonly deletingPlayerId = signal<number | null>(null);
   readonly pendingPlayerDeletion = signal<PendingPlayerDeletion | null>(null);
+  readonly trainingPickerGameId = signal<number | null>(null);
+  readonly addingPlayerToTrainingId = signal<number | null>(null);
+  readonly trackedTrainingPlayerIds = computed(() => new Set(this.liveMatchService.game()?.selectedPlayers.map((player) => player.playerId) ?? []));
   readonly t = this.i18n.t;
   readonly teamGenderOptions: Array<{ value: TeamGender; labelKey: TranslationKey }> = [
     { value: 'MIXED', labelKey: 'common.teamGender.mixed' },
@@ -83,7 +90,29 @@ export class TeamRosterPageComponent implements OnInit {
   private cancelEditingRequested = false;
 
   async ngOnInit() {
+    const gameId = Number(this.route.snapshot.queryParamMap.get('addToGameId'));
+    if (Number.isInteger(gameId) && gameId > 0) {
+      this.trainingPickerGameId.set(gameId);
+      try {
+        await this.liveMatchService.loadGame(gameId);
+        if (this.liveMatchService.game()?.sessionType !== 'TRAINING' || this.liveMatchService.game()?.team.id !== this.teamId) this.trainingPickerGameId.set(null);
+      } catch { this.trainingPickerGameId.set(null); }
+    }
     await this.refresh();
+  }
+
+  async selectPlayerForTraining(playerId: number) {
+    const gameId = this.trainingPickerGameId();
+    if (!gameId || this.trackedTrainingPlayerIds().has(playerId)) return;
+    try {
+      this.addingPlayerToTrainingId.set(playerId);
+      await this.liveMatchService.addTrainingPlayer(gameId, playerId);
+      await this.router.navigate(['/games', gameId, 'live']);
+    } catch (error) {
+      this.errorMessage.set(getErrorMessage(error, this.t));
+    } finally {
+      this.addingPlayerToTrainingId.set(null);
+    }
   }
 
   async saveTeam() {
@@ -251,6 +280,12 @@ export class TeamRosterPageComponent implements OnInit {
     this.newPosition = '';
     this.newJerseyNumber = '';
     this.syncSuggestedJerseyNumber(true);
+    this.isAddingPlayerFormOpen.set(false);
+  }
+
+  openNewPlayerForm() {
+    this.syncSuggestedJerseyNumber();
+    this.isAddingPlayerFormOpen.set(true);
   }
 
   resetEditingPlayer() {

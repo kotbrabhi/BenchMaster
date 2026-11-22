@@ -245,6 +245,9 @@ export function serializeGame(game: GameWithRoster) {
     id: game.id,
     label: game.label,
     status: game.status,
+    sessionType: game.sessionType,
+    periodCount: game.periodCount,
+    periodDurationSeconds: game.periodDurationSeconds,
     currentPeriodNumber: game.currentPeriodNumber,
     currentPeriodStatus: game.currentPeriodStatus,
     startedAt: game.startedAt?.toISOString() ?? null,
@@ -274,6 +277,7 @@ export function serializeGameListItem(game: GameWithRoster) {
     id: game.id,
     label: game.label,
     status: game.status,
+    sessionType: game.sessionType,
     createdAt: game.createdAt.toISOString(),
     teamId: game.teamId,
     teamName: game.team.name,
@@ -293,6 +297,7 @@ export function serializeSummary(game: GameWithRoster) {
     id: game.id,
     label: game.label,
     status: game.status,
+    sessionType: game.sessionType,
     startedAt: game.startedAt?.toISOString() ?? null,
     endedAt: game.endedAt?.toISOString() ?? null,
     team: {
@@ -303,7 +308,7 @@ export function serializeSummary(game: GameWithRoster) {
     totalGameSeconds,
     totalPlayerSeconds,
     maxPlayerSeconds: maxSeconds,
-    insights,
+    insights: game.sessionType === 'TRAINING' ? { ...insights, starterBenchSplit: { starterCount: 0, benchCount: 0, starterSeconds: 0, benchSeconds: 0, starterAverageSeconds: 0, benchAverageSeconds: 0, starterShare: 0, benchShare: 0 } } : insights,
     rotationTimeline: serializeRotationTimeline(game, players),
     players
   };
@@ -320,6 +325,7 @@ export function serializeSummaryExport(game: GameWithRoster, shareId: string | n
       id: summary.id,
       label: summary.label,
       status: summary.status,
+      sessionType: summary.sessionType,
       startedAt: summary.startedAt,
       endedAt: summary.endedAt,
       totalGameSeconds: summary.totalGameSeconds,

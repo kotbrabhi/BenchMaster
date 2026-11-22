@@ -165,6 +165,21 @@
               <span class="button__label">{{ 'home.teams.newGameAction' | t }}</span>
             </a>
 
+            <a
+              class="button button--secondary button--icon team-card__training-action"
+              [routerLink]="['/training/new']"
+              [queryParams]="{ teamId: team.id }"
+              [attr.aria-label]="'training.newAction' | t"
+              [attr.title]="'training.newAction' | t">
+              <span class="button__icon" aria-hidden="true">
+                <svg class="icon icon--stroke" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8.5" />
+                  <path d="M5.8 5.8c3 2.2 4.4 5.1 4.4 9.1 0 1.7-.4 3-1.1 4.3M18.2 5.8c-3 2.2-4.4 5.1-4.4 9.1 0 1.7.4 3 1.1 4.3M3.6 9.3c2.7.2 4.9 1.1 6.7 2.7M20.4 9.3c-2.7.2-4.9 1.1-6.7 2.7" />
+                </svg>
+              </span>
+              <span class="button__label">{{ 'training.badge' | t }}</span>
+            </a>
+
             <div
               class="team-card__menu"
               (click)="$event.stopPropagation()"
@@ -214,13 +229,6 @@
       }
     </div>
 
-    @if (showGuestTeamLimitHint()) {
-      <div class="info-panel info-panel--accent">
-        <span class="info-panel__eyebrow">{{ 'home.mode.guest' | t }}</span>
-        <p class="info-panel__text">{{ 'home.teams.guestLimit' | t }}</p>
-      </div>
-    }
-
     @if (!teams().length) {
       <div class="status-panel status-panel--empty">
         <span class="status-panel__eyebrow">{{ 'home.teams.title' | t }}</span>
@@ -261,8 +269,9 @@
             [routerLink]="gameLink(game)">
             <div class="game-card__content">
               <strong>{{ game.label }}</strong>
-              <p>{{ game.teamName }}</p>
+              <p>@if (game.sessionType === 'TRAINING') { {{ 'training.badge' | t }} · }{{ game.teamName }}</p>
               <span class="game-card__date">{{ formattedGameDate(game.createdAt) }}</span>
+              @if (game.sessionType === 'TRAINING') { <span class="game-card__date">{{ 'training.history.players' | t : { count: game.selectedCount, active: game.activeCount } }}</span> }
             </div>
 
             <span class="game-card__status">

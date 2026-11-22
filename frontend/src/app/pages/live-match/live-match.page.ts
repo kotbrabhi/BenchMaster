@@ -19,6 +19,8 @@ import { ConfirmationDialogComponent } from '../../shared/components/confirmatio
 import { PlayerCardComponent } from '../../shared/components/player-card/player-card.component';
 import { DurationPipe } from '../../shared/pipes/duration.pipe';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { CoachSettingsService } from '../../services/coach-settings.service';
+import { formatPlayingTime, LiveStatKey } from '../../core/coach-settings';
 
 type LiveRosterView = 'court' | 'bench';
 
@@ -49,6 +51,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   private longPressSelectedPlayerId: number | null = null;
   readonly liveMatchService = inject(LiveMatchService);
   readonly timeTrackingService = inject(TimeTrackingService);
+  readonly coachSettingsService = inject(CoachSettingsService);
 
   readonly game = this.liveMatchService.game;
   readonly pendingBenchPlayers = this.liveMatchService.pendingBenchPlayers;
@@ -72,6 +75,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.initMobileViewport();
     this.timeTrackingService.start();
+    void this.coachSettingsService.load().catch(() => undefined);
     await this.loadGame();
   }
 
@@ -115,6 +119,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   async toggleBenchPlayer(playerId: number) {
+    if (this.game()?.sessionType === 'TRAINING') { await this.toggleTrainingPlayer(playerId); return; }
     const previousView = this.mobileRosterView();
     const selectionHadFocus = this.isFocusedPlayerSelection();
     const player = this.game()?.benchPlayers.find((entry) => entry.playerId === playerId);
@@ -184,6 +189,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   async toggleActivePlayer(playerId: number) {
+    if (this.game()?.sessionType === 'TRAINING') { await this.toggleTrainingPlayer(playerId); return; }
     const previousView = this.mobileRosterView();
     const selectionHadFocus = this.isFocusedPlayerSelection();
     const wasSelected = this.isActiveSelected(playerId);
@@ -269,12 +275,14 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   requestEndGame() {
+    if (!this.coachSettingsService.settings().confirmSessionEnd) { void this.confirmEndGame(); return; }
+    const isTraining = this.game()?.sessionType === 'TRAINING';
     this.pendingConfirmation.set({
       action: 'end-game',
-      title: this.t('live.confirmEndGame.title'),
-      message: this.t('live.confirmEndGame.message'),
-      details: this.t('live.confirmEndGame.details'),
-      confirmLabel: this.t('live.actions.end'),
+      title: this.t(isTraining ? 'training.live.confirmEndTitle' : 'live.confirmEndGame.title'),
+      message: this.t(isTraining ? 'training.live.confirmEnd' : 'live.confirmEndGame.message'),
+      details: this.t(isTraining ? 'training.live.confirmEndDetails' : 'live.confirmEndGame.details'),
+      confirmLabel: this.t(isTraining ? 'training.live.end' : 'live.actions.end'),
       tone: 'danger'
     });
   }
@@ -300,14 +308,21 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     const periodElapsed = this.periodClockSeconds(game);
 
     return {
-      matchLabel: this.t('live.playerTime.matchShort'),
+      matchLabel: this.t(game.sessionType === 'TRAINING' ? 'training.live.timeShort' : 'live.playerTime.matchShort'),
       matchPercent: this.timeSharePercent(this.playerSeconds(game, player), matchElapsed),
       periodLabel: this.t('live.playerTime.periodShort'),
       periodPercent: this.timeSharePercent(this.playerPeriodSeconds(game, player), periodElapsed)
     };
   }
 
+  playerTimeLabel(game: GameDetail, player: GamePlayerState) {
+    const settings = this.coachSettingsService.settings();
+    if (settings.playingTimeDisplay === 'PERCENTAGE') return formatPlayingTime(this.playerSeconds(game, player), this.clockSeconds(game), settings.playingTimeDisplay);
+    return `${Math.round(this.playerSeconds(game, player) / 60)} ${this.t('coachSettings.live.minutes')}`;
+  }
+
   playerStats(player: GamePlayerState): PlayerCardStat[] {
+    const visibleStats = new Set(this.coachSettingsService.settings().visibleLiveStats);
     const correctionMode = this.correctionMode();
     const isMobileQuickTapEnabled = this.isMobileViewport() && player.isOnCourt;
     const statConfig: Array<{
@@ -348,7 +363,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       }
     ];
 
-    return statConfig.map((stat) => ({
+    return statConfig.filter((stat) => visibleStats.has(stat.valueKey === 1 ? 'points' : stat.valueKey as LiveStatKey)).map((stat) => ({
       label: this.t(stat.labelKey),
       value: stat.value,
       highlighted: stat.value > 0,
@@ -563,12 +578,25 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     }[game.status];
   }
 
+  private async toggleTrainingPlayer(playerId: number) {
+    try {
+      await this.liveMatchService.toggleTrainingPlayer(this.gameId, playerId);
+      this.errorMessage.set('');
+    } catch (error) {
+      this.errorMessage.set(getErrorMessage(error, this.t));
+    }
+  }
+
   periodStatusLabel(game: GameDetail) {
     return {
       NOT_STARTED: this.t('live.period.status.notStarted'),
       LIVE: this.t('live.period.status.live'),
       COMPLETED: this.t('live.period.status.completed')
     }[this.effectivePeriodStatus(game)];
+  }
+
+  periodIndicatorLabel(game: GameDetail) {
+    return game.status === 'PAUSED' ? this.t('live.status.paused') : this.periodStatusLabel(game);
   }
 
   effectivePeriodStatus(game: GameDetail) {
@@ -588,11 +616,11 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
   }
 
   canCompletePeriod(game: GameDetail) {
-    return (game.status === 'LIVE' || game.status === 'PAUSED') && this.effectivePeriodStatus(game) === 'LIVE';
+    return game.sessionType === 'GAME' && (game.status === 'LIVE' || game.status === 'PAUSED') && this.effectivePeriodStatus(game) === 'LIVE';
   }
 
   canStartNextPeriod(game: GameDetail) {
-    return game.status === 'PAUSED' && this.effectivePeriodStatus(game) === 'COMPLETED';
+    return game.sessionType === 'GAME' && game.status === 'PAUSED' && this.effectivePeriodStatus(game) === 'COMPLETED';
   }
 
   toggleCorrectionMode() {
@@ -613,7 +641,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
     };
 
     return [
-      ...[1, 2, 3].map((points) => ({
+      ...(this.coachSettingsService.settings().visibleLiveStats.includes('points') ? [1, 2, 3].map((points) => ({
         value: points,
         label: `${correctionMode ? '-' : '+'}${points}`,
         title: correctionMode
@@ -621,29 +649,29 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
           : this.t('live.actions.addPoints', { count: points }),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, points)),
         row: 'primary' as const
-      })),
-      {
+      })) : []),
+      ...(this.coachSettingsService.settings().visibleLiveStats.includes('assists') ? [{
         value: 'assists' as const,
         label: statLabel('live.stats.assists.short'),
         title: correctionMode ? this.t('live.actions.removeAssist') : this.t('live.actions.addAssist'),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, 'assists')),
         row: 'secondary' as const
-      },
-      {
+      }] : []),
+      ...(this.coachSettingsService.settings().visibleLiveStats.includes('rebounds') ? [{
         value: 'rebounds' as const,
         label: statLabel('live.stats.rebounds.short'),
         title: correctionMode ? this.t('live.actions.removeRebound') : this.t('live.actions.addRebound'),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, 'rebounds')),
         row: 'secondary' as const
-      },
-      {
+      }] : []),
+      ...(this.coachSettingsService.settings().visibleLiveStats.includes('blocks') ? [{
         value: 'blocks' as const,
         label: statLabel('live.stats.blocks.short'),
         title: correctionMode ? this.t('live.actions.removeBlock') : this.t('live.actions.addBlock'),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, 'blocks')),
         row: 'tertiary' as const
-      },
-      {
+      }] : []),
+      ...(this.coachSettingsService.settings().visibleLiveStats.includes('interceptions') ? [{
         value: 'interceptions' as const,
         label: statLabel('live.stats.interceptions.short'),
         title: correctionMode
@@ -651,7 +679,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
           : this.t('live.actions.addInterception'),
         disabled: disabled || (correctionMode && !this.canReverseAction(player, 'interceptions')),
         row: 'tertiary' as const
-      }
+      }] : [])
     ];
   }
 
@@ -930,7 +958,7 @@ export class LiveMatchPageComponent implements OnInit, OnDestroy {
       this.busyAction.set('end-game');
       await this.liveMatchService.endGame(this.gameId);
       this.pendingConfirmation.set(null);
-      await this.router.navigate(['/games', this.gameId, 'summary']);
+      if (this.coachSettingsService.settings().openSummaryAfterEnd) await this.router.navigate(['/games', this.gameId, 'summary']);
     } catch (error) {
       this.errorMessage.set(getErrorMessage(error, this.t));
     } finally {

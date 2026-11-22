@@ -21,6 +21,7 @@ export function createApp() {
 
   app.use(
     cors({
+      credentials: true,
       origin(origin, callback) {
         if (!origin || allowedOrigins.has(origin)) {
           callback(null, true);

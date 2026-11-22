@@ -174,11 +174,11 @@
   }
 
   @if (stats.length) {
-    <dl class="player-card__stats">
-      @for (stat of stats; track stat.label) {
-        @if (stat.clickable) {
+    @if (mobileStatActions) {
+      <div class="player-card__mobile-stat-actions" aria-label="{{ 'live.stats.title' | t }}">
+        @for (stat of stats; track stat.label) {
           <button
-            class="player-card__stat player-card__stat-button"
+            class="player-card__mobile-stat-action"
             [class.player-card__stat--highlighted]="stat.highlighted"
             [class.player-card__stat--danger]="stat.tone === 'danger'"
             type="button"
@@ -188,17 +188,38 @@
             [attr.aria-label]="accessibleActionLabel(stat.title || stat.label)"
             [attr.title]="stat.title || stat.label"
             (click)="handleStatClick($event, stat)">
-            <span class="player-card__stat-label">{{ stat.label }}</span>
-            <span class="player-card__stat-value">{{ stat.value }}</span>
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
           </button>
-        } @else {
-          <div class="player-card__stat" [class.player-card__stat--highlighted]="stat.highlighted">
-            <dt>{{ stat.label }}</dt>
-            <dd>{{ stat.value }}</dd>
-          </div>
         }
-      }
-    </dl>
+      </div>
+    } @else {
+      <dl class="player-card__stats">
+        @for (stat of stats; track stat.label) {
+          @if (stat.clickable) {
+            <button
+              class="player-card__stat player-card__stat-button"
+              [class.player-card__stat--highlighted]="stat.highlighted"
+              [class.player-card__stat--danger]="stat.tone === 'danger'"
+              type="button"
+              [attr.data-player-id]="playerId"
+              data-player-control="stat"
+              [disabled]="stat.disabled"
+              [attr.aria-label]="accessibleActionLabel(stat.title || stat.label)"
+              [attr.title]="stat.title || stat.label"
+              (click)="handleStatClick($event, stat)">
+              <span class="player-card__stat-label">{{ stat.label }}</span>
+              <span class="player-card__stat-value">{{ stat.value }}</span>
+            </button>
+          } @else {
+            <div class="player-card__stat" [class.player-card__stat--highlighted]="stat.highlighted">
+              <dt>{{ stat.label }}</dt>
+              <dd>{{ stat.value }}</dd>
+            </div>
+          }
+        }
+      </dl>
+    }
   }
 
   @if (quickActions.length) {

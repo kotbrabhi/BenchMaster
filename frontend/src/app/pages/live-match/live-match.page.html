@@ -2,7 +2,8 @@
   <p class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true">{{ displayErrorMessage() }}</p>
   @if (game(); as currentGame) {
     <header class="toolbar">
-      <h1 class="toolbar__title">{{ 'live.hero.title' | t : { game: currentGame.label } }}</h1>
+      @if (currentGame.sessionType === 'TRAINING') { <span class="toolbar__eyebrow">{{ 'training.badge' | t }}</span> }
+      <h1 class="toolbar__title">{{ (currentGame.sessionType === 'TRAINING' ? 'training.live.title' : 'live.hero.title') | t : { game: currentGame.label } }}</h1>
     </header>
 
     @if (displayErrorMessage()) {
@@ -12,26 +13,39 @@
     <section class="surface-card live-control-panel live-control-panel--clock">
       <div class="section-heading live-control-panel__heading">
         <div>
-          <h2>{{ 'live.clock.title' | t }}</h2>
+          <h2>{{ currentGame.sessionType === 'TRAINING' ? ('training.live.duration' | t) : ('live.clock.title' | t) }}</h2>
         </div>
       </div>
 
-      <div class="live-clock-card">
+      <div class="live-clock-card" [class.live-clock-card--training]="currentGame.sessionType === 'TRAINING'">
         <div class="live-clock-card__row">
-          <div class="live-clock-card__metric">
+          @if (currentGame.sessionType === 'GAME') { <div class="live-clock-card__metric">
             <div class="live-clock-card__metric-header">
               <p class="live-clock-card__label">{{ 'live.clock.matchLabel' | t }}</p>
-              <span
-                class="state-chip live-clock-card__status-chip"
-                [class.state-chip--selected]="currentGame.status === 'LIVE' || currentGame.status === 'DRAFT'"
-                [class.state-chip--danger]="currentGame.status === 'PAUSED'">
-                {{ statusLabel(currentGame) }}
-              </span>
             </div>
-            <strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong>
-          </div>
+            <div class="live-clock-card__time-value"><strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong><span class="training-status-dot" [class.training-status-dot--running]="currentGame.status === 'LIVE'" [class.training-status-dot--stopped]="currentGame.status !== 'LIVE'" role="img" [attr.aria-label]="statusLabel(currentGame)" [attr.title]="statusLabel(currentGame)"></span></div>
+          </div> } @else { <div class="live-clock-card__metric"><div class="live-clock-card__metric-header"><p class="live-clock-card__label">{{ 'training.badge' | t }}</p></div><div class="live-clock-card__time-value"><strong>{{ clockSeconds(currentGame) | duration : 'clock' }}</strong><span class="training-status-dot" [class.training-status-dot--running]="currentGame.status === 'LIVE'" [class.training-status-dot--stopped]="currentGame.status !== 'LIVE'" role="img" [attr.aria-label]="statusLabel(currentGame)" [attr.title]="statusLabel(currentGame)"></span></div></div> }
 
           <div class="action-flow live-clock-card__actions">
+            @if (currentGame.sessionType === 'TRAINING' && (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED')) {
+              <a class="button button--secondary live-clock-card__control" [routerLink]="['/teams', currentGame.team.id]" [queryParams]="{ addToGameId: currentGame.id }">
+                <span aria-hidden="true">＋</span><span>{{ 'training.addPlayer.action' | t }}</span>
+              </a>
+            }
+            @if (currentGame.status === 'DRAFT' && currentGame.sessionType === 'TRAINING') {
+              <button
+                class="button button--icon live-clock-card__control"
+                type="button"
+                data-live-control="start"
+                [attr.aria-busy]="isActionBusy('start')"
+                [attr.aria-label]="(currentGame.sessionType === 'TRAINING' ? 'training.live.start' : 'live.actions.start') | t"
+                [attr.title]="(currentGame.sessionType === 'TRAINING' ? 'training.live.start' : 'live.actions.start') | t"
+                (click)="startGame()">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z" /></svg>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'training.live.start' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'training.live.startShort' | t }}</span>
+              </button>
+            }
             @if (canPause(currentGame)) {
               <button
                 class="button button--secondary button--icon live-clock-card__control"
@@ -73,15 +87,15 @@
                 type="button"
                 data-live-control="end-game"
                 [attr.aria-busy]="isActionBusy('end-game')"
-                [attr.aria-label]="'live.actions.end' | t"
-                [attr.title]="'live.actions.end' | t"
+                [attr.aria-label]="(currentGame.sessionType === 'TRAINING' ? 'training.live.end' : 'live.actions.end') | t"
+                [attr.title]="(currentGame.sessionType === 'TRAINING' ? 'training.live.end' : 'live.actions.end') | t"
                 (click)="requestEndGame()">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 4v16" />
                   <path d="M8 5h8l-2.5 3L16 11H8" />
                 </svg>
-                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ 'live.actions.end' | t }}</span>
-                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ 'live.actions.endShort' | t }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--full">{{ currentGame.sessionType === 'TRAINING' ? ('training.live.end' | t) : ('live.actions.end' | t) }}</span>
+                <span class="live-clock-card__control-label live-clock-card__control-label--short">{{ currentGame.sessionType === 'TRAINING' ? ('training.live.endShort' | t) : ('live.actions.endShort' | t) }}</span>
               </button>
             }
 
@@ -102,19 +116,14 @@
           </div>
         </div>
 
-        <div class="live-clock-card__row">
+        @if (currentGame.sessionType === 'GAME') { <div class="live-clock-card__row">
           <div class="live-clock-card__metric">
             <div class="live-clock-card__metric-header">
               <p class="live-clock-card__label">
                 {{ 'live.period.label' | t : { number: currentGame.currentPeriodNumber } }}
               </p>
-              <span
-                class="state-chip live-clock-card__status-chip"
-                [class.state-chip--selected]="effectivePeriodStatus(currentGame) === 'LIVE'">
-                {{ periodStatusLabel(currentGame) }}
-              </span>
             </div>
-            <strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong>
+            <div class="live-clock-card__time-value"><strong>{{ periodClockSeconds(currentGame) | duration : 'clock' }}</strong><span class="training-status-dot" [class.training-status-dot--running]="currentGame.status === 'LIVE' && effectivePeriodStatus(currentGame) === 'LIVE'" [class.training-status-dot--stopped]="currentGame.status !== 'LIVE' || effectivePeriodStatus(currentGame) !== 'LIVE'" role="img" [attr.aria-label]="periodIndicatorLabel(currentGame)" [attr.title]="periodIndicatorLabel(currentGame)"></span></div>
           </div>
 
           <div class="action-flow live-clock-card__actions">
@@ -135,7 +144,7 @@
               </button>
             }
 
-            @if (canCompletePeriod(currentGame)) {
+            @if (currentGame.sessionType === 'GAME' && canCompletePeriod(currentGame)) {
               <button
                 class="button button--secondary button--icon live-clock-card__control"
                 type="button"
@@ -152,7 +161,7 @@
               </button>
             }
 
-            @if (canStartNextPeriod(currentGame)) {
+            @if (currentGame.sessionType === 'GAME' && canStartNextPeriod(currentGame)) {
               <button
                 class="button button--icon live-clock-card__control"
                 type="button"
@@ -170,11 +179,11 @@
               </button>
             }
           </div>
-        </div>
+        </div> }
       </div>
     </section>
 
-    @if (currentGame.status === 'DRAFT') {
+    @if (currentGame.status === 'DRAFT' && currentGame.sessionType === 'GAME') {
       <section class="surface-card">
         <div class="section-heading">
           <div>
@@ -200,20 +209,31 @@
       </section>
     }
 
+    @if (currentGame.status === 'DRAFT' && currentGame.sessionType === 'TRAINING') {
+      <section class="surface-card">
+        <div class="section-heading"><div><h2>{{ 'training.setup.roster' | t }}</h2><p>{{ 'training.setup.count' | t : { count: currentGame.selectedPlayers.length } }}</p></div></div>
+        <div class="stack live-player-list">
+          @for (player of currentGame.selectedPlayers; track player.playerId) {
+            <app-player-card [playerId]="player.playerId" [playerName]="player.name" [jerseyNumber]="player.jerseyNumber" [position]="player.position" [compact]="true" [tone]="'bench'" [note]="'training.live.inactive' | t" [timeLabel]="player.totalSeconds | duration : 'compact'"></app-player-card>
+          }
+        </div>
+      </section>
+    }
+
     @if (currentGame.status === 'LIVE' || currentGame.status === 'PAUSED') {
       <section
         class="surface-card live-control-panel live-control-panel--players"
         [class.live-control-panel--danger]="correctionMode()">
         <div class="section-heading live-control-panel__heading">
           <div>
-            <h2>{{ 'live.players.title' | t : labelParams() }}</h2>
-            <p>{{ 'live.players.subtitle' | t }}</p>
+            @if (currentGame.sessionType === 'TRAINING') { <h2>{{ 'training.setup.roster' | t }}</h2><p>{{ 'training.live.activeCount' | t : { active: currentGame.activePlayers.length, total: currentGame.selectedPlayers.length } }}</p> }
+            @else { <h2>{{ 'live.players.title' | t : labelParams() }}</h2><p>{{ 'live.players.subtitle' | t }}</p> }
           </div>
 
           <div class="live-player-controls">
-            <span class="state-chip" [class.state-chip--danger]="isTeamFoulsWarning(currentGame)">
+            @if (currentGame.sessionType === 'GAME') { <span class="state-chip" [class.state-chip--danger]="isTeamFoulsWarning(currentGame)">
               {{ 'live.teamFouls.label' | t }}: {{ teamFouls(currentGame) }}
-            </span>
+            </span> }
 
             <button
               class="button live-player-controls__correction"
@@ -339,8 +359,8 @@
           id="live-roster-court">
           <div class="section-heading">
             <div>
-              <h2>{{ 'live.onCourt.title' | t }}</h2>
-              <p>{{ 'live.onCourt.subtitle' | t : onCourtSubtitleParams(currentGame) }}</p>
+              <h2>{{ currentGame.sessionType === 'TRAINING' ? ('training.live.active' | t) : ('live.onCourt.title' | t) }}</h2>
+              <p>{{ currentGame.sessionType === 'TRAINING' ? ('training.live.activeCount' | t : { active: currentGame.activePlayers.length, total: currentGame.selectedPlayers.length }) : ('live.onCourt.subtitle' | t : onCourtSubtitleParams(currentGame)) }}</p>
             </div>
 
             @if (rosterGuidanceChipLabel('court')) {
@@ -366,9 +386,11 @@
                 [selected]="isActiveSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'court')"
                 [note]="playerNote(player, 'court')"
-                [timeProgress]="playerTimeProgress(currentGame, player)"
+                [timeProgress]="coachSettingsService.settings().playingTimeDisplay === 'MINUTES' ? playerTimeProgress(currentGame, player) : null"
+                [timeLabel]="playerTimeLabel(currentGame, player)"
                 [inlineStat]="foulCounter(player, isFoulCounterClickable(player, 'court'))"
                 [stats]="playerStats(player)"
+                [mobileStatActions]="isMobileViewport()"
                 [quickActions]="isMobileViewport() ? [] : pointActions(player)"
                 [quickActionsTone]="correctionMode() ? 'danger' : 'default'"
                 [actionLabel]="activePlayerActionLabel(player.playerId)"
@@ -393,8 +415,8 @@
           id="live-roster-bench">
           <div class="section-heading">
             <div>
-              <h2>{{ 'live.bench.title' | t }}</h2>
-              <p>{{ 'live.bench.subtitle' | t }}</p>
+              <h2>{{ currentGame.sessionType === 'TRAINING' ? ('training.live.inactive' | t) : ('live.bench.title' | t) }}</h2>
+              <p>{{ currentGame.sessionType === 'TRAINING' ? ('training.setup.roster' | t) : ('live.bench.subtitle' | t) }}</p>
             </div>
 
             @if (rosterGuidanceChipLabel('bench')) {
@@ -420,7 +442,8 @@
                 [selected]="isBenchSelected(player.playerId)"
                 [stateLabel]="playerSelectionStateLabel(player.playerId, 'bench')"
                 [note]="playerNote(player, 'bench')"
-                [timeProgress]="playerTimeProgress(currentGame, player)"
+                [timeProgress]="coachSettingsService.settings().playingTimeDisplay === 'MINUTES' ? playerTimeProgress(currentGame, player) : null"
+                [timeLabel]="playerTimeLabel(currentGame, player)"
                 [inlineStat]="foulCounter(player, isFoulCounterClickable(player, 'bench'))"
                 [stats]="playerStats(player)"
                 [actionLabel]="benchPlayerActionLabel(player.playerId)"

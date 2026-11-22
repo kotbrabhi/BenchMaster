@@ -45,6 +45,10 @@
         <label for="gameLabel">{{ 'newGame.details.label' | t }}</label>
         <input id="gameLabel" name="gameLabel" [(ngModel)]="gameLabel" [placeholder]="'newGame.details.placeholder' | t" />
       </div>
+      <div class="setup-format-fields">
+        <div class="form-field"><label for="gamePeriodCount">{{ 'coachSettings.match.periodCount' | t }}</label><select id="gamePeriodCount" class="form-control" [(ngModel)]="periodCount"><option [ngValue]="2">2</option><option [ngValue]="4">4</option><option [ngValue]="6">6</option><option [ngValue]="8">8</option></select></div>
+        <div class="form-field"><label for="gamePeriodDuration">{{ 'coachSettings.match.periodDuration' | t }}</label><select id="gamePeriodDuration" class="form-control" [(ngModel)]="periodDurationSeconds"><option [ngValue]="300">5</option><option [ngValue]="480">8</option><option [ngValue]="600">10</option><option [ngValue]="720">12</option></select></div>
+      </div>
     } @else {
       <div class="status-panel status-panel--empty">
         <span class="status-panel__eyebrow">{{ 'newGame.chooseTeam.title' | t }}</span>
