@@ -1,24 +1,25 @@
 import { DOCUMENT, CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet, TitleStrategy } from '@angular/router';
+import { Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Router, RouterOutlet, TitleStrategy } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { AppModeService } from './core/app-mode.service';
 import { AuthService } from './core/auth.service';
 import { getErrorMessage } from './core/api';
 import { I18nService } from './core/i18n.service';
-import { Locale, TranslationKey } from './core/translations';
 import { FriendlyNotification } from './core/models';
+import { Locale, TranslationKey } from './core/translations';
 import { FriendlyMatchService } from './services/friendly-match.service';
 import { CoachSettingsService } from './services/coach-settings.service';
 import { GameService } from './services/game.service';
 import { TeamService } from './services/team.service';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
+import { AppShellComponent } from './shell/app-shell.component';
+import { AuthPanelComponent } from './shell/auth-panel.component';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [CommonModule, RouterOutlet, TranslatePipe, AppShellComponent, AuthPanelComponent],
+  templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
@@ -33,20 +34,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly friendlyMatchService = inject(FriendlyMatchService);
   private readonly coachSettingsService = inject(CoachSettingsService);
 
-  isSidebarCollapsed = false;
   readonly isDarkTheme = signal(false);
-  authIntent = signal<'login' | 'register'>('login');
+  private authTrigger: HTMLElement | null = null;
   isAuthPanelOpen = signal(false);
   authErrorMessage = signal('');
   authSubmitting = signal(false);
-  authName = '';
-  authEmail = '';
-  authPassword = '';
-  private authPanelElement: HTMLElement | null = null;
-  private authTrigger: HTMLElement | null = null;
   private notificationsSubscription?: Subscription;
-  private notificationMenuElement: HTMLElement | null = null;
-  private accountMenuElement: HTMLElement | null = null;
   private installPromptEvent: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }) | null = null;
   readonly installBannerVisible = signal(false);
   readonly installHelpVisible = signal(false);
@@ -64,30 +57,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.installHelpVisible.set(false);
   };
 
-  @ViewChild('authPanel')
-  set authPanelRef(element: ElementRef<HTMLElement> | undefined) {
-    this.authPanelElement = element?.nativeElement ?? null;
-
-    if (this.authPanelElement) {
-      this.getAuthFocusableElements()[0]?.focus();
-      return;
-    }
-
-    const trigger = this.authTrigger;
-    this.authTrigger = null;
-    if (trigger) {
-      queueMicrotask(() => trigger.focus());
-    }
-  }
-
   readonly currentUser = this.authService.currentUser;
   readonly isRestoringSession = this.authService.isRestoring;
   readonly isAuthenticated = computed(() => !!this.currentUser());
   readonly locale = this.i18nService.locale;
   readonly notifications = signal<FriendlyNotification[]>([]);
-  readonly notificationsOpen = signal(false);
-  readonly accountMenuOpen = signal(false);
-  readonly mobileMenuOpen = signal(false);
   readonly pushNotificationStatus = signal<'checking' | 'enabled' | 'disabled' | 'unsupported' | 'blocked' | 'error'>('checking');
   readonly pushBannerDismissed = signal(false);
   readonly pushBannerVisible = computed(() => this.isAuthenticated()
@@ -97,23 +71,6 @@ export class AppComponent implements OnInit, OnDestroy {
     && this.pushNotificationStatus() !== 'enabled'
     && !this.pushBannerDismissed());
   readonly unreadNotificationCount = computed(() => this.notifications().filter((item) => !item.readAt).length);
-
-  @ViewChild('notificationMenu')
-  set notificationMenuRef(element: ElementRef<HTMLElement> | undefined) {
-    this.notificationMenuElement = element?.nativeElement ?? null;
-  }
-
-  @ViewChild('accountMenu')
-  set accountMenuRef(element: ElementRef<HTMLElement> | undefined) {
-    this.accountMenuElement = element?.nativeElement ?? null;
-  }
-
-  readonly navigationItems = [
-    { labelKey: 'app.nav.home' as const, link: '/', icon: 'home' as const },
-    { labelKey: 'app.nav.newGame' as const, link: '/games/new', icon: 'plus' as const },
-    { labelKey: 'training.newAction' as const, link: '/training/new', icon: 'training' as const },
-    { labelKey: 'app.nav.friendlies' as const, link: '/friendlies', icon: 'calendar' as const }
-  ];
 
   constructor() {
     effect(() => {
@@ -178,43 +135,15 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.router.url.includes('/live');
   }
 
-  toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
-  }
-
   toggleTheme() {
     this.setTheme(this.isDarkTheme() ? 'light' : 'dark');
   }
 
   toggleNotifications() {
-    this.notificationsOpen.update((open) => !open);
-    if (this.notificationsOpen()) void this.refreshNotifications();
-  }
-
-  toggleAccountMenu() {
-    this.accountMenuOpen.update((open) => !open);
-  }
-
-  toggleMobileMenu() {
-    this.mobileMenuOpen.update((open) => !open);
-  }
-
-  closeMobileMenu() {
-    this.mobileMenuOpen.set(false);
-  }
-
-  closeAccountMenu() {
-    this.accountMenuOpen.set(false);
-  }
-
-  userInitials() {
-    const user = this.currentUser();
-    const name = user?.name?.trim() || user?.email || '';
-    return name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((part) => part[0].toLocaleUpperCase()).join('') || '?';
+    void this.refreshNotifications();
   }
 
   async openNotification(notification: FriendlyNotification) {
-    this.notificationsOpen.set(false);
     if (notification.readAt) return;
     try {
       await this.friendlyMatchService.markNotificationRead(notification.id);
@@ -312,102 +241,35 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('document:click', ['$event'])
-  closeNotificationsOnOutsideClick(event: MouseEvent) {
-    const target = event.target as Node;
-    if (this.mobileMenuOpen() && !this.document.querySelector('.shell__mobile-menu')?.parentElement?.contains(target)) {
-      this.mobileMenuOpen.set(false);
-    }
-    if (this.notificationsOpen() && !this.notificationMenuElement?.contains(event.target as Node)) {
-      this.notificationsOpen.set(false);
-    }
-    if (this.accountMenuOpen() && !this.accountMenuElement?.contains(event.target as Node)) {
-      this.accountMenuOpen.set(false);
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  closeNotificationsOnEscape() {
-    if (this.mobileMenuOpen()) this.mobileMenuOpen.set(false);
-    if (this.notificationsOpen()) this.notificationsOpen.set(false);
-    if (this.accountMenuOpen()) this.accountMenuOpen.set(false);
-  }
-
-  themeToggleLabel() {
-    return this.i18nService.t(this.isDarkTheme() ? 'app.nav.themeToLight' : 'app.nav.themeToDark');
-  }
-
-  openAuthPanel(event: MouseEvent) {
-    this.authTrigger = event.currentTarget as HTMLElement;
-    this.authIntent.set('login');
+  openAuthPanel(event?: MouseEvent) {
+    this.authTrigger = event?.currentTarget as HTMLElement | null;
     this.authErrorMessage.set('');
     this.isAuthPanelOpen.set(true);
   }
 
   closeAuthPanel() {
     this.authErrorMessage.set('');
-    this.authPassword = '';
+    const trigger = this.authTrigger;
+    this.authTrigger = null;
+    queueMicrotask(() => trigger?.focus());
     this.isAuthPanelOpen.set(false);
   }
 
-  @HostListener('document:keydown', ['$event'])
-  handleAuthPanelKeydown(event: KeyboardEvent) {
-    if (!this.isAuthPanelOpen()) {
-      return;
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.closeAuthPanel();
-      return;
-    }
-
-    if (event.key !== 'Tab') {
-      return;
-    }
-
-    const focusable = this.getAuthFocusableElements();
-    const first = focusable[0];
-    const last = focusable.at(-1);
-
-    if (!first || !last) {
-      event.preventDefault();
-      this.authPanelElement?.focus();
-      return;
-    }
-
-    const activeElement = this.document.activeElement;
-    const focusIsOutsidePanel = !this.authPanelElement?.contains(activeElement);
-
-    if (event.shiftKey && (activeElement === first || focusIsOutsidePanel)) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && (activeElement === last || focusIsOutsidePanel)) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  setAuthIntent(intent: 'login' | 'register') {
-    this.authIntent.set(intent);
-    this.authErrorMessage.set('');
-  }
-
-  async submitAuth() {
+  async submitAuth(credentials: { intent: 'login' | 'register'; name: string; email: string; password: string }) {
     this.authErrorMessage.set('');
 
     try {
       this.authSubmitting.set(true);
-      if (this.authIntent() === 'register') {
+      if (credentials.intent === 'register') {
         await this.authService.register({
-          name: this.authName,
-          email: this.authEmail,
-          password: this.authPassword
+          name: credentials.name,
+          email: credentials.email,
+          password: credentials.password
         });
       } else {
         await this.authService.login({
-          email: this.authEmail,
-          password: this.authPassword
+          email: credentials.email,
+          password: credentials.password
         });
       }
 
@@ -427,50 +289,16 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  openAccountEntry(event: MouseEvent) {
-    if (this.isAuthenticated()) { void this.router.navigate(['/coach/settings']); return; }
-    this.openAuthPanel(event);
-  }
-
   async logout() {
-    this.accountMenuOpen.set(false);
     await this.detachCurrentPushSubscription();
     await this.authService.logout();
     this.coachSettingsService.settings.set({ defaultPeriodCount: 4, defaultPeriodDurationSeconds: 600, playingTimeDisplay: 'PERCENTAGE', visibleLiveStats: ['points', 'rebounds', 'assists', 'blocks', 'interceptions'], confirmSessionEnd: true, openSummaryAfterEnd: true });
     this.document.defaultView?.sessionStorage.removeItem('benchmaster.authReturnUrl');
     this.notifications.set([]);
-    this.notificationsOpen.set(false);
     this.appModeService.setMode('guest');
     await this.refreshNavigationData();
     this.closeAuthPanel();
     await this.router.navigate(['/']);
-  }
-
-  canSubmitAuth() {
-    const hasIdentity = this.authIntent() === 'login' || this.authName.trim().length > 0;
-    const email = this.authEmail.trim();
-    const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    return hasIdentity && hasValidEmail && this.authPassword.length >= 8;
-  }
-
-  authDisabledReason(): TranslationKey | '' {
-    if (this.isRestoringSession()) {
-      return 'common.reasons.authRestoring';
-    }
-
-    if (this.authIntent() === 'register' && !this.authName.trim()) {
-      return 'common.reasons.authNameRequired';
-    }
-
-    const email = this.authEmail.trim();
-    if (!email) return 'error.authEmailRequired';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'error.authEmailInvalid';
-    if (this.authPassword.length < 8) return 'error.authPasswordShort';
-    return '';
-  }
-
-  authIntentLabel() {
-    return this.authIntent() === 'login' ? 'home.auth.loginTab' : 'home.auth.registerTab';
   }
 
   toggleLocale() {
@@ -584,15 +412,4 @@ export class AppComponent implements OnInit, OnDestroy {
     await Promise.all([this.teamService.loadTeams(), this.gameService.loadGames()]);
   }
 
-  private getAuthFocusableElements() {
-    if (!this.authPanelElement) {
-      return [];
-    }
-
-    return Array.from(
-      this.authPanelElement.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )
-    ).filter((element) => element.getClientRects().length > 0);
-  }
 }

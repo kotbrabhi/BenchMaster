@@ -1,0 +1,23 @@
+<div class="auth-sheet">
+  <button class="auth-sheet__backdrop" type="button" tabindex="-1" aria-hidden="true" [attr.aria-label]="'app.nav.closeAuthPanel' | t" (click)="close()"></button>
+  <section #authPanel class="auth-sheet__panel surface-card" role="dialog" aria-modal="true" aria-labelledby="auth-panel-title" tabindex="-1">
+    <div class="auth-sheet__brand"><img class="auth-sheet__brand-logo" src="brand/benchmaster-light.svg" alt="BenchMaster" width="490" height="128" /></div>
+    <div class="section-heading"><div><h2 id="auth-panel-title">{{ 'home.auth.title' | t }}</h2><p>{{ 'home.auth.subtitle' | t }}</p></div></div>
+    <p class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true">{{ errorMessage() }}</p>
+    @if (errorMessage()) { <div class="error-banner" aria-hidden="true">{{ errorMessage() }}</div> }
+    <div class="cluster">
+      <button class="pill" type="button" [class.pill--active]="authIntent === 'login'" [attr.aria-pressed]="authIntent === 'login'" (click)="setAuthIntent('login')">{{ 'home.auth.loginTab' | t }}</button>
+      <button class="pill" type="button" [class.pill--active]="authIntent === 'register'" [attr.aria-pressed]="authIntent === 'register'" (click)="setAuthIntent('register')">{{ 'home.auth.registerTab' | t }}</button>
+    </div>
+    <div class="auth-form">
+      @if (authIntent === 'register') { <div class="form-field"><label for="navAuthName">{{ 'home.auth.nameLabel' | t }}</label><input id="navAuthName" name="navAuthName" [value]="authName" (input)="authName = $any($event.target).value" [placeholder]="'home.auth.namePlaceholder' | t" /></div> }
+      <div class="form-field"><label for="navAuthEmail">{{ 'home.auth.emailLabel' | t }}</label><input id="navAuthEmail" name="navAuthEmail" type="email" autocomplete="email" [value]="authEmail" (input)="authEmail = $any($event.target).value" [placeholder]="'home.auth.emailPlaceholder' | t" /></div>
+      <div class="form-field"><label for="navAuthPassword">{{ 'home.auth.passwordLabel' | t }}</label><input id="navAuthPassword" name="navAuthPassword" type="password" [attr.autocomplete]="authIntent === 'login' ? 'current-password' : 'new-password'" [value]="authPassword" (input)="authPassword = $any($event.target).value" [placeholder]="'home.auth.passwordPlaceholder' | t" /></div>
+    </div>
+    <div class="auth-sheet__actions">
+      <button class="button button--secondary" type="button" (click)="close()">{{ 'common.actions.cancel' | t }}</button>
+      <button class="button" type="button" [disabled]="!canSubmitAuth() || isRestoringSession()" [attr.aria-busy]="submitting() || isRestoringSession()" (click)="submit()">{{ authIntentLabel() | t }}</button>
+    </div>
+    @if (authDisabledReason(); as disabledReason) { <p class="control-reason">{{ disabledReason | t }}</p> }
+  </section>
+</div>
