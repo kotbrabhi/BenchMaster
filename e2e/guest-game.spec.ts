@@ -8,6 +8,13 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
+test('primary home action opens and focuses the first-team form', async ({ page }) => {
+  await page.getByRole('button', { name: /créer ma première équipe/i }).click();
+
+  const teamName = page.getByRole('textbox', { name: /nom de l'équipe/i });
+  await expect(teamName).toBeFocused();
+});
+
 test('creates, tracks, finishes and reloads a guest game summary', async ({ page }) => {
   const playerNames = ['Alex Martin', 'Camille Bernard', 'Noah Petit', 'Lina Robert', 'Ethan Richard', 'Jade Durand'];
 

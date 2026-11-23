@@ -29,8 +29,8 @@
     "test:e2e:report": "npx --no-install playwright show-report"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "prisma": "8.0.0-rc.33",
-    "@playwright/test": "^1.56.1",
     "typescript": "^6.0.3"
   },
   "overrides": {

@@ -177,10 +177,10 @@ export class HomePageComponent implements OnInit {
       return;
     }
 
+    this.startCreatingTeam();
     this.viewportScroller.scrollToAnchor('home-teams');
     setTimeout(() => {
-      const teamsSection = this.document.getElementById('home-teams');
-      teamsSection?.focus({ preventScroll: true });
+      this.document.getElementById('teamName')?.focus({ preventScroll: true });
     }, 120);
   }
 

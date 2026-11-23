@@ -24,6 +24,7 @@
     "@angular/platform-browser": "^22.2.6",
     "@angular/platform-browser-dynamic": "^22.2.6",
     "@angular/router": "^22.2.6",
+    "@playwright/test": "^1.65.1",
     "rxjs": "^7.8.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
