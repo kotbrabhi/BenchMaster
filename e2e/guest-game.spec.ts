@@ -39,7 +39,7 @@ test('creates, tracks, finishes and reloads a guest game summary', async ({ page
 
   const alexCard = page.locator('app-player-card').filter({ hasText: 'Alex Martin' });
   await alexCard.getByRole('button').first().click();
-  await alexCard.getByRole('button', { name: /Alex Martin, Ajouter \+2 points/i }).click();
+  await alexCard.getByRole('button', { name: /Alex Martin, Ajouter \+2/i }).click();
 
   await page.locator('[data-live-control="end-game"]').click();
   await expect(page.getByRole('dialog')).toBeVisible();
