@@ -46,10 +46,11 @@ test('creates, tracks, finishes and reloads a guest game summary', async ({ page
   await page.getByRole('dialog').getByRole('button', { name: /terminer le match/i }).click();
 
   await expect(page.getByRole('heading', { name: 'Finale E2E' })).toBeVisible();
-  await expect(page.getByText(/alex martin/i)).toBeVisible();
-  await expect(page.getByRole('region', { name: /tableau des statistiques/i })).toBeVisible();
+  const statsTable = page.getByRole('region', { name: /tableau des statistiques/i });
+  await expect(statsTable).toBeVisible();
+  await expect(statsTable.getByRole('row', { name: /Alex Martin/i })).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Finale E2E' })).toBeVisible();
-  await expect(page.getByText(/alex martin/i)).toBeVisible();
+  await expect(statsTable.getByRole('row', { name: /Alex Martin/i })).toBeVisible();
 });
