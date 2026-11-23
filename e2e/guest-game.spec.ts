@@ -34,8 +34,8 @@ test('creates, tracks, finishes and reloads a guest game summary', async ({ page
   await page.getByRole('button', { name: /créer le match/i }).click();
 
   await expect(page.getByRole('heading', { name: /finale e2e/i })).toBeVisible();
-  await page.getByRole('button', { name: /démarrer le match/i }).click();
-  await expect(page.getByRole('button', { name: /mettre en pause/i })).toBeVisible();
+  await page.getByRole('button', { name: /lancer le match/i }).click();
+  await expect(page.getByRole('button', { name: /pause chrono/i })).toBeVisible();
 
   await page.getByRole('button', { name: 'Ajouter +2' }).first().click();
 
