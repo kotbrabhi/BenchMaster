@@ -23,10 +23,13 @@ test('creates, tracks, finishes and reloads a guest game summary', async ({ page
     .click();
 
   await page.getByLabel(/nom du match/i).fill('Finale E2E');
+  await page.getByRole('button', { name: /continuer vers le cinq/i }).click();
+  for (const name of playerNames.slice(0, 5)) {
+    await page.getByRole('button', { name: new RegExp(`retirer ${name} du cinq de départ`, 'i') }).click();
+  }
   for (const name of playerNames.slice(0, 5)) {
     await page.getByRole('button', { name: new RegExp(`inclure ${name} dans le cinq`, 'i') }).click();
   }
-  await page.getByRole('button', { name: /continuer vers le cinq/i }).click();
   await page.getByRole('button', { name: /voir le résumé/i }).click();
   await page.getByRole('button', { name: /créer le match/i }).click();
 
