@@ -17,7 +17,10 @@ test('creates, tracks, finishes and reloads a guest game summary', async ({ page
 
   await expect(page.getByRole('heading', { name: /étoiles e2e/i })).toBeVisible();
   await page.goto('/');
-  await page.getByRole('link', { name: /nouveau match/i }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigation principale' })
+    .getByRole('link', { name: 'Nouveau match' })
+    .click();
 
   await page.getByLabel(/nom du match/i).fill('Finale E2E');
   for (const name of playerNames.slice(0, 5)) {
