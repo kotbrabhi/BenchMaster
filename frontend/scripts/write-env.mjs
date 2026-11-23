@@ -8,7 +8,7 @@ const frontendRoot = path.resolve(__dirname, '..');
 const outputPath = path.join(frontendRoot, 'src/environments/environment.generated.ts');
 const apiBaseUrl = (process.env.API_BASE_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
-if (process.env.E2E === '1' || process.env.CI === '1') {
+if (process.env.E2E === '1') {
   let parsedApiUrl;
   try {
     parsedApiUrl = new URL(apiBaseUrl);
@@ -29,4 +29,4 @@ const fileContents = `export const environment = {
 await mkdir(path.dirname(outputPath), { recursive: true });
 await writeFile(outputPath, fileContents, 'utf8');
 
-console.log(`Environment generated (E2E=${process.env.E2E === '1' ? 'enabled' : 'disabled'}, CI=${process.env.CI === '1' ? 'enabled' : 'disabled'})`);
+console.log(`Environment generated (E2E=${process.env.E2E === '1' ? 'enabled' : 'disabled'})`);
