@@ -1,3 +1,18 @@
 {
-  "buildPath": "comp"
+  "buildPath": "comp",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "frontend/src/app/app.component.html"
+        ],
+        "createdAt": "2026-11-23T21:45:38.023Z",
+        "reason": "False positive: Angular [src] binds one of two existing bundled BenchMaster logo assets based on the active light or dark theme."
+      }
+    ]
+  }
 }

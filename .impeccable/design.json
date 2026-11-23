@@ -6,257 +6,272 @@
     "colorMeta": {
       "light-bg": {
         "role": "neutral",
-        "displayName": "Cool Mist",
-        "canonical": "#edf3f8",
+        "displayName": "Cool Slate Mist",
+        "canonical": "#f2f3f5",
         "tonalRamp": [
-          "#14283b",
-          "#32485a",
-          "#4f6476",
-          "#8192a0",
-          "#aab7c1",
-          "#c4ced5",
-          "#d8e2e9",
-          "#edf3f8"
+          "#202a35",
+          "#3d4650",
+          "#5b626b",
+          "#787e86",
+          "#989da2",
+          "#b5b9bd",
+          "#d2d5d8",
+          "#f2f3f5"
         ]
       },
       "light-surface": {
         "role": "neutral",
-        "displayName": "White Surface",
+        "displayName": "Opaque White",
         "canonical": "#ffffff",
         "tonalRamp": [
-          "#14283b",
-          "#32485a",
-          "#4f6476",
-          "#8192a0",
-          "#aab7c1",
-          "#c4ced5",
-          "#d8e2e9",
+          "#202a35",
+          "#3f4851",
+          "#5e666e",
+          "#7e838a",
+          "#9fa3a8",
+          "#bec1c4",
+          "#dedfe1",
           "#ffffff"
         ]
       },
       "light-ink": {
         "role": "neutral",
-        "displayName": "Deep Slate Ink",
-        "canonical": "#14283b",
+        "displayName": "Slate Ink",
+        "canonical": "#202a35",
         "tonalRamp": [
-          "#07121d",
-          "#0d1d2c",
-          "#14283b",
-          "#304354",
-          "#4f6476",
-          "#8293a1",
-          "#b8c3cc",
-          "#edf3f8"
+          "#202a35",
+          "#202a35",
+          "#202a35",
+          "#202a35",
+          "#202a35",
+          "#202a35",
+          "#202a35",
+          "#202a35"
         ]
       },
       "light-muted": {
         "role": "neutral",
-        "displayName": "Blue Gray",
-        "canonical": "#4f6476",
+        "displayName": "Slate Secondary",
+        "canonical": "#626e7a",
         "tonalRamp": [
-          "#14283b",
-          "#32485a",
-          "#4f6476",
-          "#8192a0",
-          "#aab7c1",
-          "#c4ced5",
-          "#d8e2e9",
-          "#edf3f8"
+          "#202a35",
+          "#29343f",
+          "#323d48",
+          "#3c4752",
+          "#46515c",
+          "#4f5a66",
+          "#586470",
+          "#626e7a"
         ]
       },
       "light-border": {
         "role": "neutral",
-        "displayName": "Mist Border",
-        "canonical": "#d6e0e8",
+        "displayName": "Slate Divider",
+        "canonical": "#d9dfe5",
         "tonalRamp": [
-          "#14283b",
-          "#32485a",
-          "#4f6476",
-          "#8192a0",
-          "#aab7c1",
-          "#c4ced5",
-          "#d6e0e8",
-          "#edf3f8"
+          "#202a35",
+          "#3a434e",
+          "#545d66",
+          "#6e767f",
+          "#899199",
+          "#a3abb2",
+          "#bdc4cb",
+          "#d9dfe5"
         ]
       },
       "light-accent": {
         "role": "primary",
-        "displayName": "Court Blue",
-        "canonical": "#1d4ed8",
+        "displayName": "Slate Action",
+        "canonical": "#31556d",
         "tonalRamp": [
-          "#101b3b",
-          "#172b68",
-          "#1d4ed8",
-          "#3869eb",
-          "#6f92f2",
-          "#9cb3f7",
-          "#c5d2fb",
-          "#edf2ff"
+          "#202a35",
+          "#22303d",
+          "#253645",
+          "#273c4d",
+          "#2a4355",
+          "#2c495d",
+          "#2e4f65",
+          "#31556d"
         ]
       },
       "light-accent-strong": {
         "role": "primary",
-        "displayName": "Deep Court Blue",
-        "canonical": "#1e40af",
+        "displayName": "Deep Slate Action",
+        "canonical": "#426e89",
         "tonalRamp": [
-          "#0b1636",
-          "#142867",
-          "#1e40af",
-          "#385fc8",
-          "#6a85d8",
-          "#9baee5",
-          "#c5d0ef",
-          "#edf1fb"
+          "#202a35",
+          "#253441",
+          "#2a3d4d",
+          "#2e4758",
+          "#335165",
+          "#385a71",
+          "#3d647c",
+          "#426e89"
         ]
       },
       "light-court": {
         "role": "secondary",
-        "displayName": "Hardwood Amber",
-        "canonical": "#b45309",
+        "displayName": "Copper Court",
+        "canonical": "#9d572d",
         "tonalRamp": [
-          "#321707",
-          "#672f0b",
-          "#b45309",
-          "#cb6818",
-          "#df8d4e",
-          "#eab58c",
-          "#f4d8c3",
-          "#fff4e5"
+          "#202a35",
+          "#323034",
+          "#433733",
+          "#543d32",
+          "#674430",
+          "#794a2f",
+          "#8a502e",
+          "#9d572d"
         ]
       },
       "light-danger": {
         "role": "tertiary",
-        "displayName": "Scoreboard Red",
-        "canonical": "#b42318",
+        "displayName": "Slate Danger",
+        "canonical": "#a54642",
         "tonalRamp": [
-          "#32110f",
-          "#671915",
-          "#b42318",
-          "#ca4237",
-          "#db756e",
-          "#e9a39e",
-          "#f4cfcc",
-          "#fff2f0"
+          "#202a35",
+          "#332e37",
+          "#453239",
+          "#58363a",
+          "#6c3a3c",
+          "#7e3e3e",
+          "#914240",
+          "#a54642"
         ]
       },
       "dark-bg": {
         "role": "neutral",
-        "displayName": "Deep Teal Night",
-        "canonical": "#101c20",
+        "displayName": "Club Forest Night",
+        "canonical": "#111b17",
         "tonalRamp": [
-          "#090f11",
-          "#101c20",
-          "#203438",
-          "#36494d",
-          "#617174",
-          "#8c999b",
-          "#b8c1c2",
-          "#e5e9e9"
+          "#edf2ee",
+          "#ced4d0",
+          "#afb6b2",
+          "#919894",
+          "#707773",
+          "#515955",
+          "#323b37",
+          "#111b17"
         ]
       },
       "dark-surface": {
         "role": "neutral",
-        "displayName": "Deep Teal Surface",
-        "canonical": "#18282c",
+        "displayName": "Forest Surface",
+        "canonical": "#1b2721",
         "tonalRamp": [
-          "#090f11",
-          "#18282c",
-          "#263b3e",
-          "#405255",
-          "#697779",
-          "#939d9e",
-          "#bec5c6",
-          "#e5e9e9"
+          "#edf2ee",
+          "#d0d6d1",
+          "#b2b9b5",
+          "#959d98",
+          "#757e79",
+          "#58625c",
+          "#3a4540",
+          "#1b2721"
         ]
       },
       "dark-ink": {
         "role": "neutral",
-        "displayName": "Soft Chalk",
-        "canonical": "#f4f7f5",
+        "displayName": "Warm Chalk",
+        "canonical": "#edf2ee",
         "tonalRamp": [
-          "#101c20",
-          "#1c2d31",
-          "#344448",
-          "#566467",
-          "#7f8a8b",
-          "#a6afaf",
-          "#cdd2d1",
-          "#f4f7f5"
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee",
+          "#edf2ee"
         ]
       },
       "dark-muted": {
         "role": "neutral",
-        "displayName": "Cool Sage Gray",
-        "canonical": "#c0d0cc",
+        "displayName": "Forest Secondary",
+        "canonical": "#a5b2aa",
         "tonalRamp": [
-          "#18282c",
-          "#263b3e",
-          "#405255",
-          "#637476",
-          "#879594",
-          "#a7b7b3",
-          "#c0d0cc",
-          "#e5ece9"
+          "#edf2ee",
+          "#e3e9e4",
+          "#d9e0db",
+          "#cfd7d1",
+          "#c4cec7",
+          "#bac5be",
+          "#b0bcb4",
+          "#a5b2aa"
         ]
       },
       "dark-accent": {
         "role": "primary",
-        "displayName": "Night Mint",
-        "canonical": "#4ed0a5",
+        "displayName": "Club Mint",
+        "canonical": "#82c49a",
         "tonalRamp": [
-          "#10251f",
-          "#174434",
-          "#247858",
-          "#36a27a",
-          "#4ed0a5",
-          "#7bdfbe",
-          "#b2eed8",
-          "#e5fbf1"
+          "#edf2ee",
+          "#deece2",
+          "#cfe5d6",
+          "#c0dfcb",
+          "#b0d8be",
+          "#a1d1b2",
+          "#92cba7",
+          "#82c49a"
         ]
       },
       "dark-accent-strong": {
         "role": "primary",
-        "displayName": "Bright Mint",
-        "canonical": "#72e0ba",
+        "displayName": "Bright Club Mint",
+        "canonical": "#a4d9b5",
         "tonalRamp": [
-          "#10251f",
-          "#174434",
-          "#247858",
-          "#36a27a",
-          "#59c99f",
-          "#72e0ba",
-          "#b5f0dc",
-          "#e5fbf1"
+          "#edf2ee",
+          "#e3eee6",
+          "#d9ebde",
+          "#cee8d6",
+          "#c3e4ce",
+          "#b9e0c6",
+          "#afddbe",
+          "#a4d9b5"
         ]
       },
       "dark-court": {
         "role": "secondary",
         "displayName": "Night Hardwood",
-        "canonical": "#f5a65b",
+        "canonical": "#e3a15b",
         "tonalRamp": [
-          "#321707",
-          "#672f0b",
-          "#a45d24",
-          "#ca7d38",
-          "#e6954c",
-          "#f5a65b",
-          "#facb9d",
-          "#fff2e5"
+          "#edf2ee",
+          "#ece7d9",
+          "#eadbc5",
+          "#e9d0b0",
+          "#e7c49a",
+          "#e6b886",
+          "#e4ad71",
+          "#e3a15b"
         ]
       },
       "dark-danger": {
         "role": "tertiary",
-        "displayName": "Night Scoreboard Red",
-        "canonical": "#ff7b72",
+        "displayName": "Forest Danger",
+        "canonical": "#f08b7f",
         "tonalRamp": [
-          "#32110f",
-          "#671915",
-          "#a52e29",
-          "#ce504a",
-          "#e96c65",
-          "#ff9189",
-          "#ffc3be",
-          "#fff2f0"
+          "#edf2ee",
+          "#ede4de",
+          "#eed5cf",
+          "#eec7bf",
+          "#efb7af",
+          "#efa99f",
+          "#f09a90",
+          "#f08b7f"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Forest Divider",
+        "canonical": "#34443a",
+        "tonalRamp": [
+          "#edf2ee",
+          "#d3dad5",
+          "#b9c1bc",
+          "#9fa9a2",
+          "#848f87",
+          "#6a766e",
+          "#505e55",
+          "#34443a"
         ]
       }
     },
@@ -276,19 +291,14 @@
     },
     "shadows": [
       {
-        "name": "card-light",
-        "value": "0 18px 40px rgba(20, 40, 59, 0.14)",
-        "purpose": "Ambient separation for cards in light mode."
+        "name": "overlay-light",
+        "value": "0 16px 36px rgba(24, 36, 44, 0.18)",
+        "purpose": "Depth for menus and dialogs only."
       },
       {
-        "name": "card-dark",
-        "value": "0 18px 40px rgba(0, 0, 0, 0.32)",
-        "purpose": "Ambient separation for cards in dark mode."
-      },
-      {
-        "name": "dialog",
-        "value": "0 28px 64px var(--color-shadow)",
-        "purpose": "Structural elevation for confirmation dialogs."
+        "name": "overlay-dark",
+        "value": "0 20px 44px rgba(0, 0, 0, 0.42)",
+        "purpose": "Depth for menus and dialogs only."
       }
     ],
     "motion": [
@@ -369,40 +379,45 @@
     }
   ],
   "narrative": {
-    "northStar": "The Coach’s Clipboard",
-    "overview": "BenchMaster’s visual language pairs the clarity of a coach’s working board with a subtle basketball-court setting. A restrained court-line and wood-grain backdrop gives the app its sport context; foreground surfaces remain calm and high contrast so a coach can read a clock, find a player, and act quickly during a game. The interface favors practical grouping, explicit status, and direct touch controls over decorative display. Controls feel tactile and fast, with clear feedback and direct labels.\n\nThe system supports a cool court-side palette: a cool blue light theme and a deep green-blue dark theme. Court-orange accents mark basketball-specific context and starter/bench distinctions; the primary action color changes to mint in dark mode. Use the supplied BenchMaster logo as the brand mark and preserve French and English interface support.",
+    "northStar": "The Coach’s Working Board",
+    "overview": "BenchMaster is a restrained premium coaching workspace. The selected structure is Proposition A: focused pages, opaque surfaces, precise data hierarchy, and a quiet application canvas. Light mode uses the Slate & Copper palette; dark mode uses Club Forest and mint actions. Copper and amber are reserved for basketball context. Keep the supplied logo, French and English, responsive navigation, and the real live-coaching workflow.",
     "keyCharacteristics": [
-      "A quiet court-side atmosphere behind operational surfaces.",
-      "Large, direct controls suited to one-handed touch use.",
-      "Player identity, live status, and game data are grouped into compact cards.",
-      "Light and dark themes each use their own semantic accent palette."
+      "Task-focused coaching pages with clear hierarchy.",
+      "Opaque, calm surfaces and fine dividers.",
+      "Light Slate & Copper and dark Club Forest palettes.",
+      "High-contrast live controls with large touch targets."
     ],
     "rules": [
       {
-        "name": "The Theme-Paired Accent Rule",
-        "body": "Use the blue action palette in light mode and the mint action palette in dark mode; keep court amber reserved for basketball context and game data.",
+        "name": "Theme-specific action colors",
+        "body": "Use slate blue for light-mode actions and forest mint for dark-mode actions; reserve copper and amber for basketball context.",
         "section": "colors"
       },
       {
-        "name": "The Scan-First Type Rule",
-        "body": "Reserve uppercase, tracked type for short labels and statuses; keep instructions and longer copy in sentence case with comfortable line height.",
+        "name": "Quiet operational surfaces",
+        "body": "Keep the application canvas flat, panels opaque, and depth for actual overlays.",
+        "section": "overview"
+      },
+      {
+        "name": "Scan-first type",
+        "body": "Use tracked uppercase only for short metadata and statuses; keep instructions in sentence case.",
         "section": "typography"
       }
     ],
     "dos": [
-      "Do preserve both the light blue and dark mint theme palettes.",
-      "Do reserve warm court colors for basketball context, starter/bench data, and related highlights.",
-      "Do keep touch controls at least 44px tall and primary calls to action 48px tall.",
-      "Do use the provided logo asset and keep the French and English interface supported.",
-      "Do retain the low-contrast court setting behind high-contrast operational surfaces.",
-      "Do allow player names, labels, and action text to wrap on small screens."
+      "Do use the Slate & Copper palette in light mode and Club Forest palette in dark mode.",
+      "Do reserve court copper/amber for basketball context.",
+      "Do keep controls at least 44px and primary actions 48px tall.",
+      "Do preserve the BenchMaster logo, French and English, and existing user modes.",
+      "Do keep live clocks and substitution actions immediately scannable.",
+      "Do allow player names and localized labels to wrap on small screens."
     ],
     "donts": [
-      "Don’t use the court texture or grain as a high-contrast foreground pattern.",
-      "Don’t mix the light-theme blue action color into dark-theme primary controls; use the dark-theme mint tokens.",
-      "Don’t use court amber as the default action color.",
-      "Don’t shrink live-game or player controls below their established touch-target sizing.",
-      "Don’t make live status, errors, selection, or disabled states depend on color alone; pair color with labels, borders, or shape."
+      "Don’t use parquet, court-line illustrations, or decorative grain as a global background.",
+      "Don’t use decorative glass, blur, or gradients on ordinary surfaces.",
+      "Don’t use court copper/amber as the default action color.",
+      "Don’t reduce live-game touch targets.",
+      "Don’t make live status, errors, selection, or disabled states depend on color alone."
     ]
   }
 }

@@ -46,7 +46,7 @@
   height: 100%;
   border-radius: inherit;
   transform-origin: left center;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  background: var(--color-accent);
   transition: transform var(--transition-standard);
 }
 
@@ -59,11 +59,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 56px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: var(--color-player-surface);
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-ink);
   text-align: left;
   transition:
@@ -75,13 +76,12 @@
 
 .progress-step--complete {
   border-color: var(--color-status-success-border);
-  background: linear-gradient(135deg, var(--color-status-success-bg), var(--color-surface-glass-strong));
+  background: transparent;
 }
 
 .progress-step--active {
   border-color: var(--color-accent-strong-soft);
-  background: linear-gradient(135deg, var(--color-selected-card-start), var(--color-selected-card-end));
-  box-shadow: inset 0 0 0 1px var(--color-selection-shadow);
+  background: transparent;
 }
 
 .progress-step:disabled {
@@ -100,10 +100,10 @@
 .progress-step__number {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 4px;
   background: var(--color-ink-soft);
   color: var(--color-ink);
   font-weight: 800;
@@ -111,8 +111,9 @@
 
 .progress-step--complete .progress-step__number,
 .progress-step--active .progress-step__number {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  background: var(--color-accent);
   color: var(--color-on-accent);
+  border-radius: 4px;
 }
 
 .progress-step__copy {
@@ -148,7 +149,7 @@
 
 .step-card--complete {
   border-color: var(--color-accent-strong-soft);
-  background: linear-gradient(180deg, var(--color-panel-accent-start), var(--color-panel-start));
+  background: var(--color-surface-glass-strong);
 }
 
 .step-card__header,
@@ -206,8 +207,8 @@
   gap: 14px;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: var(--color-player-surface);
+  border-radius: 6px;
+  background: var(--color-surface-glass);
 }
 
 .wizard-player-card {
@@ -218,32 +219,30 @@
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: var(--color-player-surface);
-  transition: background-color var(--transition-standard), border-color var(--transition-standard), box-shadow var(--transition-standard);
+  border-radius: 4px;
+  background: var(--color-surface-glass);
+  transition: background-color var(--transition-standard), border-color var(--transition-standard);
 }
 
 .wizard-player-card--selected,
 .wizard-summary-group--starter {
   border-color: var(--color-accent-strong-soft);
-  background: linear-gradient(180deg, var(--color-selected-card-start), var(--color-selected-card-end));
+  background: var(--color-accent-soft);
 }
 
 .wizard-player-card--starter {
   border-color: var(--color-selection-border);
-  background: linear-gradient(180deg, var(--color-court-soft), var(--color-selected-card-end));
-  box-shadow: inset 0 0 0 1px var(--color-selection-shadow);
+  background: var(--color-court-soft);
 }
 
 .wizard-summary-group--available {
   border-color: var(--color-border);
-  background: linear-gradient(180deg, var(--color-unselected-card-start), var(--color-unselected-card-end));
+  background: var(--color-surface-glass);
 }
 
 .wizard-player-card--error {
   border-color: var(--color-danger);
-  background: linear-gradient(135deg, var(--color-danger-soft), var(--color-surface-glass-strong));
-  box-shadow: inset 0 0 0 1px var(--color-danger-soft);
+  background: var(--color-danger-soft);
 }
 
 .wizard-player-card__copy {
@@ -259,7 +258,7 @@
   flex: 0 0 36px;
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: 4px;
   background: var(--color-ink-soft);
   color: var(--color-ink);
   font-size: 0.75rem;
@@ -410,9 +409,9 @@
   flex-direction: column;
   gap: 14px;
   padding: 16px;
-  border-radius: 20px;
+  border-radius: 6px;
   border: 1px solid var(--color-accent-strong-soft);
-  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
+  background: var(--color-surface-glass);
 }
 
 .wizard-summary-group__list {
@@ -440,11 +439,8 @@
   display: grid;
   gap: 12px;
   align-content: start;
-  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
-  box-shadow:
-    var(--shadow-card),
-    0 0 0 1px var(--color-inset-highlight) inset;
-  backdrop-filter: blur(18px);
+  background: var(--color-surface-glass-strong);
+  border: 1px solid var(--color-border);
 }
 
 .setup-footer__identity {
@@ -556,4 +552,21 @@
   .progress-step {
     transition-property: border-color, background-color, box-shadow;
   }
+}
+
+/* Proposition A: emphasize the active setup step and simplify player rows. */
+.setup-progress, .step-card, .wizard-stage, .setup-footer__card, .wizard-summary__hero { border-radius: 6px; box-shadow: none; backdrop-filter: none; }
+.setup-progress__steps { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0; border-bottom: 1px solid var(--color-border); }
+.progress-step--active { border-bottom-color: var(--color-accent); }
+.wizard-player-grid { gap: 0; border-top: 1px solid var(--color-border); }
+.wizard-player-card, .wizard-summary-player { border-width: 0 0 1px; border-radius: 0; background: var(--color-surface-glass); box-shadow: none; }
+.wizard-player-card { min-height: 60px; padding: 7px 4px; }
+.wizard-player-card--selected, .wizard-summary-group--starter, .wizard-player-card--starter, .wizard-summary-group--available, .wizard-player-card--error { background: var(--color-surface-glass); box-shadow: none; }
+.wizard-player-card--selected, .wizard-summary-group--starter { border-bottom-color: var(--color-accent-strong-soft); }
+.wizard-player-card--starter { border-bottom-color: var(--color-selection-border); }
+.wizard-player-card__number, .wizard-player-card .button { border-radius: 4px; }
+.wizard-player-card__status { border-radius: 3px; }
+@media (max-width: 620px) {
+  .setup-progress__steps { grid-template-columns: repeat(3,minmax(150px,1fr)); overflow-x: auto; }
+  .progress-step { justify-content: flex-start; padding-inline: 8px; }
 }

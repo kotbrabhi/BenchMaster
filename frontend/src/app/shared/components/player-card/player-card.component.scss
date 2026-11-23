@@ -4,9 +4,11 @@
   gap: var(--mobile-card-gap);
   padding: var(--mobile-card-padding);
   border: 1px solid var(--color-border);
-  border-radius: var(--mobile-card-radius);
+  border-radius: 10px;
   background: var(--color-surface-glass);
 }
+
+.player-card:hover { border-color: var(--color-accent-strong-soft); }
 
 .player-card__details {
   display: flex;
@@ -285,7 +287,7 @@
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 18px;
+  border-radius: 10px;
   background: var(--color-ink-soft);
   font-weight: 800;
   flex-shrink: 0;
@@ -384,7 +386,6 @@ button.player-card__inline-stat {
   min-width: 0;
   padding: 10px 8px;
   border: 1px solid var(--color-border);
-  border-radius: 14px;
   background: var(--color-player-surface-soft);
   text-align: center;
 }
@@ -446,7 +447,6 @@ button.player-card__inline-stat {
   min-height: 44px;
   padding: 0 10px;
   border: 1px solid var(--color-accent-strong-soft);
-  border-radius: 14px;
   background: var(--color-surface-glass-strong);
   color: var(--color-accent-strong);
   font-size: 0.8125rem;
@@ -467,8 +467,8 @@ button.player-card__inline-stat {
   min-height: 48px;
   padding: 0 16px;
   border: 1px solid transparent;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  border-radius: 8px;
+  background: var(--color-accent);
   color: var(--color-on-accent);
   text-align: left;
 }
@@ -500,7 +500,7 @@ button.player-card__inline-stat {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  background: var(--color-accent);
 }
 
 .player-card__action svg {

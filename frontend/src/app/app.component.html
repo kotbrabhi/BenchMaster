@@ -6,8 +6,45 @@
   [class.shell--mobile-nav-hidden]="isLiveMatchRoute">
   <header class="shell__header">
     <a class="shell__brand" routerLink="/" aria-label="BenchMaster">
-      <img class="shell__brand-logo" src="brand/benchmaster-light.svg" alt="BenchMaster" width="490" height="128" />
+      <img
+        class="shell__brand-logo"
+        [src]="isDarkTheme() ? 'brand/benchmaster-dark.svg' : 'brand/benchmaster-light.svg'"
+        alt="BenchMaster"
+        width="490"
+        height="128" />
     </a>
+
+    <button
+      class="shell__mobile-menu-toggle"
+      type="button"
+      [attr.aria-label]="'app.nav.moreOptions' | t"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-controls="shell-mobile-menu"
+      (click)="toggleMobileMenu()">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        @if (mobileMenuOpen()) {
+          <path d="m6 6 12 12M18 6 6 18" />
+        } @else {
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        }
+      </svg>
+    </button>
+
+    <nav id="shell-mobile-menu" class="shell__mobile-menu surface-card" [class.shell__mobile-menu--open]="mobileMenuOpen()" [attr.aria-label]="'app.nav.moreOptions' | t" [attr.inert]="mobileMenuOpen() ? null : ''">
+        <div class="shell__mobile-menu-heading">{{ 'app.nav.preferences' | t }}</div>
+        <div class="shell__mobile-menu-tools">
+          <button type="button" (click)="toggleTheme()"><span>{{ themeToggleLabel() }}</span><span class="shell__mobile-menu-tool-icon" aria-hidden="true">
+            @if (isDarkTheme()) { ☼ } @else { ◐ }
+          </span></button>
+          <button type="button" (click)="toggleLocale(); closeMobileMenu()"><span>{{ 'app.nav.language' | t }}</span><strong>{{ nextLocaleLabel() | uppercase }}</strong></button>
+          @if (isAuthenticated()) {
+            <a routerLink="/coach/settings" (click)="closeMobileMenu()"><span>{{ 'coachSettings.title' | t }}</span><span aria-hidden="true">›</span></a>
+            <button type="button" (click)="logout(); closeMobileMenu()"><span>{{ 'home.auth.logout' | t }}</span><span aria-hidden="true">↪</span></button>
+          } @else {
+            <button type="button" (click)="openAuthPanel($event); closeMobileMenu()"><span>{{ 'home.auth.loginTab' | t }}</span><span aria-hidden="true">↗</span></button>
+          }
+        </div>
+    </nav>
 
     <div class="shell__header-actions">
       @if (isAuthenticated()) {

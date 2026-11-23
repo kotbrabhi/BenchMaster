@@ -29,14 +29,41 @@
     @if (filteredSessions().length) {
       <div class="stack">
         @for (game of filteredSessions(); track game.id) {
-          <a class="game-card" [class.game-card--draft]="game.status === 'DRAFT'" [class.game-card--live]="game.status === 'LIVE'" [class.game-card--paused]="game.status === 'PAUSED'" [class.game-card--finished]="game.status === 'FINISHED'" [routerLink]="gameLink(game)">
+          <a
+            class="game-card"
+            [class.game-card--draft]="game.status === 'DRAFT'"
+            [class.game-card--live]="game.status === 'LIVE'"
+            [class.game-card--paused]="game.status === 'PAUSED'"
+            [class.game-card--finished]="game.status === 'FINISHED'"
+            [routerLink]="gameLink(game)">
             <div class="game-card__content">
               <strong>{{ game.label }}</strong>
               <p>@if (game.sessionType === 'TRAINING') { {{ 'training.badge' | t }} · }{{ game.teamName }}</p>
-              <span class="game-card__date">{{ formattedDate(game.createdAt) }}</span>
+              <span class="game-card__date">{{ formattedGameDate(game.createdAt) }}</span>
               @if (game.sessionType === 'TRAINING') { <span class="game-card__date">{{ 'training.history.players' | t : { count: game.selectedCount, active: game.activeCount } }}</span> }
             </div>
-            <span class="game-card__status"><span>{{ statusLabel(game.status) }}</span></span>
+
+            <span class="game-card__status">
+              <svg class="icon icon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                @switch (game.status) {
+                  @case ('LIVE') {
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                  }
+                  @case ('PAUSED') {
+                    <path d="M9 6v12M15 6v12" />
+                  }
+                  @case ('FINISHED') {
+                    <path d="m5 12 4 4L19 6" />
+                  }
+                  @default {
+                    <path d="M12 7v5l3 3" />
+                    <circle cx="12" cy="12" r="8" />
+                  }
+                }
+              </svg>
+              <span>{{ statusLabel(game.status) }}</span>
+            </span>
           </a>
         }
       </div>

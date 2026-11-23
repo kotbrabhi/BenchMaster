@@ -87,6 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly notifications = signal<FriendlyNotification[]>([]);
   readonly notificationsOpen = signal(false);
   readonly accountMenuOpen = signal(false);
+  readonly mobileMenuOpen = signal(false);
   readonly pushNotificationStatus = signal<'checking' | 'enabled' | 'disabled' | 'unsupported' | 'blocked' | 'error'>('checking');
   readonly pushBannerDismissed = signal(false);
   readonly pushBannerVisible = computed(() => this.isAuthenticated()
@@ -192,6 +193,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleAccountMenu() {
     this.accountMenuOpen.update((open) => !open);
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen.update((open) => !open);
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen.set(false);
   }
 
   closeAccountMenu() {
@@ -305,6 +314,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:click', ['$event'])
   closeNotificationsOnOutsideClick(event: MouseEvent) {
+    const target = event.target as Node;
+    if (this.mobileMenuOpen() && !this.document.querySelector('.shell__mobile-menu')?.parentElement?.contains(target)) {
+      this.mobileMenuOpen.set(false);
+    }
     if (this.notificationsOpen() && !this.notificationMenuElement?.contains(event.target as Node)) {
       this.notificationsOpen.set(false);
     }
@@ -315,6 +328,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   closeNotificationsOnEscape() {
+    if (this.mobileMenuOpen()) this.mobileMenuOpen.set(false);
     if (this.notificationsOpen()) this.notificationsOpen.set(false);
     if (this.accountMenuOpen()) this.accountMenuOpen.set(false);
   }

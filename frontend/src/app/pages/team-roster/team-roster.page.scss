@@ -488,3 +488,87 @@
     text-align: center;
   }
 }
+
+/* Proposition A: roster as a calm, compact management list. */
+.team-card-inline,
+.roster-editor-card,
+.roster-player-card {
+  gap: 12px;
+}
+
+.team-card-inline__label,
+.roster-editor-card__header h3 {
+  color: var(--color-ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.team-card-inline__identity {
+  gap: 4px;
+}
+
+.team-card-inline__name {
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.roster-editor-card,
+.roster-player-card {
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.roster-editor-card {
+  background: var(--color-surface-glass-strong);
+}
+
+.roster-player-card {
+  padding: 6px 10px;
+  background: var(--color-surface-glass);
+}
+
+.roster-player-card + .roster-player-card {
+  margin-top: 2px;
+}
+
+.roster-player-card__number {
+  border-radius: 4px;
+  background: var(--color-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.roster-editor-card__grid input,
+.roster-editor-card__grid select,
+.team-card-inline__input,
+.roster-inline-input {
+  border-radius: 4px;
+  background: var(--color-control-bg);
+}
+
+.roster-player-card--editing,
+.roster-editor-card--editing {
+  border-color: var(--color-accent-strong);
+}
+
+.roster-player-card__action {
+  border-radius: 4px;
+}
+
+.roster-player-card__action.button--danger {
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .roster-stack {
+    gap: 0;
+  }
+
+  .roster-player-card {
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+
+  .roster-player-card:last-child {
+    border-bottom: 0;
+  }
+}

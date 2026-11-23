@@ -56,7 +56,7 @@ export class HistoryPageComponent implements OnInit {
     }[status];
   }
 
-  formattedDate(value: string) {
+  formattedGameDate(value: string) {
     const locale = this.i18n.locale() === 'fr' ? 'fr-FR' : 'en-GB';
     return new Intl.DateTimeFormat(locale, { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
   }

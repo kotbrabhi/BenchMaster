@@ -17,7 +17,7 @@
 .friendly-invite-brand img {
   width: 88px;
   height: auto;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--color-logo-plate);
 }
 
@@ -43,7 +43,7 @@
   min-width: 0;
   padding: 12px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 4px;
   background: var(--color-surface-glass);
 }
 
@@ -83,4 +83,14 @@
   .friendly-invite-facts {
     grid-template-columns: 1fr;
   }
+}
+
+.friendly-invite-facts {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.friendly-invite-choice input:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 2px;
 }

@@ -16,7 +16,7 @@
 .info-banner {
   padding: 12px 14px;
   border: 1px solid var(--color-status-success-border);
-  border-radius: 16px;
+  border-radius: 4px;
   background: var(--color-status-success-bg);
   color: var(--color-status-success);
   font-weight: 700;
@@ -37,8 +37,8 @@
   gap: 6px;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: var(--color-player-surface);
+  border-radius: 4px;
+  background: var(--color-surface);
 }
 
 .share-api-card__item span {
@@ -71,8 +71,8 @@
   gap: 14px;
   padding: 18px;
   border: 1px solid var(--color-border);
-  border-radius: 22px;
-  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
+  border-radius: 4px;
+  background: var(--color-surface);
 }
 
 .insight-panel__header h3 {
@@ -91,8 +91,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 18px;
-  background: var(--color-player-surface);
+  border-radius: 4px;
+  background: var(--color-surface);
 }
 
 .insight-row strong,
@@ -122,7 +122,7 @@
   display: flex;
   min-height: 16px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--color-chart-track);
 }
 
@@ -131,11 +131,11 @@
 }
 
 .split-bar__segment--starter {
-  background: linear-gradient(90deg, var(--color-chart-starter), var(--color-chart-starter-highlight));
+  background: var(--color-chart-starter);
 }
 
 .split-bar__segment--bench {
-  background: linear-gradient(90deg, var(--color-chart-bench), var(--color-chart-bench-highlight));
+  background: var(--color-chart-bench);
 }
 
 .timeline-card {
@@ -159,8 +159,8 @@
   gap: 12px;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
+  border-radius: 4px;
+  background: var(--color-surface);
 }
 
 .timeline-item__time {
@@ -202,13 +202,13 @@
   gap: 14px;
   padding: 16px;
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: linear-gradient(180deg, var(--color-summary-panel-start), var(--color-summary-panel-end));
+  border-radius: 4px;
+  background: var(--color-surface);
 }
 
 .summary-card--total {
   border-color: var(--color-accent-strong-soft);
-  background: linear-gradient(180deg, var(--color-court-soft), var(--color-summary-panel-start));
+  background: var(--color-surface-warm);
 }
 
 .summary-card__header,
@@ -268,7 +268,7 @@
 
 .summary-card__stats div {
   padding: 12px;
-  border-radius: 16px;
+  border-radius: 3px;
   background: var(--color-player-surface-soft);
 }
 
@@ -467,4 +467,17 @@
   .summary-sort-pills {
     display: none;
   }
+}
+
+.summary-table {
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-table tbody tr:hover {
+  background: var(--color-surface-muted);
+}
+
+.timeline-item__time strong,
+.summary-card__time strong {
+  font-variant-numeric: tabular-nums;
 }

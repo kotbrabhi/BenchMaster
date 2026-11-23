@@ -1,72 +1,8 @@
+/* The default application canvas is deliberately quiet. Basketball context lives in match content. */
 .shell::before,
 .shell::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
+  display: none;
 }
-
-.shell::before {
-  z-index: -2;
-  background:
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center / 100% 3px no-repeat,
-    radial-gradient(circle, transparent 0 43%, var(--color-court-line) 43.5% 45.2%, transparent 45.7%) center / min(40vh, 320px) min(40vh, 320px) no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) 80px / 3px min(20vh, 180px) no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(80px + min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% - min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) calc(50% + min(12vh, 96px)) calc(100% - 80px) / 3px min(20vh, 180px) no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 80px - min(20vh, 180px)) / min(24vh, 192px) 3px no-repeat,
-    radial-gradient(circle at 50% 0, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) top center / min(100vw, 720px) min(48vh, 420px) no-repeat,
-    radial-gradient(circle at 50% 100%, transparent 0 69%, var(--color-court-line) 69.4% 71%, transparent 71.4%) bottom center / min(100vw, 720px) min(48vh, 420px) no-repeat,
-    radial-gradient(circle at 50% 0, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center 118px / min(24vh, 192px) min(12vh, 96px) no-repeat,
-    radial-gradient(circle at 50% 100%, transparent 0 62%, var(--color-court-line) 62.5% 64.1%, transparent 64.6%) center calc(100% - 118px) / min(24vh, 192px) min(12vh, 96px) no-repeat,
-    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center 48px / 22px 22px no-repeat,
-    radial-gradient(circle, transparent 0 53%, var(--color-court-line) 54% 58%, transparent 59%) center calc(100% - 48px) / 22px 22px no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center 38px / 64px 3px no-repeat,
-    linear-gradient(var(--color-court-line), var(--color-court-line)) center calc(100% - 38px) / 64px 3px no-repeat,
-    repeating-linear-gradient(
-      90deg,
-      var(--color-shell-grain) 0 2px,
-      transparent 2px 88px
-    ),
-    repeating-linear-gradient(
-      180deg,
-      var(--color-shell-line) 0 1px,
-      transparent 1px 144px
-    ),
-    linear-gradient(
-      90deg,
-      var(--color-wood-light) 0%,
-      var(--color-wood-light) 11%,
-      var(--color-wood-mid) 24%,
-      var(--color-wood-mid) 36%,
-      var(--color-wood-dark) 50%,
-      var(--color-wood-light) 64%,
-      var(--color-wood-mid) 78%,
-      var(--color-wood-light) 100%
-    );
-  opacity: 0.28;
-  transition: opacity 220ms ease;
-}
-
-.shell::after {
-  z-index: -1;
-  background:
-    radial-gradient(circle at top center, var(--color-shell-glow), transparent 32%),
-    radial-gradient(circle at center, var(--color-shell-glow-soft), transparent 46%),
-    linear-gradient(180deg, var(--color-shell-wash-start), var(--color-shell-wash-end));
-  opacity: 0.94;
-}
-
-.shell--focus::before {
-  opacity: 0.68;
-}
-
-.shell--focus::after {
-  opacity: 0.78;
-}
-
 
 .shell__account-toggle {
   display: none;
@@ -75,10 +11,10 @@
   height: 44px;
   padding: 0;
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  background: var(--color-surface-glass-strong);
+  border-radius: 8px;
+  background: var(--color-surface);
   color: var(--color-ink);
-  box-shadow: 0 4px 14px var(--color-shadow);
+  box-shadow: none;
   cursor: pointer;
 }
 
@@ -139,7 +75,7 @@
   width: min(340px, calc(100vw - 24px));
   padding: 14px;
   border: 1px solid var(--color-border);
-  box-shadow: 0 18px 46px var(--color-shadow);
+  box-shadow: 0 16px 36px var(--color-shadow);
 }
 
 .shell-notifications-popover__heading {
@@ -224,4 +160,147 @@
 
 .shell-notifications-popover__empty {
   margin: 12px 2px 4px;
+}
+.game-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--mobile-card-gap);
+  padding: var(--mobile-card-padding);
+  border: 1px solid var(--color-border);
+  border-radius: var(--mobile-card-radius);
+  color: inherit;
+  text-decoration: none;
+  background: var(--color-surface-glass);
+}
+
+.game-card__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.game-card strong {
+  display: block;
+  margin: 0;
+  font-size: var(--player-name-size);
+  font-weight: var(--player-name-weight);
+}
+
+.game-card p,
+.game-card strong,
+.game-card__date {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.game-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+}
+
+.game-card__date {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--player-meta-size);
+  font-weight: 700;
+}
+
+.game-card__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: var(--tap-target-min);
+  padding: 0 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: var(--state-label-size);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.game-card--draft {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+.game-card--draft .game-card__status {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+.game-card--live {
+  border-color: var(--color-status-live-border);
+  background: var(--color-accent-soft);
+}
+
+.game-card--live .game-card__status {
+  background: var(--color-status-live);
+  color: var(--color-status-live-ink);
+}
+
+.game-card--paused {
+  border-color: var(--color-status-paused-border);
+  background: var(--color-status-paused-surface);
+}
+
+.game-card--paused .game-card__status {
+  background: var(--color-status-paused);
+  color: var(--color-status-paused-ink);
+}
+
+.game-card--finished {
+  border-color: var(--color-status-finished-border);
+  background: var(--color-status-finished-surface);
+}
+
+.game-card--finished .game-card__status {
+  background: var(--color-status-finished);
+  color: var(--color-status-finished-ink);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.icon--stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon--fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+@media (max-width: 900px) {
+  .game-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 767px) {
+  .shell > .shell__header > .shell__mobile-menu-toggle { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; margin-left: auto; padding: 0; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--color-ink); cursor: pointer; }
+  .shell__mobile-menu-toggle svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .shell > .shell__header > .shell__mobile-menu { position: absolute; top: calc(100% + 8px); right: 12px; z-index: 55; display: none; width: min(320px, calc(100vw - 24px)); padding: 8px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); box-shadow: 0 8px 20px var(--color-shadow); }
+  .shell > .shell__header > .shell__mobile-menu.shell__mobile-menu--open { display: grid; }
+  .shell__mobile-menu-tools { display: grid; padding-top: 2px; }
+  .shell__mobile-menu-heading { padding: 8px 12px 6px; color: var(--color-text-muted); font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .shell__mobile-menu a, .shell__mobile-menu button { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 46px; padding: 0 12px; border: 0; border-radius: 4px; background: transparent; color: var(--color-ink); font: inherit; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
+  .shell__mobile-menu a:hover, .shell__mobile-menu button:hover { background: var(--color-toggle-hover); }
+  .shell__mobile-menu a:focus-visible, .shell__mobile-menu button:focus-visible, .shell__mobile-menu-toggle:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 2px; }
+  .shell__mobile-menu-tools strong { color: var(--color-accent); font-size: .78rem; letter-spacing: .08em; }
+  .shell__mobile-menu-tool-icon { font-size: 1rem; }
+  .shell__header-actions { display: none; }
+  .shell__mobile-locale-toggle { display: none !important; }
 }
