@@ -8,6 +8,19 @@ const frontendRoot = path.resolve(__dirname, '..');
 const outputPath = path.join(frontendRoot, 'src/environments/environment.generated.ts');
 const apiBaseUrl = (process.env.API_BASE_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
+if (process.env.E2E === '1' || process.env.CI === '1') {
+  let parsedApiUrl;
+  try {
+    parsedApiUrl = new URL(apiBaseUrl);
+  } catch {
+    throw new Error('E2E requires API_BASE_URL to be a localhost URL.');
+  }
+
+  if (!['localhost', '127.0.0.1'].includes(parsedApiUrl.hostname)) {
+    throw new Error('E2E refuses to build with a non-local API_BASE_URL.');
+  }
+}
+
 const fileContents = `export const environment = {
   apiBaseUrl: '${apiBaseUrl}'
 } as const;
@@ -16,4 +29,4 @@ const fileContents = `export const environment = {
 await mkdir(path.dirname(outputPath), { recursive: true });
 await writeFile(outputPath, fileContents, 'utf8');
 
-console.log(`Environment generated with API_BASE_URL=${apiBaseUrl}`);
+console.log(`Environment generated (E2E=${process.env.E2E === '1' ? 'enabled' : 'disabled'}, CI=${process.env.CI === '1' ? 'enabled' : 'disabled'})`);

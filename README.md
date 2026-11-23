@@ -192,6 +192,9 @@ The web app runs on [http://localhost:4200](http://localhost:4200).
 - `npm run db:migrate`: run Prisma development migrations in the backend workspace
 - `npm run db:setup`: generate Prisma client, deploy migrations, and seed the database
 - `npm run db:seed`: rerun the backend seed script
+- `npm run test:e2e`: run the Playwright end-to-end suite (see [`docs/e2e.md`](./docs/e2e.md))
+- `npm run test:e2e:ui`: open Playwright's interactive runner
+- `npm run test:e2e:report`: open the most recent HTML report
 
 ## API Overview
 
